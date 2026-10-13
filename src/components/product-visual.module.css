@@ -106,38 +106,38 @@
 .sceneNote { position: absolute; z-index: 4; left: 7%; bottom: 6%; font-size: clamp(9px, 1.8cqw, 13px); letter-spacing: -0.02em; }
 .previewLabel { position: absolute; z-index: 4; top: 9%; right: 7%; max-width: 38%; font-size: clamp(8px, 1.5cqw, 11px); letter-spacing: 0.04em; text-align: right; }
 
-.scene[data-project="iqra"] { background: #bdc9ac; }
-.scene[data-project="iqra"] .halo { background: #d9dfc7; left: 23%; top: 16%; width: 75%; }
-.scene[data-project="iqra"] .orbitLine { border-color: rgb(48 69 52 / 20%); }
+.scene[data-project="iqra"] { background: #f0e6ce; }
+.scene[data-project="iqra"] .halo { background: #fbf7f0; left: 23%; top: 16%; width: 75%; }
+.scene[data-project="iqra"] .orbitLine { border-color: rgb(140 106 39 / 20%); }
 .scene[data-project="iqra"] .phoneFront { left: 46%; top: 13%; transform: rotate(7deg); }
 .scene[data-project="iqra"] .phoneBack { left: 22%; top: 30%; transform: rotate(-11deg); }
-.arabicLetter { position: absolute; z-index: 1; left: 8%; bottom: 13%; font-family: Georgia, serif; font-size: clamp(45px, 13cqw, 90px); color: rgb(48 69 52 / 25%); }
+.arabicLetter { position: absolute; z-index: 1; left: 8%; bottom: 13%; font-family: Georgia, serif; font-size: clamp(45px, 13cqw, 90px); color: rgb(140 106 39 / 28%); }
 
-.scene[data-project="vela"] { background: #eed4c2; }
-.scene[data-project="vela"] .halo { background: #f7e2d1; width: 85%; left: 35%; top: 6%; }
-.scene[data-project="vela"] .orbitLine { left: 30%; border-color: rgb(115 75 61 / 13%); }
+.scene[data-project="vela"] { background: #cde4dd; }
+.scene[data-project="vela"] .halo { background: #e5f0ec; width: 85%; left: 35%; top: 6%; }
+.scene[data-project="vela"] .orbitLine { left: 30%; border-color: rgb(35 103 94 / 18%); }
 .scene[data-project="vela"] .phoneBack { width: 25%; left: 36%; top: 36%; transform: rotate(-10deg); }
 .scene[data-project="vela"] .phoneFront { width: 29%; left: 59%; top: 18%; transform: rotate(9deg); }
 .scene[data-project="vela"] .phoneThird { left: 18%; top: 57%; width: 20%; transform: rotate(-17deg); }
 .velaWords { position: absolute; z-index: 3; left: 7%; top: 29%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(20px, 5cqw, 38px); line-height: 1.1; letter-spacing: -0.06em; }
 
-.resumeHalo { position: absolute; width: 80%; aspect-ratio: 1; border-radius: 50%; background: #d8cde9; left: 30%; top: 4%; }
-.resumeWindow { position: absolute; z-index: 2; left: 10%; top: 24%; width: 80%; height: 67%; background: #f3eff8; box-shadow: 0 19px 45px rgb(76 49 109 / 13%); border: 1px solid rgb(82 56 114 / 12%); border-radius: 7px; overflow: hidden; transform: rotate(-2deg); transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1); }
+.resumeHalo { position: absolute; width: 80%; aspect-ratio: 1; border-radius: 50%; background: #c9cef6; left: 30%; top: 4%; }
+.resumeWindow { position: absolute; z-index: 2; left: 10%; top: 24%; width: 80%; height: 67%; background: #f0f1fc; box-shadow: 0 19px 45px rgb(76 49 109 / 13%); border: 1px solid rgb(82 56 114 / 12%); border-radius: 7px; overflow: hidden; transform: rotate(-2deg); transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1); }
 .browserBar { display: flex; position: relative; z-index: 2; align-items: center; justify-content: space-between; height: clamp(23px, 5.3cqw, 37px); padding: 0 3.5%; border-bottom: 1px solid rgb(60 45 75 / 9%); background: #faf8fc; color: #62586e; font-size: clamp(7px, 1.4cqw, 10px); }
 .browserDots { display: flex; gap: 4px; }
 .browserDots i { width: 4px; height: 4px; background: #d7d0df; border-radius: 50%; }
 .browserPlus { font-size: 14px; color: #9d93a7; }
-.resumeShelf { position: absolute; inset: 14% 0 0; background: linear-gradient(130deg, #ebe6f2, #f6f3fa); }
+.resumeShelf { position: absolute; inset: 14% 0 0; background: linear-gradient(130deg, #e3e5f8, #f4f5fd); }
 .resumePaper { position: absolute; width: 39%; aspect-ratio: 1000 / 1415; box-shadow: 0 5px 16px rgb(63 44 93 / 14%); background: #fff; }
 .resumePaper img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .resumePaper0 { left: 2%; top: 15%; transform: rotate(-11deg); }
 .resumePaper1 { right: -1%; top: 19%; transform: rotate(13deg); }
 .resumePaper2 { z-index: 2; left: 31%; top: 3%; width: 43%; transform: rotate(1deg); }
-.resumeSeal { position: absolute; z-index: 4; right: 4%; bottom: 5%; width: 17%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6%; border-radius: 50%; background: #6743aa; color: #fff9ea; transform: rotate(13deg); box-shadow: 0 4px 13px rgb(65 40 101 / 14%); }
+.resumeSeal { position: absolute; z-index: 4; right: 4%; bottom: 5%; width: 17%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6%; border-radius: 50%; background: #5357c6; color: #fff9ea; transform: rotate(13deg); box-shadow: 0 4px 13px rgb(65 40 101 / 14%); }
 .resumeSeal span { font-size: clamp(5px, 1.1cqw, 8px); letter-spacing: 0.12em; }
 .resumeSeal svg { width: 34%; height: 34%; }
 
-.scene[data-project="wardrobe"] { background: #e6e1d6; }
+.scene[data-project="wardrobe"] { background: #dce4ef; }
 .fashionRule { position: absolute; left: 7%; right: 7%; top: 22%; height: 1px; background: rgb(81 76 67 / 20%); }
 .fashionWords { position: absolute; z-index: 4; left: 7%; top: 28%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(21px, 5.4cqw, 40px); line-height: 1.05; letter-spacing: -0.065em; }
 .fashionWords em { font-weight: 400; }
@@ -235,3 +235,12 @@
 }
 
 .propertyWindow{position:absolute;z-index:4;left:14%;top:27%;width:82%;border-radius:4px;overflow:hidden;transform:rotate(-5deg);box-shadow:10px 20px 45px #1a31352b;border:1px solid #ffffff80;background:#fff}.propertyWindow>img{width:100%;height:auto}.propertyWords{bottom:5%;font-size:clamp(23px,6.8cqw,50px);z-index:5}
+
+.scene[data-project="shield-family"] .halo{background:#f5f1ea55}.scene[data-project="shield-family"] .orbitLine{border-color:#5856d622}.scene[data-project="wardrobe"] .fashionShirt{width:27%;height:39%;left:8%;bottom:14%;transform:rotate(-9deg)}.wardrobePhone{position:absolute;width:39%;left:49%;top:16%;padding:4px;border-radius:28px;background:#263141;box-shadow:0 22px 36px #1d2e4733;transform:rotate(7deg);overflow:hidden;transition:transform .5s var(--ease-out)}.wardrobePhone img{width:100%;height:auto;border-radius:24px}.scene[data-project="wardrobe"] .fashionWords{font-size:clamp(26px,6cqw,45px);top:28%}.scene[data-project="next-project"] .mark{display:none}.scene[data-project="next-project"] .sceneNote{display:none}.scene[data-project="next-project"] .surpriseYear{left:auto;right:8%;font-size:14px;bottom:12%}.surpriseMark{width:50%;height:62%;left:25%;top:14%}.large[data-project="sarpoli"] .mark{font-size:18px}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.scene:hover .wardrobePhone{transform:translateY(-5px) rotate(4deg)}}
+
+.currentWebWindow{position:absolute;left:7%;top:24%;width:86%;border-radius:7px;overflow:hidden;background:#fff;box-shadow:0 20px 36px #30347530;transform:rotate(-3deg);transition:transform .65s var(--ease-out)}.currentWebWindow>img{width:100%;height:auto}.webSceneNote{position:absolute;left:7%;bottom:5%;font-size:clamp(8px,1.8cqw,12px);color:#4342b7}.scene[data-project="sarpoli"]{background:#3b5bdb;color:#fff}.agencyGrid{position:absolute;inset:0;background-image:linear-gradient(#ffffff0c 1px,transparent 1px),linear-gradient(90deg,#ffffff0c 1px,transparent 1px);background-size:42px 42px}.agencyOrbit{position:absolute;width:110%;aspect-ratio:1;border:1px solid #ffffff38;border-radius:50%;left:0;top:-7%;box-shadow:0 0 0 35px #ffffff07,0 0 0 70px #ffffff05}.agencyWebsite{position:absolute;left:9%;top:23%;width:86%;background:#fff;border-radius:8px;overflow:hidden;transform:rotate(-5deg);box-shadow:0 26px 48px #0b185e40;transition:transform .65s var(--ease-out)}.agencyWebsite>img{width:100%;height:auto}.agencyServices{font-size:clamp(9px,1.8cqw,12px);color:#e5eafa;bottom:8%;left:9%}.scene[data-project="kaizencv"] .resumeHalo{width:85%;left:25%;top:12%}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.scene:hover .agencyWebsite{transform:translateY(-7px) rotate(-3deg)}.scene:hover .currentWebWindow{transform:translateY(-5px) rotate(-1deg)}}
+@media(max-width:600px){.agencyWebsite{top:23%;width:79%;left:11%}.agencyServices{bottom:6%;font-size:9px}.scene[data-project="sarpoli"] .mark{top:7%;left:9%;font-size:13px}.scene[data-project="sarpoli"] .mark img{width:28px;height:28px}.webSceneNote{bottom:6%}.currentWebWindow{top:26%}}
+
+.previewLabel{right:17%;max-width:32%;font-size:clamp(7px,1.35cqw,10px)}

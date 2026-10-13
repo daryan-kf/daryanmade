@@ -18,7 +18,7 @@ function Mark({ project, inverse = false }: { project: Project; inverse?: boolea
 function Phone({ slug, screen, className = "" }: { slug: string; screen: number; className?: string }) {
   return (
     <div className={`${styles.phone} ${className}`}>
-      <Image src={`/images/${slug}/screen-${screen}.webp`} alt="" width={1000} height={2167} sizes="(max-width: 700px) 36vw, (max-width: 1100px) 24vw, 300px" />
+      <Image src={slug === "shield-family" ? `/images/shield-site/${["parent-home", "child-home", "learning"][screen - 1]}.webp` : `/images/${slug}/screen-${screen}.webp`} alt="" width={1000} height={2167} sizes="(max-width: 700px) 36vw, (max-width: 1100px) 24vw, 300px" />
       <span className={styles.phoneEdge} />
     </div>
   );
@@ -37,8 +37,7 @@ function MobileScene({ project, large }: ProductVisualProps) {
       <div className={styles.orbitLine} />
       <Mark project={project} />
       <span className={styles.previewLabel}>{isShield ? "Development preview" : "Interface preview"}</span>
-      <span className={styles.sceneNote}>{isShield ? "A little learning. A little more play." : isIqra ? "One verse at a time." : "Find your everyday rhythm."}</span>
-      <div className={styles.deviceAssembly}>
+      <div className={styles.deviceAssembly} data-parallax>
         <Phone slug={project.slug} screen={2} className={styles.phoneBack} />
         <Phone slug={project.slug} screen={1} className={styles.phoneFront} />
         {large && <Phone slug={project.slug} screen={3} className={styles.phoneThird} />}
@@ -50,37 +49,23 @@ function MobileScene({ project, large }: ProductVisualProps) {
 }
 
 function ResumeScene({ project }: { project: Project }) {
-  return (
-    <>
-      <div className={styles.resumeHalo} />
-      <Mark project={project} />
-      <div className={styles.resumeWindow}>
-        <BrowserBar label="A little more you." />
-        <div className={styles.resumeShelf}>
-          {[2, 3, 1].map((screen, i) => (
-            <div className={`${styles.resumePaper} ${styles[`resumePaper${i}`]}`} key={screen}>
-              <Image src={`/images/kaizencv/screen-${screen}.webp`} alt="" width={1000} height={1415} sizes="(max-width: 700px) 45vw, (max-width: 1100px) 32vw, 400px" />
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className={styles.resumeSeal}><span>YOUR NEXT</span><svg viewBox="0 0 40 40"><path d="m20 2 3.7 12.4L36 10l-8.6 10L36 30l-12.3-4.4L20 38l-3.7-12.4L4 30l8.6-10L4 10l12.3 4.4Z" fill="currentColor" /></svg><span>CHAPTER</span></div>
-    </>
-  );
+  return <>
+    <div className={styles.resumeHalo} /><Mark project={project} />
+    <div className={styles.currentWebWindow}>
+      <BrowserBar label="kaizencv.com" />
+      <Image src="/images/kaizencv/website-current.webp" alt="" width={1600} height={1000} sizes="(max-width: 700px) 90vw, 700px" />
+    </div>
+  </>;
 }
 
 function WardrobeScene({ project }: { project: Project }) {
-  return (
-    <>
-      <div className={styles.fashionRule} />
-      <Mark project={project} />
-      <span className={styles.fashionWords}>Wear it.<br /><em>Your way.</em></span>
-      <div className={`${styles.fashionPhoto} ${styles.fashionMain}`}><Image src="/images/wardrobe/screen-1.webp" alt="" fill sizes="(max-width: 700px) 48vw, 400px" /></div>
-      <div className={`${styles.fashionPhoto} ${styles.fashionSecond}`}><Image src="/images/wardrobe/screen-2.webp" alt="" fill sizes="(max-width: 700px) 32vw, 300px" /></div>
-      <div className={`${styles.fashionPhoto} ${styles.fashionShirt}`}><Image src="/images/wardrobe/hero.webp" alt="" fill sizes="(max-width: 700px) 28vw, 220px" /></div>
-      <span className={styles.conceptLabel}>Concept imagery</span>
-    </>
-  );
+  return <>
+    <div className={styles.fashionRule} /><Mark project={project} />
+    <span className={styles.fashionWords}>Wear it.<br /><em>Your way.</em></span>
+    <div className={styles.wardrobePhone}><Image src="/images/wardrobe/current-ui.webp" alt="" width={1000} height={2167} sizes="(max-width: 700px) 52vw, 360px" /></div>
+    <div className={`${styles.fashionPhoto} ${styles.fashionShirt}`}><Image src="/images/wardrobe/hero.webp" alt="" fill sizes="(max-width: 700px) 28vw, 220px" /></div>
+    <span className={styles.conceptLabel}>In the making</span>
+  </>;
 }
 
 function PropertyScene({ project }: { project: Project }) {
@@ -91,23 +76,18 @@ function PropertyScene({ project }: { project: Project }) {
       <Mark project={project} inverse />
       <div className={styles.propertyWindow}>
         <BrowserBar label="koebsklar.vercel.app" />
-        <Image src="/images/koebsklar/website.webp" alt="" width={1600} height={900} sizes="(max-width: 700px) 85vw, 700px" />
+        <Image src="/images/koebsklar/website-current.webp" alt="" width={1600} height={1000} sizes="(max-width: 700px) 85vw, 700px" />
       </div>
     </>
   );
 }
 
 function AgencyScene({ project }: { project: Project }) {
-  return (
-    <>
-      <Image className={styles.agencyPhoto} src="/images/sarpoli/hero.webp" alt="" fill sizes="(max-width: 700px) 100vw, 1000px" />
-      <div className={styles.agencyWash} />
-      <Mark project={project} />
-      <span className={styles.agencyWords}>Ideas,<br /><em>put to work.</em></span>
-      <span className={styles.agencyServices}>Websites · Tools · Automation</span>
-      <svg className={styles.agencyDiagram} viewBox="0 0 200 200" fill="none"><circle cx="100" cy="100" r="83" stroke="currentColor" strokeWidth="1" /><path d="M17 100h166M100 17v166M41 41l118 118M41 159 159 41" stroke="currentColor" strokeWidth="1" /><circle cx="100" cy="100" r="29" fill="currentColor" /><circle cx="100" cy="100" r="18" fill="#e7e3d4" /></svg>
-    </>
-  );
+  return <>
+    <div className={styles.agencyGrid} /><div className={styles.agencyOrbit} />
+    <Mark project={project} inverse />
+    <div className={styles.agencyWebsite}><BrowserBar label="sarpoli.com" /><Image src="/images/sarpoli/website-current.webp" alt="" width={1600} height={1000} sizes="(max-width: 700px) 90vw, 800px" /></div>
+  </>;
 }
 
 function IdentityScene({ project }: { project: Project }) {
@@ -133,7 +113,7 @@ export function ProductVisual({ project, large = false }: ProductVisualProps) {
       data-project={project.slug}
       style={{ "--project-color": project.color, "--project-ink": project.ink } as CSSProperties}
       role="img"
-      aria-label={`${project.name} ${concept ? "concept imagery" : isMobile ? "development preview" : "product preview"}`}
+      aria-label={`${project.name} ${concept ? "development interface preview and styling imagery" : isMobile ? "development preview" : "product preview"}`}
     >
       {project.slug === "next-project" ? <><Mark project={project} /><MakerMark className={styles.surpriseMark} /><span className={styles.surpriseYear}>2027</span><span className={styles.sceneNote}>Something good is taking shape.</span></> : isMobile ? <MobileScene project={project} large={large} />
         : project.slug === "kaizencv" ? <ResumeScene project={project} />

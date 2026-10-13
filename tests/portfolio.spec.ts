@@ -2,11 +2,18 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { projects } from "../src/lib/projects";
 
-const projectLinks = (page: Page) => page.locator("#work a[href^='/projects/']");
+const projectCards = (page: Page) => page.locator("#work article[data-project-card]");
 const expectedPaths = (items = projects) => items.map((project) => `/projects/${project.slug}`).sort();
-async function renderedProjectPaths(page: Page) {
-  return (await projectLinks(page).evaluateAll((links) => links.map((link) => link.getAttribute("href") || ""))).sort();
-}
+const expectedCardLinks = [
+  ["sarpoli", "https://sarpoli.com"],
+  ["kaizencv", "https://www.kaizencv.com"],
+  ["koebsklar", "https://koebsklar.vercel.app/"],
+  ["shield-family", "/projects/shield-family"],
+  ["iqra", "https://apps.apple.com/app/id6797948777"],
+  ["vela", "https://apps.apple.com/app/id6783922107"],
+  ["wardrobe", "/projects/wardrobe"],
+  ["next-project", "/projects/next-project"],
+] as const;
 async function loadPage(page: Page, path: string) {
   const response = await page.goto(path);
   expect(response?.status(), `${path} response status`).toBe(200);
@@ -27,21 +34,32 @@ async function assertNoOverflow(page: Page) {
   expect(widths.body, JSON.stringify(widths)).toBeLessThanOrEqual(widths.viewport + 1);
 }
 
-test("homepage introduces the maker and links all projects with honest statuses", async ({ page }) => {
+test("homepage presents eight full project cards with the intended live destinations", async ({ page }) => {
   await loadPage(page, "/");
   await expect(page).toHaveTitle(/daryanmade/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Good ideas\.\s*Made real\./);
   await expect(page.locator(".hero-kicker")).toContainText("DARYAN KAMALIFAR");
   await expect(page.locator("header .founder-link")).toHaveAttribute("href", "https://sarpoli.com");
-  expect(await renderedProjectPaths(page)).toEqual(expectedPaths());
-  for (const project of projects) {
-    const link = page.locator(`#work a[href='/projects/${project.slug}']`);
-    await expect(link).toContainText(project.name);
-    await expect(link.locator(".status")).toHaveText(project.status);
+  await expect(projectCards(page)).toHaveCount(8);
+  expect(await projectCards(page).evaluateAll(cards => cards.map(card => card.getAttribute("data-project-card")))).toEqual(expectedCardLinks.map(([slug]) => slug));
+  for (const [slug, href] of expectedCardLinks) {
+    const card = page.locator(`#work article[data-project-card='${slug}']`);
+    const project = projects.find(item => item.slug === slug)!;
+    await expect(card.getByRole("heading", { name: project.name, exact: true })).toBeVisible();
+    await expect(card).toContainText(project.summary);
+    await expect(card).toContainText(project.status === "Coming soon" ? "Very soon" : project.status);
+    const primaryLink = card.locator("a[data-project-link]");
+    if (href.startsWith("https://")) {
+      expect(new URL((await primaryLink.getAttribute("href"))!).href).toBe(new URL(href).href);
+      await expect(card.locator("a[data-project-link]")).toHaveAttribute("target", "_blank");
+      await expect(card.locator("a[data-project-link]")).toHaveAttribute("rel", /noopener/);
+    } else {
+      await expect(primaryLink).toHaveAttribute("href", href);
+    }
+    if (project.storeUrl) await expect(card.getByRole("link", { name: `Download ${project.name} on the App Store` })).toHaveAttribute("href", project.storeUrl);
   }
-  await expect(page.locator("#work a[href='/projects/shield-family'] .status")).toHaveText("Live");
-  await expect(page.locator("#work a[href='/projects/kaizencv'] .status")).toHaveText("Live");
-  await expect(page.locator("#work a[href='/projects/iqra'] .status")).toHaveText("Live");
+  await expect(page.locator("#work").getByRole("link", { name: /^Download .+ on the App Store$/ })).toHaveCount(3);
+  await expect(page.getByRole("button", { name: /^(Live|All work|In the making)/ })).toHaveCount(0);
 });
 
 test("the public portfolio omits discontinued projects and keeps the next project a surprise", async ({ page }) => {
@@ -65,6 +83,13 @@ test("social previews render PNGs, the sitemap lists current projects, and remov
     expect(response.headers()["content-type"]).toContain("image/png");
     expect([...((await response.body()).subarray(0, 8))]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
   }
+  const icon = await request.get("/icon.svg");
+  expect(icon.status()).toBe(200);
+  expect(icon.headers()["content-type"]).toContain("image/svg+xml");
+  const iconSvg = await icon.text();
+  expect(iconSvg).toContain('stroke-linecap="round"');
+  expect(iconSvg).toContain('stroke-width="4.7"');
+  expect(iconSvg).toContain('<svg');
   const sitemapResponse = await request.get("/sitemap.xml");
   expect(sitemapResponse.status()).toBe(200);
   const sitemap = await sitemapResponse.text();
@@ -76,18 +101,16 @@ test("social previews render PNGs, the sitemap lists current projects, and remov
   expect(removed.status()).toBe(404);
 });
 
-test("project filters show the right projects and announce their results", async ({ page }) => {
+test("project category navigation reaches each complete collection without filtering cards", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await loadPage(page, "/");
-  for (const [label, selected] of [
-    ["Live", projects.filter((project) => project.status === "Live")],
-    ["In the making", projects.filter((project) => ["Coming soon", "Coming very soon", "In development", "2027"].includes(project.status))],
-    ["All work", projects],
-  ] as const) {
-    const button = page.getByRole("button", { name: new RegExp(`^${label}`) });
-    await button.click();
-    await expect(button).toHaveAttribute("aria-pressed", "true");
-    expect(await renderedProjectPaths(page)).toEqual(expectedPaths([...selected]));
-    await expect(page.locator("[aria-live='polite']")).toContainText(`Showing ${selected.length}`);
+  const directory = page.getByRole("navigation", { name: "Project categories" });
+  for (const [label, id, count] of [["Agency", "agency", 1], ["Web apps", "web-apps", 2], ["Mobile apps", "mobile-apps", 4], ["Next chapter", "next-chapter", 1]] as const) {
+    await directory.getByRole("link", { name: new RegExp(`^${label}`) }).click();
+    await expect(page).toHaveURL(new RegExp(`#${id}$`));
+    await expect(page.locator(`#${id} article[data-project-card]`)).toHaveCount(count);
+    await expect(page.locator(`#${id}`).getByRole("heading", { name: new RegExp(`^${label}`) }).first()).toBeVisible();
+    await expect(projectCards(page)).toHaveCount(8);
   }
 });
 
@@ -101,6 +124,15 @@ test("all project pages load with owner attribution, useful actions, and working
   for (const project of projects) {
     await loadPage(page, `/projects/${project.slug}`);
     await expect(page).toHaveTitle(new RegExp(project.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    if (project.slug === "shield-family") {
+      await expect(page.locator("h1")).toHaveText(/A better answer\s*to “five more\s*minutes\.”/);
+      await expect(page.getByText("An independent project by Daryan Kamalifar", { exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Back to daryanmade", exact: true })).toHaveAttribute("href", "/");
+      await expect(page.locator(`a[href='${project.storeUrl}']`).first()).toBeVisible();
+      await revealAndCheckImages(page);
+      await assertNoOverflow(page);
+      continue;
+    }
     if (project.slug === "next-project") {
       await expect(page.locator("h1")).toHaveText(/Something good\s*is taking shape\./);
       await expect(page.locator("main")).toContainText("2027");
@@ -122,17 +154,17 @@ test("all project pages load with owner attribution, useful actions, and working
 });
 
 test("screenshot dialog supports keyboard navigation, Escape, and focus return", async ({ page }) => {
-  await loadPage(page, "/projects/shield-family");
-  const preview = page.getByRole("button", { name: "Enlarge Shield Family: Family overview", exact: true });
+  await loadPage(page, "/projects/iqra");
+  const preview = page.getByRole("button", { name: "Enlarge Iqra: Quran reader", exact: true });
   await preview.scrollIntoViewIfNeeded();
   await preview.focus();
   await page.keyboard.press("Enter");
-  const dialog = page.getByRole("dialog", { name: "Shield Family enlarged preview" });
+  const dialog = page.getByRole("dialog", { name: "Iqra enlarged preview" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Close enlarged preview" })).toBeFocused();
   await expect(dialog.getByRole("button", { name: /Previous/ })).toBeDisabled();
   await dialog.getByRole("button", { name: /Next/ }).click();
-  await expect(dialog.locator(".image-dialog-toolbar > span")).toHaveText("Child profile");
+  await expect(dialog.locator(".image-dialog-toolbar > span")).toHaveText("Prayer learning");
   await expect(dialog.getByRole("button", { name: /Previous/ })).toBeEnabled();
   await page.keyboard.press("Escape");
   await expect(dialog).not.toBeVisible();
@@ -170,18 +202,48 @@ test("mobile menu closes on Escape, restores focus, and reaches section anchors"
   await expect.poll(() => page.locator("#work").evaluate((element) => Math.abs(element.getBoundingClientRect().top))).toBeLessThan(130);
 });
 
-test("keyboard users can skip the header and operate project filters", async ({ page }) => {
+test("keyboard users can skip the header and navigate project categories", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await loadPage(page, "/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#main-content$/);
-  const filter = page.getByRole("button", { name: /^Live/ });
-  await filter.focus();
-  await page.keyboard.press("Space");
-  await expect(filter).toHaveAttribute("aria-pressed", "true");
-  expect(await renderedProjectPaths(page)).toEqual(expectedPaths(projects.filter((project) => project.status === "Live")));
+  const mobile = page.getByRole("navigation", { name: "Project categories" }).getByRole("link", { name: /^Mobile apps/ });
+  await mobile.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#mobile-apps$/);
+  await expect(page.locator("#mobile-apps article[data-project-card]")).toHaveCount(4);
+});
+
+test("FAQ answers animate open and closed, and expose keyboard controls correctly", async ({ page }) => {
+  await loadPage(page, "/");
+  const question = page.locator(".home-faq [data-faq-trigger]").first();
+  await question.scrollIntoViewIfNeeded();
+  const answerId = await question.getAttribute("aria-controls");
+  const panel = page.locator(`[id="${answerId}"]`);
+  await expect(question).toHaveAttribute("aria-expanded", "false");
+  await expect(panel).toHaveAttribute("aria-hidden", "true");
+  await expect(panel).toHaveAttribute("inert", "");
+  const duration = await panel.evaluate(element => getComputedStyle(element).transitionDuration.split(",").map(value => parseFloat(value)));
+  expect(Math.max(...duration)).toBeGreaterThan(0);
+  await question.click();
+  await expect(question).toHaveAttribute("aria-expanded", "true");
+  await expect(panel).toHaveAttribute("aria-hidden", "false");
+  await expect(panel).toBeVisible();
+  await expect.poll(() => panel.evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThan(20);
+  await question.click();
+  await expect(question).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(() => panel.evaluate(element => element.getBoundingClientRect().height)).toBe(0);
+  await question.focus();
+  await page.keyboard.press("Enter");
+  await expect(question).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("ArrowDown");
+  await expect(page.locator(".home-faq [data-faq-trigger]").nth(1)).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(page.locator(".home-faq [data-faq-trigger]").last()).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(question).toBeFocused();
 });
 
 test("ambient sculpture motion can be paused and resumed by keyboard", async ({ page }) => {

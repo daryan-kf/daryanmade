@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { SiteFrame } from "@/components/site-frame";
 import { MotionProvider } from "@/components/motion-provider";
 import { siteUrl } from "@/lib/projects";
 import "./globals.css";
@@ -21,5 +20,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#f4f2eb", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${manrope.variable} ${instrument.variable}`}><body id="top"><a className="skip-link" href="#main-content">Skip to content</a><MotionProvider /><Header />{children}<Footer /></body></html>;
+  return <html lang="en" className={`${manrope.variable} ${instrument.variable}`}><body id="top"><a className="skip-link" href="#main-content">Skip to content</a><MotionProvider /><SiteFrame>{children}</SiteFrame></body></html>;
 }

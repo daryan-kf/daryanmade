@@ -24,6 +24,16 @@ export type Project = {
 export const linkedin = "https://www.linkedin.com/in/daryan-kf/";
 export const contact = "mailto:info@sarpoli.com";
 
+export function projectDestination(project: Project) {
+  if (["sarpoli", "kaizencv", "koebsklar"].includes(project.slug) && project.url) {
+    return { href: project.url, label: `Visit ${project.name}`, external: true };
+  }
+  if (["iqra", "vela"].includes(project.slug) && project.storeUrl) {
+    return { href: project.storeUrl, label: "View on the App Store", external: true };
+  }
+  return { href: `/projects/${project.slug}`, label: project.slug === "shield-family" ? "Explore Shield Family" : "A little preview", external: false };
+}
+
 export const projects: Project[] = [
   {
     slug: "shield-family", name: "Shield Family", category: "Family wellbeing", status: "Live", year: "Ongoing",
@@ -31,7 +41,7 @@ export const projects: Project[] = [
     headline: "Your family's limits. A little room to learn.",
     description: "A thoughtfully built iPhone app that helps families create healthier screen habits, connect learning with play, and make a plan together.",
     story: "Screen time is part of family life. I wanted to build something that makes it feel more intentional: clear boundaries, worthwhile learning, and a shared plan that parents and children can understand.",
-    color: "#dce8d4", ink: "#273c2c", tags: ["iOS app", "Product design", "Family wellbeing"],
+    color: "#e9e8f7", ink: "#332c9e", tags: ["iOS app", "Product design", "Family wellbeing"],
     features: [
       { title: "Set the boundaries", text: "Choose daily screen-time limits and bedtime. Earned extra time never overrides bedtime or a parent pause." },
       { title: "Let curiosity lead", text: "Quizzes and brain games can earn extra minutes, at the rate and within the daily cap you choose." },
@@ -47,7 +57,7 @@ export const projects: Project[] = [
     summary: "Your next chapter starts with you.", headline: "Make your next career move count.",
     description: "An AI career toolkit for turning your experience into a clearer CV, preparing for interviews, and approaching the next opportunity with more confidence.",
     story: "A good career tool should help people express what they can do. KaizenCV brings practical writing and preparation tools into one place, so the work of applying feels a little less overwhelming.",
-    color: "#e9e3f3", ink: "#443264", tags: ["Web platform", "AI tools", "Career development"],
+    color: "#e5e7fb", ink: "#4342b7", tags: ["Web platform", "AI tools", "Career development"],
     features: [
       { title: "Tell your story clearly", text: "Import your CV, answer the coach's questions, and review suggestions before applying them." },
       { title: "Prepare with purpose", text: "Explore role-specific questions and company briefings with interview preparation, currently in beta." },
@@ -60,7 +70,7 @@ export const projects: Project[] = [
     summary: "A closer connection, one verse at a time.", headline: "A quieter space to learn and connect.",
     description: "A Quran learning companion, designed with care for reading, listening, memorisation, and building a meaningful daily practice.",
     story: "Some products are deeply personal. Iqra grows from the belief that learning should feel welcoming and manageable. It brings the essentials into a calm, considered experience that people can return to every day.",
-    color: "#dce3cc", ink: "#304534", tags: ["Mobile app", "Quran learning", "Daily practice"],
+    color: "#f0e6ce", ink: "#6b501f", tags: ["Mobile app", "Quran learning", "Daily practice"],
     features: [
       { title: "Read at your pace", text: "Follow the Quran word by word, with transliteration and meaning alongside the Arabic." },
       { title: "Listen and learn", text: "Audio-led learning and recitation support for building familiarity over time." },
@@ -73,7 +83,7 @@ export const projects: Project[] = [
     summary: "A little direction for your every day.", headline: "Make room for the day you want.",
     description: "A calm companion for everyday planning, focus and personal growth, built around momentum over streaks.",
     story: "Good tools meet you where you are. Vela explores how a personal app can make everyday decisions feel lighter, with thoughtful design that helps you keep moving without making life another dashboard.",
-    color: "#f0dfd4", ink: "#734b3d", tags: ["Mobile app", "Productivity", "Personal routines"],
+    color: "#cde4dd", ink: "#185148", tags: ["Mobile app", "Productivity", "Personal routines"],
     features: [
       { title: "Find your next step", text: "Bring today's tasks, plans and goals together, with a voice companion to help you work through them." },
       { title: "Build your rhythm", text: "Focus sessions, habits and personal growth tools that keep attention on manageable progress." },
@@ -86,7 +96,7 @@ export const projects: Project[] = [
     summary: "Less “nothing to wear.” More you.", headline: "A fresh look at what you already own.",
     description: "A digital closet and outfit companion exploring AI try-on, outfit ideas, and a more intentional relationship with your wardrobe. Part of the Vela family.",
     story: "The best outfit might already be in your closet. Wardrobe explores how technology can help you see familiar pieces differently and make getting dressed feel more creative.",
-    color: "#e9e3d8", ink: "#514c43", tags: ["Vela family", "Digital wardrobe", "AI try-on"],
+    color: "#dce4ef", ink: "#34507a", tags: ["Vela family", "Digital wardrobe", "AI try-on"],
     features: [
       { title: "Meet your digital closet", text: "Bring the pieces you own into a single place to explore and organise." },
       { title: "See a new combination", text: "Discover outfit possibilities and looks built around your personal style." },
@@ -98,7 +108,7 @@ export const projects: Project[] = [
     summary: "Complex property documents. A clearer picture.", headline: "More clarity before the next property decision.",
     description: "An AI-assisted document workspace for Danish property lawyers, bringing purchase agreements, condition reports and transaction documents into a structured review.",
     story: "Property work involves a lot of documents and a lot of details. Købsklar explores a practical use for automation: helping professionals find, organise, and review the information that deserves their attention.",
-    color: "#dce4e8", ink: "#2e4857", tags: ["Web platform", "AI automation", "Property documents"],
+    color: "#e2e9fc", ink: "#1d4ed8", tags: ["Web platform", "AI automation", "Property documents"],
     features: [
       { title: "Bring documents together", text: "A dedicated workspace for reviewing the material behind a property transaction." },
       { title: "Surface the details", text: "AI-assisted analysis draws attention to concerns across purchase agreements, reports and supporting documents." },
@@ -111,7 +121,7 @@ export const projects: Project[] = [
     summary: "AI that makes itself useful.", headline: "Thoughtful automation. Real-world work.",
     description: "My AI agency, helping businesses turn practical problems into thoughtfully designed websites, tools, and automated workflows.",
     story: "I founded Sarpoli to bring the same care I put into my own products to the work of other businesses. The starting point is always the work itself: understand the problem, build something useful, and keep improving it.",
-    color: "#252c24", ink: "#eff0e5", tags: ["Founder", "AI agency", "Web & automation"],
+    color: "#0b0f1a", ink: "#d9e0fb", tags: ["Founder", "AI agency", "Web & automation"],
     features: [
       { title: "Start with the problem", text: "Look at the workflow, understand what takes time, and identify where technology can help." },
       { title: "Build the right thing", text: "Design and develop websites, digital tools, and automations around the actual need." },
