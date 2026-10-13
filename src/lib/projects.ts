@@ -47,7 +47,7 @@ export const projects: Project[] = [
       { title: "Let curiosity lead", text: "Quizzes and brain games can earn extra minutes, at the rate and within the daily cap you choose." },
       { title: "Keep the family in sync", text: "Share the family plan through private iCloud. Raw per-app screen-time data stays on the device; aggregate totals sync." }
     ],
-    url: "https://shieldfamily.vercel.app", action: "Visit Shield Family",
+    url: "/projects/shield-family", action: "Visit Shield Family",
     storeUrl: "https://apps.apple.com/app/shield-family-parents-control/id6782042659",
     privacyUrl: "https://daryan-kf.github.io/kidshield-legal/privacy.html",
     termsUrl: "https://daryan-kf.github.io/kidshield-legal/terms.html", support: "mailto:info@sarpoli.com"

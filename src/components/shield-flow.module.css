@@ -1,0 +1,113 @@
+@font-face { font-family: "Shield Hanken"; src: url("/images/shield-site/fonts/HankenGrotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Shield Fraunces"; src: url("/images/shield-site/fonts/Fraunces.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+
+.site {
+  --flow-ink: #211e1a;
+  --flow-muted: #6a625a;
+  --flow-paper: #f5f1ea;
+  --flow-surface: #fbf8f3;
+  --flow-line: #e3dcd0;
+  --flow-indigo: #5856d6;
+  --flow-deep: #332c9e;
+  --flow-wash: #e9e8f7;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: var(--flow-paper);
+  color: var(--flow-ink);
+  font-family: "Shield Hanken", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+.site em { font-family: "Shield Fraunces", Georgia, serif; font-weight: 450; color: var(--flow-indigo); }
+.site button { font: inherit; }
+.site a:focus-visible,.site button:focus-visible,.site code:focus-visible { outline: 3px solid var(--flow-indigo); outline-offset: 5px; }
+.header { width: min(1120px,100%); margin: 0 auto; padding: 28px 32px; display: flex; justify-content: space-between; align-items: center; gap: 24px; border-bottom: 1px solid var(--flow-line); }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-size: 26px; line-height: 1; letter-spacing: -1.2px; font-weight: 800; white-space: nowrap; }
+.brand img { border-radius: 10px; }
+.brand>span>span { font-weight: 500; }
+.makerLink { font-size: 12px; color: var(--flow-muted); white-space: nowrap; }
+.makerLink:hover { color: var(--flow-indigo); }
+.main { flex: 1; width: min(720px,100%); margin: 0 auto; padding: 64px 28px 88px; }
+.articleMain { width: min(860px,100%); }
+.pageHeading { margin-bottom: 32px; }
+.eyebrow { font-size: 12px; font-weight: 750; letter-spacing: .035em; color: var(--flow-deep); }
+.pageHeading h1 { margin: 18px 0 22px; font-size: clamp(42px,5.5vw,68px); font-weight: 650; line-height: 1.07; letter-spacing: -.055em; }
+.intro { color: var(--flow-muted); font-size: 17px; line-height: 1.75; max-width: 650px; }
+.card { padding: 32px; border: 1px solid var(--flow-line); border-radius: 24px; background: var(--flow-surface); }
+.card h2 { font-size: 25px; line-height: 1.25; font-weight: 750; letter-spacing: -.035em; margin: 0 0 14px; }
+.card h2:focus { outline: none; }
+.card>p { color: var(--flow-muted); font-size: 15px; line-height: 1.8; }
+.card>p+p { margin-top: 12px; }
+.button { display: inline-flex; justify-content: center; align-items: center; gap: 12px; min-height: 56px; border: 0; border-radius: 13px; background: var(--flow-indigo); color: white; padding: 14px 22px; font-size: 15px; font-weight: 750; line-height: 1.4; cursor: pointer; text-align: center; }
+.button:hover { background: var(--flow-deep); }
+.button:disabled { opacity: .55; cursor: wait; }
+.button svg { width: 21px; height: 21px; }
+.confirmButton { width: 100%; margin-top: 26px; }
+.quietLink { color: var(--flow-deep); font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }
+.actionLinks { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-top: 22px; }
+.assurance { display: flex; align-items: flex-start; gap: 9px; margin-top: 22px; color: var(--flow-muted); font-size: 12px; line-height: 1.75; }
+.assurance svg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 3px; color: var(--flow-indigo); }
+.error { padding: 16px 18px; margin-top: 20px; border-radius: 13px; background: #f6e3dd; color: #8d3425; font-size: 14px; line-height: 1.7; }
+.error p { margin: 0; }
+.error a { display: inline-block; margin-top: 8px; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.successMark { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 20px; border-radius: 50%; background: var(--flow-wash); color: var(--flow-indigo); }
+.successMark svg { width: 25px; height: 25px; }
+.codeLabel { display: block; margin-top: 24px; font-size: 12px; color: var(--flow-muted); font-weight: 650; }
+.codeRow { display: flex; align-items: center; gap: 16px; margin-top: 9px; padding: 18px; border: 1px solid #cbc6e3; border-radius: 14px; background: var(--flow-wash); }
+.codeRow code { min-width: 0; flex: 1; color: var(--flow-deep); font-family: ui-monospace,"SFMono-Regular",Consolas,monospace; font-size: clamp(17px,3.6vw,24px); font-weight: 650; letter-spacing: .035em; overflow-wrap: anywhere; user-select: all; }
+.copyButton { flex-shrink: 0; border: 1px solid #bab3dd; border-radius: 8px; padding: 8px 12px; background: var(--flow-surface); color: var(--flow-deep); font-size: 12px; font-weight: 700; cursor: pointer; }
+.copyStatus { min-height: 22px; margin-top: 7px; font-size: 12px; color: var(--flow-muted); }
+.expiry { margin: 10px 0 0; font-size: 12px; color: var(--flow-muted); }
+.renewal { margin-top: 24px; padding: 20px; border-radius: 14px; background: #ede7dc; }
+.renewal strong { font-size: 14px; }
+.renewal p { margin-top: 6px; color: var(--flow-muted); font-size: 13px; line-height: 1.8; }
+.redeemButton { width: 100%; margin-top: 24px; }
+.emailNote { margin-top: 18px!important; font-size: 13px!important; }
+.article { padding: 36px; background: var(--flow-surface); border: 1px solid var(--flow-line); border-radius: 24px; }
+.article section+section { margin-top: 34px; padding-top: 30px; border-top: 1px solid var(--flow-line); }
+.article h2 { font-size: 23px; font-weight: 750; line-height: 1.3; letter-spacing: -.025em; margin: 0 0 14px; }
+.article h3 { margin: 24px 0 12px; font-size: 18px; line-height: 1.4; letter-spacing: -.02em; }
+.article p,.article li { font-size: 15px; color: var(--flow-muted); line-height: 1.85; }
+.article p+p { margin-top: 13px; }
+.article strong { color: var(--flow-ink); font-weight: 700; }
+.article a { color: var(--flow-deep); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.article a.button { color: white; text-decoration: none; }
+.article ul,.article ol { padding-left: 22px; margin: 16px 0 0; }
+.article li+li { margin-top: 10px; }
+.notice { margin-bottom: 30px; padding: 20px 22px; border-left: 3px solid var(--flow-indigo); border-radius: 0 13px 13px 0; background: var(--flow-wash); }
+.notice p { font-size: 14px; color: var(--flow-deep); line-height: 1.8; }
+.steps { list-style: none; counter-reset: steps; padding: 0!important; margin: 0!important; }
+.steps>li { position: relative; padding: 0 0 30px 48px; margin: 0!important; counter-increment: steps; }
+.steps>li::before { content: counter(steps,decimal-leading-zero); position: absolute; top: 1px; left: 0; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--flow-wash); color: var(--flow-deep); font-size: 11px; font-weight: 750; }
+.steps>li:last-child { padding-bottom: 0; }
+.planList { display: grid; gap: 12px; margin-top: 18px; }
+.planList>div { padding: 15px 18px; background: var(--flow-paper); border-radius: 12px; }
+.planList dt { font-size: 14px; color: var(--flow-ink); font-weight: 750; }
+.planList dd { margin: 4px 0 0; font-size: 13px; color: var(--flow-muted); line-height: 1.8; }
+.footer { width: min(1120px,100%); margin: auto; border-top: 1px solid var(--flow-line); padding: 26px 32px 30px; color: var(--flow-muted); }
+.footer p { font-size: 12px; }
+.footer nav { display: flex; flex-wrap: wrap; gap: 9px 22px; margin-top: 14px; font-size: 12px; }
+.footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width:600px) {
+  .header { padding: 22px 23px; gap: 15px; }
+  .brand { font-size: 23px; gap: 8px; }
+  .brand img { width: 32px; height: 32px; }
+  .makerLink { font-size: 11px; }
+  .main { padding: 42px 23px 60px; }
+  .pageHeading h1 { font-size: 44px; }
+  .intro { font-size: 16px; }
+  .card { padding: 24px 20px; border-radius: 20px; }
+  .card h2 { font-size: 23px; }
+  .card>p { font-size: 14px; }
+  .codeRow { padding: 15px 12px; gap: 10px; }
+  .copyButton { padding: 8px 10px; font-size: 11px; }
+  .renewal { padding: 17px; }
+  .article { padding: 26px 20px; border-radius: 20px; }
+  .article p,.article li { font-size: 14px; }
+  .article h2 { font-size: 21px; }
+  .steps>li { padding-left: 42px; }
+  .footer { padding: 23px; }
+}
+@media (max-width:360px) { .makerLink { font-size: 10px; } .brand { font-size: 21px; } .pageHeading h1 { font-size: 39px; } .codeRow { align-items: stretch; flex-direction: column; } .copyButton { align-self: flex-start; } }

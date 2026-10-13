@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ShieldOfferForm } from "./shield-offer-form";
 import { FaqAccordion } from "./faq-accordion";
 import styles from "./shield-family-site.module.css";
 
-const SHIELD_SITE = "https://shieldfamily.vercel.app";
 const APP_STORE_URL = "https://apps.apple.com/app/shield-family-parents-control/id6782042659";
 
 /** The page is one short story: four steps, each one idea, each ending in a nudge to the next. */
@@ -43,7 +43,7 @@ const TRUST: { icon: IconName; title: string; text: string }[] = [
 const BUBBLES = ["Five more minutes?", "Just this level", "Pleeease", "I’m almost done", "Five more minutes?"];
 
 export function ShieldFamilySite() {
-  const availability = "Founding Families · Offer preview";
+  const availability = "Founding Families · 3 months free";
   const faqs = [1, 2, 3, 5, 6, 7].map((i) => funnelFaqs[i]);
   return (
     <div className={styles.site}>
@@ -67,7 +67,7 @@ export function ShieldFamilySite() {
                 <a href="#moment" className={styles.button}>See how it works <Icon name="arrowDown" /></a>
                 <a href="#offer" className={styles.textLink}>Or get 3 months free <Icon name="arrowRight" /></a>
               </div>
-              <p className={styles.heroOffer}><span className={styles.offerGift}><Icon name="check" /></span><strong>3 months free</strong><span>Offer preview · eligibility & renewal terms apply</span></p>
+              <p className={styles.heroOffer}><span className={styles.offerGift}><Icon name="check" /></span><strong>3 months free</strong><span>Eligibility & renewal terms apply</span></p>
             </div>
           </div>
           <div className={styles.heroVisual} data-hero-fade><EarningDemo /></div>
@@ -134,12 +134,12 @@ export function ShieldFamilySite() {
           <div className={styles.offerIntro} data-reveal>
             <p className={styles.offerEyebrow} data-reveal-item>Founding Families · the first 500</p>
             <h2 id="offer-title" data-reveal-item><span data-offer-word>3 months.</span><span data-offer-word>Free.</span></h2>
-            <p data-reveal-item>The full app for your whole family. Every child, your co-parent, and a printable family agreement to start with.</p>
+            <p data-reveal-item>The full app for your whole family. Every child, your co-parent, and a shared plan to start with.</p>
           </div>
           <ol className={styles.claimSteps} aria-label="How to get the offer" data-reveal><li data-reveal-item><b>1</b> Choose your plan</li><li data-reveal-item><b>2</b> Confirm your email</li><li data-reveal-item><b>3</b> Redeem your Apple code</li></ol>
-          <div className={styles.offerForm} data-reveal><OfferPreview /></div>
+          <div className={styles.offerForm} data-reveal><ShieldOfferForm /></div>
           <p className={styles.offerCancel}><Icon name="lock" /> Cancel anytime in your Apple settings, at least 24 hours before it renews.</p>
-          <a href="https://shieldfamily.vercel.app/guide/redeem" className={styles.redeemHelp}>See how redemption works <Icon name="arrowRight" /></a>
+          <a href="/projects/shield-family/redeem" className={styles.redeemHelp}>See how redemption works <Icon name="arrowRight" /></a>
         </section>
 
         {/* Download */}
@@ -159,7 +159,7 @@ export function ShieldFamilySite() {
           <p className={styles.downloadNote} data-reveal-item>A parent device and a child device · iOS / iPadOS 26 or later</p>
         </section>
       </main>
-      <footer className={styles.footer} id="shield-footer"><Brand /><nav aria-label="Footer"><a href="https://shieldfamily.vercel.app/claim">Recover your code</a><a href="https://shieldfamily.vercel.app/guide/setup">Setup help</a><a href="https://shieldfamily.vercel.app/companion">Family agreement</a><a href="https://shieldfamily.vercel.app/privacy">Website privacy</a><a href="https://daryan-kf.github.io/kidshield-legal/privacy.html">App privacy</a><a href="https://daryan-kf.github.io/kidshield-legal/terms.html">Terms</a><a href="mailto:info@sarpoli.com">Contact</a></nav><p>© {new Date().getFullYear()} Shield Family</p></footer>
+      <footer className={styles.footer} id="shield-footer"><Brand /><nav aria-label="Footer"><a href="/projects/shield-family#offer">Recover your code</a><a href="/projects/shield-family#inside">Setup help</a><a href="/projects/shield-family/privacy">Website privacy</a><a href="https://daryan-kf.github.io/kidshield-legal/privacy.html">App privacy</a><a href="https://daryan-kf.github.io/kidshield-legal/terms.html">Terms</a><a href="mailto:info@sarpoli.com">Contact</a></nav><p>© {new Date().getFullYear()} Shield Family</p></footer>
       <MobileOffer />
     </div>
   );
@@ -324,19 +324,6 @@ function AppleMark({ className }: { className?: string }) {
 }
 
 
-/** Transactions remain on Shield's existing, verified site. This page never collects email. */
-function OfferPreview() {
-  const [plan, setPlan] = useState("annual");
-  const plans = [{ id: "annual", name: "Yearly", renewal: "Renews for a full year" }, { id: "quarterly", name: "Every 3 months", renewal: "Renews every three months" }, { id: "monthly", name: "Monthly", renewal: "Renews monthly" }];
-  return <div className={styles.offerPreview}>
-    <h3>Choose your rhythm.</h3><p className={styles.previewLead}>Compare the renewal options. Choose your final plan and check local prices on Shield Family.</p>
-    <fieldset className={styles.planFieldset}><legend>Your plan after the free months</legend><div className={styles.planOptions}>{plans.map((option) => <label key={option.id} className={styles.planOption} data-selected={plan === option.id || undefined}><input type="radio" name="shield-offer-plan" value={option.id} checked={plan === option.id} onChange={() => setPlan(option.id)} /><span className={styles.planName}>{option.name}<i aria-hidden="true" /></span><strong>3 months free</strong><span>{option.renewal}</span><small>Local price confirmed on Shield's offer page.</small></label>)}</div></fieldset>
-    <div className={styles.previewNotice}><strong>Launch offer preview</strong><p>Check the current availability on Shield Family's offer page. This portfolio does not collect emails or issue codes.</p></div>
-    <a href={SHIELD_SITE + "/#offer"} className={styles.offerContinue}>Check the current offer on Shield <Icon name="arrowRight" /></a>
-    <p className={styles.offerTerms}>For eligible new subscribers, while the first 500 places last. After three calendar months free, the selected subscription renews automatically at its confirmed local price unless cancelled. A yearly plan charges the full annual price; a three-month plan charges every three months; a monthly plan charges monthly. Apple confirms eligibility, the amount and renewal date. Cancel in Apple Settings at least 24 hours before renewal to avoid the next charge. The offer cannot be combined with the introductory trial. <a href={SHIELD_SITE + "/guide/redeem"}>Offer and cancellation details</a>.</p>
-    <p className={styles.previewFootnote}>Already claimed? <a href={SHIELD_SITE + "/claim"}>Find your code</a> · <a href={SHIELD_SITE + "/privacy"}>Website privacy</a></p>
-  </div>;
-}
 
 function AppStoreLink({ children, className }: { children?: ReactNode; className?: string; source?: string }) {
   return <a href={APP_STORE_URL} className={className}>{children ?? <><AppleMark /><span>Download on the<strong>App Store</strong></span></>}</a>;
@@ -360,7 +347,7 @@ function MobileOffer() {
     for (const element of [hero, offer, footer]) if (element) observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  return <aside className={styles.sticky} hidden={!visible} aria-label="Shield Family offer"><span>Explore three months free<small>Offer preview · conditions apply</small></span><a href="#offer" className={styles.button}>See the offer <Icon name="arrowRight" /></a></aside>;
+  return <aside className={styles.sticky} hidden={!visible} aria-label="Shield Family offer"><span>Three months of family time<small>For eligible new subscribers · conditions apply</small></span><a href="#offer" className={styles.button}>See the offer <Icon name="arrowRight" /></a></aside>;
 }
 
 type IconName =
@@ -448,13 +435,13 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
 
 /** Public copy stays separate from the visual treatment. Screens show example data. */
 const funnelFaqs = [
-  { question: "What exactly do the three free months include?", answer: "Full access to Shield Family on the monthly, 3-month or yearly plan you choose, for eligible new subscribers who redeem a valid offer code. One family subscription covers all your children. The App Companion printables and setup guide are included too." },
+  { question: "What exactly do the three free months include?", answer: "Full access to Shield Family on the monthly, 3-month or yearly plan you choose, for eligible new subscribers who redeem a valid offer code. One family subscription covers all your children. The app helps you build a shared family plan." },
   { question: "What happens after the free period?", answer: "Your chosen subscription renews automatically. A monthly plan begins monthly billing; a 3-month plan charges the 3-month price every three months; a yearly plan charges the full annual price for the following year. Check your local price before claiming and review the exact amount and renewal date in Apple’s confirmation screen. Cancel in Apple Account settings at least 24 hours before the free period ends to avoid renewal." },
   { question: "Which devices does our family need?", answer: "A compatible parent device and child device: iPhone or iPad running iOS or iPadOS 26 or later. You connect them as a family and approve Apple Screen Time permissions during setup. Shield does not support Android or manage gaming consoles. Learning content is currently in English." },
   { question: "Can my child earn unlimited extra minutes?", answer: "No. You choose the earning rate and separate daily caps for quizzes and games. Learning can continue after a cap is reached, but stops adding time. Bedtime is a separate boundary, even when earned minutes remain. Unused earned minutes do not bank into another day." },
   { question: "How is this different from Apple’s Screen Time?", answer: "Shield uses Apple Screen Time to restrict the apps you select. It adds learning that can earn time, a visible balance for your child, parent-approved requests for more time, and a shared family view. The earning limits stay in your hands." },
-  { question: "Does Shield read private messages?", answer: "Shield does not read your child’s messages, photos, or browsing content. Family information syncs through your family’s private iCloud. Location sharing is optional. The website has a separate privacy policy explaining offer emails and website analytics." },
+  { question: "Does Shield read private messages?", answer: "Shield does not read your child’s messages, photos, or browsing content. Family information syncs through your family’s private iCloud. Location sharing is optional. The website has a separate privacy policy explaining the information needed to verify your email and send your offer code." },
   { question: "Can my co-parent and other children join?", answer: "Yes. Invite your co-parent to the same family and give each child their own settings. One family subscription includes all children. Remote changes and shared information depend on connectivity and the required permissions." },
   { question: "How do I use my code?", answer: "Confirm your email to reveal your unique code. On your iPhone or iPad, use the redemption button to open Apple’s offer screen. Review and confirm the offer, then open Shield to connect your family. There is also a step-by-step guide for entering the code manually." },
-  { question: "Do I have to give feedback to keep the offer?", answer: "No. After claiming, you can choose to receive one email a week later asking how setup went and what we could improve. It is entirely optional and never affects the offer. We want useful, honest feedback about the app." },
+  { question: "Do I have to give feedback to keep the offer?", answer: "No. Your offer does not depend on feedback. We only use your signup email for confirmation, your requested code and help with this offer." },
 ];
