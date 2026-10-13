@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { projects, getProject, projectDestination, linkedin, contact, siteUrl } from "@/lib/projects";
+import { projects, getProject, projectDestination, linkedin, contact, contactEmail, siteUrl } from "@/lib/projects";
 import { Arrow, Check, MakerMark, AppleIcon } from "@/components/icons";
 import { ProductVisual } from "@/components/product-visual";
 import { ShieldFamilySite } from "@/components/shield-family-site";
@@ -36,7 +36,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
     <section className="project-faq"><div data-reveal><span className="eyebrow">A FEW THINGS TO KNOW</span><h2>Clear from<br />the <em>start.</em></h2></div><div data-reveal><FaqAccordion items={[
       { question: `Is ${p.name} available?`, answer: <p>{available ? <>{p.name} is live. You can <a href={p.url} target="_blank" rel="noopener noreferrer">visit the website</a>{p.storeUrl && <> or <a href={p.storeUrl} target="_blank" rel="noopener noreferrer">download it from the App Store</a></>}. {p.storeUrl ? "Screenshots show a development preview; the current App Store version may differ." : "The product website has the latest information on availability and features."}</> : <>{p.name} is coming very soon. <a href={inquiry}>Get in touch</a> if you’d like to learn more.</>}</p> },
       { question: "Who is behind the project?", answer: <p>I’m Daryan Kamalifar, an independent developer and the founder of <a href="https://sarpoli.com" target="_blank" rel="noopener noreferrer">Sarpoli</a>. I’ve been coding for over ten years. <a href={linkedin} target="_blank" rel="noopener noreferrer">Find me on LinkedIn.</a></p> },
-      { question: "How can I get help or ask a question?", answer: <p>You can {p.support?.startsWith("https:") ? <a href={p.support} target="_blank" rel="noopener noreferrer">visit the product support page</a> : <a href={p.support || contact}>email {p.support?.replace("mailto:", "") || "info@sarpoli.com"}</a>} with questions about this project.{p.privacyUrl && <> Read the <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer">product privacy policy</a>{p.termsUrl && <> and <a href={p.termsUrl} target="_blank" rel="noopener noreferrer">terms</a></>}.</>}</p> },
+      { question: "How can I get help or ask a question?", answer: <p>You can {p.support?.startsWith("https:") ? <a href={p.support} target="_blank" rel="noopener noreferrer">visit the product support page</a> : <a href={p.support || contact}>email {p.support?.replace("mailto:", "") || contactEmail}</a>} with questions about this project.{p.privacyUrl && <> Read the <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer">product privacy policy</a>{p.termsUrl && <> and <a href={p.termsUrl} target="_blank" rel="noopener noreferrer">terms</a></>}.</>}</p> },
     ]} /></div></section>
     <div className="next-project"><span className="eyebrow">ONE MORE THING I’VE BEEN MAKING</span><Link href={projectDestination(next).href} {...(projectDestination(next).external ? { target: "_blank", rel: "noopener noreferrer" } : {})}><span>{next.name}</span><Arrow diagonal /></Link></div>
   </main>;

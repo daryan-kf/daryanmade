@@ -4,7 +4,7 @@ import OrbitSculpture from "@/components/orbit-sculpture";
 import { ProjectGallery } from "@/components/project-gallery";
 import { Arrow, MakerMark, LinkedInIcon } from "@/components/icons";
 import { FaqAccordion } from "@/components/faq-accordion";
-import { linkedin, siteUrl } from "@/lib/projects";
+import { contact, contactEmail, linkedin, siteUrl } from "@/lib/projects";
 import portraitStyles from "./about-portrait.module.css";
 
 export default function Home() {
@@ -40,8 +40,8 @@ export default function Home() {
     <section className="home-faq section-shell" aria-labelledby="home-faq-title"><div className="home-faq-heading" data-reveal><span className="section-index"><span className="small-dot" />03 / GOOD TO KNOW</span><h2 id="home-faq-title">A little more<br /><em>context.</em></h2><p>Real projects, an independent maker,<br />and an open line of communication.</p></div><div data-reveal><FaqAccordion defaultOpen={null} items={[
       { question: "Who designs and builds these projects?", answer: <p>I’m Daryan Kamalifar, a developer with over ten years of experience and the founder of <a href="https://sarpoli.com" target="_blank" rel="noopener noreferrer">Sarpoli</a>. I work across the idea, product design, code, and ongoing improvements. You can find my professional background on <a href={linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>.</p> },
       { question: "Where can I try the apps?", answer: <p>Each live project has a direct link to its website or official App Store listing. Shield Family has its own home here, with a closer look at the app and links to download it. Wardrobe is coming very soon.</p> },
-      { question: "Can we work on something together?", answer: <p>Through Sarpoli, I build websites, tools, and AI automations for businesses. If you have something in mind, <a href="mailto:info@sarpoli.com">tell me about it</a>.</p> },
-      { question: "How do I get help with an app?", answer: <p>Use the support link on the app’s official website or App Store page. You can also reach me at <a href="mailto:info@sarpoli.com">info@sarpoli.com</a>. Each product’s own privacy policy and terms explain how it works.</p> },
+      { question: "Can we work on something together?", answer: <p>Through Sarpoli, I build websites, tools, and AI automations for businesses. Feedback, new ideas and collaboration enquiries are always welcome. If you have something in mind, <a href={contact}>tell me about it</a>.</p> },
+      { question: "How do I get help with an app?", answer: <p>Use the support link on the app’s official website or App Store page. You can also reach me at <a href={contact}>{contactEmail}</a>. Each product’s own privacy policy and terms explain how it works.</p> },
     ]} /></div></section>
     <section className="closing-note" data-reveal aria-label="Made with care"><span className="eyebrow">IDEA → DESIGN → CODE → CARE</span><p>Small details.<br /><em>Lasting impressions.</em></p><div><MakerMark width={26} height={26} /><span>Built independently.<br />Made to be used.</span><Link href="/#work" className="round-link">Back to the work <span className="round-arrow"><Arrow diagonal /></span></Link></div></section>
   </main>;

@@ -22,7 +22,9 @@ export type Project = {
 };
 
 export const linkedin = "https://www.linkedin.com/in/daryan-kf/";
-export const contact = "mailto:info@sarpoli.com";
+export const contactEmail = "daryankamalifar@gmail.com";
+export const contact = `mailto:${contactEmail}`;
+const agencyContact = "mailto:info@sarpoli.com";
 
 export function projectDestination(project: Project) {
   if (["sarpoli", "kaizencv", "koebsklar"].includes(project.slug) && project.url) {
@@ -114,7 +116,7 @@ export const projects: Project[] = [
       { title: "Surface the details", text: "AI-assisted analysis draws attention to concerns across purchase agreements, reports and supporting documents." },
       { title: "Keep people in the loop", text: "A draft assessment and advice letter support the lawyer's review and professional judgment." }
     ],
-    url: "https://koebsklar.vercel.app", action: "Visit Købsklar", privacyUrl: "https://koebsklar.vercel.app/privatlivspolitik", termsUrl: "https://koebsklar.vercel.app/handelsbetingelser", support: contact
+    url: "https://koebsklar.vercel.app", action: "Visit Købsklar", privacyUrl: "https://koebsklar.vercel.app/privatlivspolitik", termsUrl: "https://koebsklar.vercel.app/handelsbetingelser", support: agencyContact
   },
   {
     slug: "sarpoli", name: "Sarpoli", category: "My AI agency", status: "Live", year: "Ongoing",
@@ -126,7 +128,7 @@ export const projects: Project[] = [
       { title: "Start with the problem", text: "Look at the workflow, understand what takes time, and identify where technology can help." },
       { title: "Build the right thing", text: "Design and develop websites, digital tools, and automations around the actual need." },
       { title: "Care beyond launch", text: "Bring a product mindset to client work, with attention to the details people use every day." }
-    ], url: "https://sarpoli.com", action: "Meet Sarpoli", support: contact
+    ], url: "https://sarpoli.com", action: "Meet Sarpoli", support: agencyContact
   },
   {
     slug: "next-project", name: "Next project", category: "A little surprise", status: "2027", year: "2027",
