@@ -1,0 +1,237 @@
+.surpriseMark { position: absolute; width: 40%; height: 40%; left: 30%; top: 22%; color: #bd4327; }
+.surpriseYear { position: absolute; left: 7%; bottom: 15%; font-size: clamp(24px, 9cqw, 65px); letter-spacing: -.055em; }
+
+.scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 4px;
+  background: var(--project-color, #e4e5da);
+  color: var(--project-ink, #242520);
+  container-type: inline-size;
+}
+
+.scene::after {
+  content: "";
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgb(36 37 32 / 5%);
+  border-radius: inherit;
+}
+
+.mark {
+  position: absolute;
+  z-index: 5;
+  top: 7%;
+  left: 7%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  font-size: clamp(11px, 2.4cqw, 17px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.mark img {
+  width: clamp(26px, 6.3cqw, 43px);
+  height: clamp(26px, 6.3cqw, 43px);
+  border-radius: 23%;
+}
+
+.inverse { color: #fffef8; }
+
+.halo {
+  position: absolute;
+  width: 73%;
+  aspect-ratio: 1;
+  left: 29%;
+  top: 9%;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 20%);
+  box-shadow: 0 0 0 42px rgb(255 255 255 / 7%);
+}
+
+.orbitLine {
+  position: absolute;
+  width: 96%;
+  aspect-ratio: 1;
+  left: 19%;
+  top: 3%;
+  border: 1px solid rgb(50 74 43 / 11%);
+  border-radius: 50%;
+}
+
+.deviceAssembly { position: absolute; inset: 0; z-index: 2; }
+
+.phone {
+  position: absolute;
+  width: 29%;
+  aspect-ratio: 1000 / 2167;
+  padding: 4px;
+  border-radius: clamp(18px, 4.6cqw, 32px);
+  background: linear-gradient(130deg, #5a5b51, #252823 30%, #171b17 70%, #66665c);
+  box-shadow: 2px 5px 0 rgb(36 37 32 / 20%), 11px 22px 35px rgb(39 48 33 / 18%), inset 0 0 0 1px rgb(255 255 255 / 45%);
+  transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: auto;
+}
+
+.phone img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: clamp(15px, 4cqw, 28px);
+}
+
+.phoneEdge {
+  position: absolute;
+  left: -2px;
+  top: 18%;
+  width: 2px;
+  height: 8%;
+  border-radius: 1px;
+  background: #4f524a;
+  box-shadow: 0 34px #4f524a;
+}
+
+.phoneFront { z-index: 3; left: 48%; top: 18%; transform: rotate(9deg); }
+.phoneBack { z-index: 2; left: 23%; top: 27%; transform: rotate(-10deg); }
+.phoneThird { z-index: 1; left: 71%; top: 39%; width: 23%; transform: rotate(19deg); }
+.sceneNote { position: absolute; z-index: 4; left: 7%; bottom: 6%; font-size: clamp(9px, 1.8cqw, 13px); letter-spacing: -0.02em; }
+.previewLabel { position: absolute; z-index: 4; top: 9%; right: 7%; max-width: 38%; font-size: clamp(8px, 1.5cqw, 11px); letter-spacing: 0.04em; text-align: right; }
+
+.scene[data-project="iqra"] { background: #bdc9ac; }
+.scene[data-project="iqra"] .halo { background: #d9dfc7; left: 23%; top: 16%; width: 75%; }
+.scene[data-project="iqra"] .orbitLine { border-color: rgb(48 69 52 / 20%); }
+.scene[data-project="iqra"] .phoneFront { left: 46%; top: 13%; transform: rotate(7deg); }
+.scene[data-project="iqra"] .phoneBack { left: 22%; top: 30%; transform: rotate(-11deg); }
+.arabicLetter { position: absolute; z-index: 1; left: 8%; bottom: 13%; font-family: Georgia, serif; font-size: clamp(45px, 13cqw, 90px); color: rgb(48 69 52 / 25%); }
+
+.scene[data-project="vela"] { background: #eed4c2; }
+.scene[data-project="vela"] .halo { background: #f7e2d1; width: 85%; left: 35%; top: 6%; }
+.scene[data-project="vela"] .orbitLine { left: 30%; border-color: rgb(115 75 61 / 13%); }
+.scene[data-project="vela"] .phoneBack { width: 25%; left: 36%; top: 36%; transform: rotate(-10deg); }
+.scene[data-project="vela"] .phoneFront { width: 29%; left: 59%; top: 18%; transform: rotate(9deg); }
+.scene[data-project="vela"] .phoneThird { left: 18%; top: 57%; width: 20%; transform: rotate(-17deg); }
+.velaWords { position: absolute; z-index: 3; left: 7%; top: 29%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(20px, 5cqw, 38px); line-height: 1.1; letter-spacing: -0.06em; }
+
+.resumeHalo { position: absolute; width: 80%; aspect-ratio: 1; border-radius: 50%; background: #d8cde9; left: 30%; top: 4%; }
+.resumeWindow { position: absolute; z-index: 2; left: 10%; top: 24%; width: 80%; height: 67%; background: #f3eff8; box-shadow: 0 19px 45px rgb(76 49 109 / 13%); border: 1px solid rgb(82 56 114 / 12%); border-radius: 7px; overflow: hidden; transform: rotate(-2deg); transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1); }
+.browserBar { display: flex; position: relative; z-index: 2; align-items: center; justify-content: space-between; height: clamp(23px, 5.3cqw, 37px); padding: 0 3.5%; border-bottom: 1px solid rgb(60 45 75 / 9%); background: #faf8fc; color: #62586e; font-size: clamp(7px, 1.4cqw, 10px); }
+.browserDots { display: flex; gap: 4px; }
+.browserDots i { width: 4px; height: 4px; background: #d7d0df; border-radius: 50%; }
+.browserPlus { font-size: 14px; color: #9d93a7; }
+.resumeShelf { position: absolute; inset: 14% 0 0; background: linear-gradient(130deg, #ebe6f2, #f6f3fa); }
+.resumePaper { position: absolute; width: 39%; aspect-ratio: 1000 / 1415; box-shadow: 0 5px 16px rgb(63 44 93 / 14%); background: #fff; }
+.resumePaper img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.resumePaper0 { left: 2%; top: 15%; transform: rotate(-11deg); }
+.resumePaper1 { right: -1%; top: 19%; transform: rotate(13deg); }
+.resumePaper2 { z-index: 2; left: 31%; top: 3%; width: 43%; transform: rotate(1deg); }
+.resumeSeal { position: absolute; z-index: 4; right: 4%; bottom: 5%; width: 17%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6%; border-radius: 50%; background: #6743aa; color: #fff9ea; transform: rotate(13deg); box-shadow: 0 4px 13px rgb(65 40 101 / 14%); }
+.resumeSeal span { font-size: clamp(5px, 1.1cqw, 8px); letter-spacing: 0.12em; }
+.resumeSeal svg { width: 34%; height: 34%; }
+
+.scene[data-project="wardrobe"] { background: #e6e1d6; }
+.fashionRule { position: absolute; left: 7%; right: 7%; top: 22%; height: 1px; background: rgb(81 76 67 / 20%); }
+.fashionWords { position: absolute; z-index: 4; left: 7%; top: 28%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(21px, 5.4cqw, 40px); line-height: 1.05; letter-spacing: -0.065em; }
+.fashionWords em { font-weight: 400; }
+.fashionPhoto { position: absolute; overflow: hidden; box-shadow: 0 14px 23px rgb(59 48 33 / 13%); border: clamp(3px, 0.8cqw, 6px) solid #f8f6ef; transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1); }
+.fashionPhoto img { object-fit: cover; }
+.fashionMain { z-index: 2; width: 36%; height: 77%; left: 34%; top: 14%; transform: rotate(-4deg); }
+.fashionSecond { z-index: 3; width: 27%; height: 57%; right: 6%; bottom: 5%; transform: rotate(7deg); }
+.fashionShirt { z-index: 3; left: 8%; bottom: 8%; width: 27%; height: 40%; transform: rotate(-8deg); }
+.fashionShirt img { object-position: 50% 43%; }
+.conceptLabel { position: absolute; z-index: 5; right: 7%; top: 6%; font-size: clamp(7px, 1.5cqw, 11px); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.propertyPhoto { object-fit: cover; object-position: 43% 60%; filter: saturate(0.65) brightness(0.8); }
+.propertyWash { position: absolute; inset: 0; background: linear-gradient(90deg, rgb(18 42 49 / 38%), transparent 70%), linear-gradient(0deg, rgb(18 42 49 / 35%), transparent 70%); }
+.propertyWords { position: absolute; z-index: 2; left: 7%; bottom: 11%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(28px, 7cqw, 52px); line-height: 0.98; letter-spacing: -0.06em; color: #fffdf6; }
+.propertyWords em { font-weight: 400; }
+.reviewPanel { position: absolute; z-index: 3; width: 47%; top: 24%; right: 7%; padding: 5%; background: #f7f8f2; color: #354a4e; box-shadow: 0 14px 40px rgb(17 36 43 / 18%); border: 1px solid rgb(255 255 255 / 65%); transform: rotate(3deg); transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1); }
+.reviewEyebrow { font-size: clamp(5px, 1.05cqw, 8px); letter-spacing: 0.13em; color: #59695c; }
+.reviewTitle { display: flex; align-items: center; gap: 10px; margin: 14% 0 14%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(15px, 3.2cqw, 25px); line-height: 1; letter-spacing: -0.05em; }
+.reviewTitle svg { width: 17px; height: 21px; flex-shrink: 0; }
+.documentRow { display: flex; align-items: center; gap: 8px; padding: 10% 0; border-top: 1px solid #dce2da; font-size: clamp(7px, 1.45cqw, 11px); }
+.documentRow small { display: block; color: #59695c; font-size: clamp(5px, 1.08cqw, 8px); margin-top: 4px; }
+.fileIcon { width: 23px; height: 28px; display: flex; justify-content: center; align-items: center; border: 1px solid #cdd5cb; border-radius: 2px; color: #59695c; font-size: 7px; }
+.rowDot { width: 5px; height: 5px; border: 1px solid #9aaa9a; border-radius: 50%; margin-left: auto; }
+.reviewFooter { display: flex; justify-content: space-between; border-top: 1px solid #dce2da; padding-top: 11%; font-size: clamp(5px, 1.1cqw, 8px); color: #748477; }
+.reviewFooter > span { font-size: 14px; }
+
+.agencyPhoto { object-fit: cover; object-position: 65% 22%; filter: saturate(0.65); }
+.agencyWash { position: absolute; inset: 0; background: linear-gradient(0deg, #e7e3d4 5%, rgb(231 227 212 / 85%) 35%, rgb(231 227 212 / 15%) 80%); }
+.scene[data-project="sarpoli"] { color: #30372c; }
+.agencyWords { position: absolute; z-index: 3; left: 7%; bottom: 17%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(34px, 9cqw, 68px); line-height: 0.96; letter-spacing: -0.065em; }
+.agencyWords em { font-weight: 400; }
+.agencyServices { position: absolute; z-index: 3; left: 7%; bottom: 7%; font-size: clamp(8px, 1.6cqw, 12px); }
+.agencyDiagram { position: absolute; right: 5%; bottom: 7%; width: 25%; color: #677851; opacity: 0.8; transform: rotate(13deg); }
+
+.clientNote { position: absolute; right: 7%; top: 10%; font-size: clamp(7px, 1.5cqw, 11px); color: #77796a; }
+.clientWindow { position: absolute; z-index: 2; left: 9%; top: 24%; width: 83%; overflow: hidden; background: #f8f7ef; box-shadow: 0 14px 30px rgb(53 59 43 / 16%); border: 1px solid rgb(77 81 62 / 12%); transform: rotate(-3deg); transition: transform 500ms cubic-bezier(0.23, 1, 0.32, 1); }
+.clientWindow .browserBar { background: #faf9f4; }
+.clientImage { position: relative; width: 100%; aspect-ratio: 1600 / 900; overflow: hidden; }
+.clientImage img { object-fit: contain; }
+
+.identityGrid { position: absolute; inset: 0; background-image: linear-gradient(rgb(36 37 32 / 4%) 1px, transparent 1px), linear-gradient(90deg, rgb(36 37 32 / 4%) 1px, transparent 1px); background-size: 10% 13%; }
+.identityCircle { position: absolute; width: 70%; aspect-ratio: 1; left: 45%; top: -22%; border: 1px solid rgb(36 37 32 / 15%); border-radius: 50%; box-shadow: 0 0 0 30px rgb(255 255 255 / 15%), 0 0 0 60px rgb(255 255 255 / 11%); }
+.identityName { position: absolute; top: 32%; left: 7%; right: 7%; font-size: clamp(47px, 14cqw, 110px); font-weight: 600; line-height: 0.95; letter-spacing: -0.085em; }
+.identityPhrase { position: absolute; left: 8%; top: 57%; font-family: var(--font-serif, Georgia), serif; font-size: clamp(14px, 3cqw, 23px); font-style: italic; letter-spacing: -0.03em; }
+.identityRoute { position: absolute; right: -4%; bottom: -4%; width: 70%; color: currentColor; opacity: 0.35; }
+.identityIndex { position: absolute; bottom: 8%; left: 8%; right: 8%; display: flex; align-items: center; justify-content: space-between; font-size: clamp(7px, 1.5cqw, 11px); }
+.identityIndex > span { font-size: 20px; }
+
+.large .phoneFront { width: 27%; left: 41%; top: 13%; }
+.large .phoneBack { width: 25%; left: 19%; top: 28%; }
+.large .phoneThird { left: 65%; top: 32%; width: 23%; }
+.large[data-project="vela"] .phoneFront { left: 48%; width: 27%; }
+.large[data-project="vela"] .phoneBack { left: 29%; width: 24%; top: 31%; }
+.large[data-project="vela"] .phoneThird { left: 72%; top: 29%; width: 22%; transform: rotate(17deg); }
+.large .resumeWindow { left: 13%; width: 74%; top: 20%; height: 73%; }
+.large .resumeSeal { right: 8%; bottom: 7%; width: 13%; }
+.large .reviewPanel { width: 40%; top: 20%; right: 8%; padding: 4%; }
+.large .fashionMain { left: 37%; width: 29%; height: 88%; top: 5%; }
+.large .fashionSecond { right: 8%; width: 24%; height: 70%; }
+.large .fashionShirt { left: 12%; width: 24%; height: 47%; }
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .scene:hover .phoneFront { transform: translateY(-5px) rotate(5deg); }
+  .scene:hover .phoneBack { transform: translateY(3px) rotate(-13deg); }
+  .scene:hover .phoneThird { transform: translateY(-3px) rotate(22deg); }
+  .scene:hover .resumeWindow,
+  .scene:hover .clientWindow { transform: translateY(-4px) rotate(-1deg); }
+  .scene:hover .fashionMain { transform: translateY(-4px) rotate(-2deg); }
+  .scene:hover .fashionSecond { transform: translateY(2px) rotate(9deg); }
+  .scene:hover .fashionShirt { transform: translateY(-2px) rotate(-11deg); }
+  .scene:hover .reviewPanel { transform: translateY(-4px) rotate(1deg); }
+}
+
+@media (max-width: 560px) {
+  .phone { padding: 3px; }
+  .clientNote { max-width: 35%; text-align: right; line-height: 1.5; top: 8%; }
+  .reviewPanel { padding: 4%; width: 48%; right: 6%; }
+  .reviewTitle { gap: 6px; }
+  .documentRow { gap: 5px; }
+  .fileIcon { width: 17px; height: 23px; font-size: 6px; }
+  .large .phoneFront { width: 31%; left: 46%; top: 20%; }
+  .large .phoneBack { width: 28%; left: 21%; top: 32%; }
+  .large .phoneThird { display: none; }
+  .large[data-project="vela"] .phoneFront { width: 30%; left: 58%; top: 21%; }
+  .large[data-project="vela"] .phoneBack { width: 26%; left: 36%; top: 36%; }
+  .large .reviewPanel { width: 48%; padding: 4%; top: 27%; right: 6%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone,
+  .resumeWindow,
+  .clientWindow,
+  .fashionPhoto,
+  .reviewPanel { transition: none; }
+}
+
+.propertyWindow{position:absolute;z-index:4;left:14%;top:27%;width:82%;border-radius:4px;overflow:hidden;transform:rotate(-5deg);box-shadow:10px 20px 45px #1a31352b;border:1px solid #ffffff80;background:#fff}.propertyWindow>img{width:100%;height:auto}.propertyWords{bottom:5%;font-size:clamp(23px,6.8cqw,50px);z-index:5}
