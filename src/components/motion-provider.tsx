@@ -1,11 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { stripLocale } from "@/lib/i18n";
+import { scrollEntrance } from "@/lib/scroll-entrance";
 import { usePathname } from "next/navigation";
 
 export function MotionProvider() {
   const pathname = usePathname();
+  const contentPath = stripLocale(pathname);
+  const [paused, setPaused] = useState(false);
+  const presented = useRef(new WeakSet<Element>());
+  useEffect(() => { setPaused(false); }, [contentPath]);
   useEffect(() => {
+    const sync = (event: Event) => setPaused(Boolean((event as CustomEvent<{ paused: boolean }>).detail?.paused));
+    window.addEventListener("maker-motion-change", sync);
+    return () => window.removeEventListener("maker-motion-change", sync);
+  }, []);
+  useEffect(() => {
+    if (paused) return;
+    const languageChange = document.documentElement.dataset.languageChanging === "true";
     let disposed = false;
     let cleanup: (() => void) | undefined;
     Promise.all([import("gsap"), import("gsap/ScrollTrigger"), import("lenis")]).then(([{ gsap }, { ScrollTrigger }, { default: Lenis }]) => {
@@ -19,15 +32,23 @@ export function MotionProvider() {
       lenis?.on("scroll", ScrollTrigger.update);
       if (lenis) { gsap.ticker.add(tick); gsap.ticker.lagSmoothing(0); }
       const context = gsap.context(() => {
-        const lines = gsap.utils.toArray("[data-hero-line]");
-        const hero = gsap.utils.toArray("[data-hero-fade]");
+        const fresh = (selector: string) => gsap.utils.toArray<Element>(selector).filter(element => {
+          if (languageChange && element.getBoundingClientRect().top < innerHeight) presented.current.add(element);
+          return !presented.current.has(element);
+        });
+        const lines = fresh("[data-hero-line]");
+        const hero = fresh("[data-hero-fade]");
+        [...lines, ...hero].forEach(element => presented.current.add(element));
         if (lines.length) gsap.from(lines, { yPercent: 110, rotation: 1.5, duration: 1.2, stagger: 0.12, ease: "power4.out", clearProps: "all" });
-        if (hero.length) gsap.from(hero, { opacity: 0, y: 18, duration: 1, delay: 0.25, stagger: 0.08, ease: "power3.out", clearProps: "all" });
+        if (hero.length) gsap.from(hero, { opacity: 0, y: 18, duration: .8, delay: 0.2, stagger: 0.06, ease: "power3.out", clearProps: "all" });
         gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
+          if (languageChange && element.getBoundingClientRect().top < innerHeight) presented.current.add(element);
+          if (presented.current.has(element)) return;
           const children = element.querySelectorAll("[data-reveal-item]");
           const targets = children.length ? children : element;
           const sibling = element.hasAttribute("data-project-card") && element.previousElementSibling ? 0.08 : 0;
-          gsap.from(targets, { opacity: 0, y: children.length ? 22 : 36, duration: 1, delay: finePointer ? sibling : 0, stagger: children.length ? 0.08 : 0, ease: "power3.out", clearProps: "all", scrollTrigger: { trigger: element, start: "top 94%", once: true } });
+          const entrance = gsap.from(targets, { opacity: 0, y: children.length ? 14 : 20, duration: .65, delay: finePointer ? sibling : 0, stagger: children.length ? .055 : 0, ease: "power3.out", clearProps: "all", paused: true });
+          scrollEntrance(ScrollTrigger, element, entrance, () => { presented.current.add(element); });
         });
         if (finePointer) gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((element) => {
           gsap.fromTo(element, { y: 16 }, { y: -16, ease: "none", scrollTrigger: { trigger: element.parentElement, start: "top bottom", end: "bottom top", scrub: 0.8 } });
@@ -50,6 +71,6 @@ export function MotionProvider() {
       cleanup = () => motion.revert();
     }).catch(() => { /* Content stays readable if optional motion cannot load. */ });
     return () => { disposed = true; cleanup?.(); };
-  }, [pathname]);
-  return <div className="scroll-progress" aria-hidden="true" />;
+  }, [pathname, paused]);
+  return <div className="scroll-progress" aria-hidden="true" hidden={paused} />;
 }

@@ -43,6 +43,13 @@
 .details p { max-width: 52ch; }
 .details > a { flex-shrink: 0; color: var(--ink); white-space: nowrap; }
 
+.contactPaths { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:34px; margin-top:44px; }
+.contactPaths>a { border-top:1px solid var(--line); padding-top:20px; }
+.contactPaths>a>span { font:9px monospace; letter-spacing:.07em; color:var(--muted); }
+.contactPaths h3 { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:20px; font-weight:500; letter-spacing:-.6px; margin-top:15px; }
+.contactPaths h3 svg { width:17px; height:17px; color:var(--accent); flex-shrink:0; }
+.contactPaths p { color:var(--muted); font-size:12px; line-height:1.8; margin-top:11px; max-width:340px; }
+
 @media (hover: hover) and (pointer: fine) {
   .invitation:hover .arrow { transform: translate(4px, -4px) rotate(8deg); }
 }
@@ -61,6 +68,9 @@
   .details { font-size: 12px; gap: 20px; }
   .details p { max-width: 34ch; }
   .details > a { font-size: 13px; }
+  .contactPaths { grid-template-columns:1fr; gap:25px; margin-top:30px; }
+  .contactPaths h3 { font-size:20px; margin-top:12px; }
+  .contactPaths p { font-size:13px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

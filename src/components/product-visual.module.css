@@ -244,3 +244,6 @@
 @media(max-width:600px){.agencyWebsite{top:23%;width:79%;left:11%}.agencyServices{bottom:6%;font-size:9px}.scene[data-project="sarpoli"] .mark{top:7%;left:9%;font-size:13px}.scene[data-project="sarpoli"] .mark img{width:28px;height:28px}.webSceneNote{bottom:6%}.currentWebWindow{top:26%}}
 
 .previewLabel{right:17%;max-width:32%;font-size:clamp(7px,1.35cqw,10px)}
+
+/* Preserve the dark half of the native Sarpoli mark on its midnight canvas. */
+.scene[data-project="sarpoli"] .mark img{background:#f4f6fb;padding:6px;width:48px;height:48px;border-radius:11px;box-sizing:border-box}

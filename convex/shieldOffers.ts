@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { emailLocale, type EmailLocale } from "./lib/emailLocale";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { CAMPAIGN, CONSENT_VERSION, VERIFICATION_TTL, normalizeEmail, offerPlan } from "./lib/validators";
@@ -14,14 +15,14 @@ async function rateLimit(ctx: MutationCtx, key: string, max: number, now: number
   return true;
 }
 
-async function queueEmail(ctx: MutationCtx, emailId: Id<"shieldFamilyEmails">, kind: "verification" | "code", verificationId?: Id<"shieldFamilyVerifications">) {
-  const id = await ctx.db.insert("shieldFamilyEmailJobs", { emailId, kind, ...(verificationId ? { verificationId } : {}), status: "queued", attempts: 0, nextAttemptAt: Date.now() });
+async function queueEmail(ctx: MutationCtx, emailId: Id<"shieldFamilyEmails">, kind: "verification" | "code", verificationId?: Id<"shieldFamilyVerifications">, locale?: EmailLocale) {
+  const id = await ctx.db.insert("shieldFamilyEmailJobs", { emailId, kind, ...(locale ? { locale } : {}), ...(verificationId ? { verificationId } : {}), status: "queued", attempts: 0, nextAttemptAt: Date.now() });
   await ctx.scheduler.runAfter(0, internal.shieldEmailDelivery.deliver, { jobId: id });
   return id;
 }
 
 export const requestVerification = internalMutation({
-  args: { email: v.string(), plan: offerPlan, termsAccepted: v.boolean(), requestKey: v.string() },
+  args: { email: v.string(), plan: offerPlan, termsAccepted: v.boolean(), locale: v.optional(emailLocale), requestKey: v.string() },
   handler: async (ctx, args) => {
     const now = Date.now();
     const email = normalizeEmail(args.email);
@@ -41,11 +42,11 @@ export const requestVerification = internalMutation({
       emailId = existing._id;
       await ctx.db.patch(emailId, { lastRequestedAt: now });
     } else {
-      emailId = await ctx.db.insert("shieldFamilyEmails", { email, plan: args.plan, status: "pending", requestedAt: now, lastRequestedAt: now, termsAcceptedAt: now, consentVersion: CONSENT_VERSION });
+      emailId = await ctx.db.insert("shieldFamilyEmails", { email, locale: args.locale ?? "en", plan: args.plan, status: "pending", requestedAt: now, lastRequestedAt: now, termsAcceptedAt: now, consentVersion: CONSENT_VERSION });
     }
     // Keep the requested plan on this specific link. A later request cannot alter it.
-    const verificationId = await ctx.db.insert("shieldFamilyVerifications", { emailId, plan: existing?.codeId ? existing.plan : args.plan, expiresAt: now + VERIFICATION_TTL, consentVersion: CONSENT_VERSION });
-    await queueEmail(ctx, emailId, "verification", verificationId);
+    const verificationId = await ctx.db.insert("shieldFamilyVerifications", { emailId, locale: args.locale ?? "en", plan: existing?.codeId ? existing.plan : args.plan, expiresAt: now + VERIFICATION_TTL, consentVersion: CONSENT_VERSION });
+    await queueEmail(ctx, emailId, "verification", verificationId, args.locale ?? "en");
     return { result: "accepted" as const };
   },
 });
@@ -70,7 +71,7 @@ export const confirmVerification = internalMutation({
     if (signup.codeId) {
       const code = await ctx.db.get(signup.codeId);
       if (!code || code.expiresAt <= now) return { result: "expired" as const };
-      if (!verification.usedAt) { await ctx.db.patch(verificationId, { usedAt: now }); await queueEmail(ctx, signup._id, "code"); }
+      if (!verification.usedAt) { await ctx.db.patch(verificationId, { usedAt: now }); await queueEmail(ctx, signup._id, "code", undefined, verification.locale ?? "en"); }
       return { result: "confirmed" as const, code: code.code, redeemUrl: code.redeemUrl, expiresAt: code.expiresAt, plan: code.plan };
     }
     const campaign = await ctx.db.query("shieldFamilyCampaigns").withIndex("by_slug", q => q.eq("slug", CAMPAIGN)).unique();
@@ -79,10 +80,10 @@ export const confirmVerification = internalMutation({
     if (!code) return { result: "unavailable" as const };
     // Reservation, verified email, campaign cap and email scheduling are one transaction.
     await ctx.db.patch(code._id, { status: "assigned", emailId: signup._id, assignedAt: now });
-    await ctx.db.patch(signup._id, { codeId: code._id, plan: code.plan, status: "verified", verifiedAt: now, consentVersion: verification.consentVersion });
+    await ctx.db.patch(signup._id, { locale: verification.locale ?? "en", codeId: code._id, plan: code.plan, status: "verified", verifiedAt: now, consentVersion: verification.consentVersion });
     await ctx.db.patch(verificationId, { usedAt: now });
     await ctx.db.patch(campaign._id, { allocated: campaign.allocated + 1 });
-    await queueEmail(ctx, signup._id, "code");
+    await queueEmail(ctx, signup._id, "code", undefined, verification.locale ?? "en");
     return { result: "confirmed" as const, code: code.code, redeemUrl: code.redeemUrl, expiresAt: code.expiresAt, plan: code.plan };
   },
 });

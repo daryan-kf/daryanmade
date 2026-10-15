@@ -351,3 +351,26 @@ describe("mocked Resend delivery and retry safety", () => {
     expect((await records(t)).jobs[0]).toMatchObject({ status: "queued", errorCode });
   });
 });
+
+describe("Danish Shield offer delivery", () => {
+  it("keeps verification, code email and redemption guide Danish without changing inventory behavior", async () => {
+    const t = createTest(); await seed(t);
+    expect((await post(t, "/shield-family/signup", { email: "family@example.test", plan: "annual", termsAccepted: true, locale: "da", requestKey })).status).toBe(200);
+    let state = await records(t);
+    await t.action(internal.shieldEmailDelivery.deliver, { jobId: state.jobs[0]._id });
+    expect(mail().subject).toBe("Bekræft din e-mail til Shield Family");
+    expect(mail().html).toContain('<html lang="da">');
+    expect(mail().text).toContain("https://portfolio.example.test/da/projects/shield-family/verify#token=");
+    const token = mail().text.match(/#token=([^\s]+)/)![1];
+    expect(state.campaigns[0].allocated).toBe(0);
+    expect((await post(t, "/shield-family/verify", { token })).status).toBe(200);
+    state = await records(t);
+    expect(state.emails[0].locale).toBe("da");
+    expect(state.campaigns[0].allocated).toBe(1);
+    await t.action(internal.shieldEmailDelivery.deliver, { jobId: state.jobs.find(job => job.kind === "code")!._id });
+    expect(mail(1).subject).toBe("Din Shield Family-tilbudskode");
+    expect(mail(1).text).toContain("den fulde årspris for det efterfølgende år");
+    expect(mail(1).text).toContain("https://portfolio.example.test/da/projects/shield-family/redeem");
+    expect(mail(1).text).toContain("Modtagelse af koden starter ikke et abonnement");
+  });
+});

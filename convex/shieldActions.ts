@@ -1,13 +1,14 @@
 "use node";
 
 import { v } from "convex/values";
+import { emailLocale } from "./lib/emailLocale";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { offerPlan } from "./lib/validators";
 import { matchesToken } from "./lib/tokens";
 
 export const request = internalAction({
-  args: { email: v.string(), plan: offerPlan, termsAccepted: v.boolean(), requestKey: v.string() },
+  args: { email: v.string(), plan: offerPlan, termsAccepted: v.boolean(), locale: v.optional(emailLocale), requestKey: v.string() },
   handler: async (ctx, args): Promise<{ result: "accepted" | "limited" | "invalid" | "unavailable" }> => ctx.runMutation(internal.shieldOffers.requestVerification, args),
 });
 

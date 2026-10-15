@@ -1,17 +1,17 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { projects } from "../src/lib/projects";
+import { contactEmail, projectPath, projects } from "../src/lib/projects";
 
 const projectCards = (page: Page) => page.locator("#work article[data-project-card]");
-const expectedPaths = (items = projects) => items.map((project) => `/projects/${project.slug}`).sort();
+const expectedPaths = () => ["/", "/privacy", ...projects.map(projectPath)].sort();
 const expectedCardLinks = [
   ["sarpoli", "https://sarpoli.com"],
+  ["vela", "/vela"],
+  ["wardrobe", null],
   ["kaizencv", "https://www.kaizencv.com"],
   ["koebsklar", "https://koebsklar.vercel.app/"],
   ["shield-family", "/projects/shield-family"],
-  ["iqra", "https://apps.apple.com/app/id6797948777"],
-  ["vela", "https://apps.apple.com/app/id6783922107"],
-  ["wardrobe", "/projects/wardrobe"],
+  ["iqra", "/iqra"],
   ["next-project", "/projects/next-project"],
 ] as const;
 async function loadPage(page: Page, path: string) {
@@ -38,7 +38,7 @@ test("homepage presents eight full project cards with the intended live destinat
   await loadPage(page, "/");
   await expect(page).toHaveTitle(/daryanmade/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Good ideas\.\s*Made real\./);
-  await expect(page.locator(".hero-kicker")).toContainText("DARYAN KAMALIFAR");
+  await expect(page.getByText("DARYAN KAMALIFAR", { exact: true }).first()).toBeVisible();
   await expect(page.locator("header .founder-link")).toHaveAttribute("href", "https://sarpoli.com");
   await expect(projectCards(page)).toHaveCount(8);
   expect(await projectCards(page).evaluateAll(cards => cards.map(card => card.getAttribute("data-project-card")))).toEqual(expectedCardLinks.map(([slug]) => slug));
@@ -46,8 +46,14 @@ test("homepage presents eight full project cards with the intended live destinat
     const card = page.locator(`#work article[data-project-card='${slug}']`);
     const project = projects.find(item => item.slug === slug)!;
     await expect(card.getByRole("heading", { name: project.name, exact: true })).toBeVisible();
-    await expect(card).toContainText(project.summary);
-    await expect(card).toContainText(project.status === "Coming soon" ? "Very soon" : project.status);
+    if (!["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar"].includes(slug)) await expect(card).toContainText(project.summary);
+    await expect(card).toContainText(project.status);
+    if (href === null) {
+      await expect(card).toHaveAttribute("aria-disabled", "true");
+      await expect(card.locator("a, button, [tabindex='0']")).toHaveCount(0);
+      await expect(card).toContainText("Coming soon");
+      continue;
+    }
     const primaryLink = card.locator("a[data-project-link]");
     if (href.startsWith("https://")) {
       expect(new URL((await primaryLink.getAttribute("href"))!).href).toBe(new URL(href).href);
@@ -56,9 +62,15 @@ test("homepage presents eight full project cards with the intended live destinat
     } else {
       await expect(primaryLink).toHaveAttribute("href", href);
     }
-    if (project.storeUrl) await expect(card.getByRole("link", { name: `Download ${project.name} on the App Store` })).toHaveAttribute("href", project.storeUrl);
+    if (project.storeUrl && slug !== "vela") await expect(card.getByRole("link", { name: `Download ${project.name} on the App Store` })).toHaveAttribute("href", project.storeUrl);
   }
-  await expect(page.locator("#work").getByRole("link", { name: /^Download .+ on the App Store$/ })).toHaveCount(3);
+  await expect(page.locator("[data-project-card='vela']")).toContainText("Vela 2.0 · Available for iPhone & iPad");
+  await expect(page.locator("[data-project-card='sarpoli']")).toContainText("I founded Sarpoli");
+  await expect(page.locator("[data-project-card='kaizencv']")).toContainText("review suggestions before they become your words");
+  await expect(page.locator("[data-project-card='koebsklar']")).toContainText("Estimated reduction, depending on the case");
+  await expect(page.locator("[data-project-card='koebsklar']")).toContainText("Professional review remains essential");
+  await expect(page.locator("main")).not.toContainText(/co-founder/i);
+  await expect(page.locator("#work").getByRole("link", { name: /^Download .+ on the App Store$/ })).toHaveCount(2);
   await expect(page.getByRole("button", { name: /^(Live|All work|In the making)/ })).toHaveCount(0);
 });
 
@@ -77,7 +89,7 @@ test("the public portfolio omits discontinued projects and keeps the next projec
 });
 
 test("social previews render PNGs, the sitemap lists current projects, and removed routes return 404", async ({ request }) => {
-  for (const path of ["/opengraph-image", "/projects/iqra/opengraph-image"]) {
+  for (const path of ["/opengraph-image", "/vela/opengraph-image", "/iqra/opengraph-image"]) {
     const response = await request.get(path);
     expect(response.status(), path).toBe(200);
     expect(response.headers()["content-type"]).toContain("image/png");
@@ -93,9 +105,10 @@ test("social previews render PNGs, the sitemap lists current projects, and remov
   const sitemapResponse = await request.get("/sitemap.xml");
   expect(sitemapResponse.status()).toBe(200);
   const sitemap = await sitemapResponse.text();
-  const projectPaths = [...sitemap.matchAll(/<loc>([^<]*\/projects\/[^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname).sort();
+  const projectPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname).sort();
   expect(projectPaths).toEqual(expectedPaths());
-  expect(projectPaths).toHaveLength(8);
+  expect(projectPaths).not.toContain("/projects/vela");
+  expect(projectPaths).not.toContain("/projects/iqra");
   expect(sitemap).not.toMatch(/anubal|marzline|rd-revision/i);
   const removed = await request.get("/projects/marzline");
   expect(removed.status()).toBe(404);
@@ -105,13 +118,42 @@ test("project category navigation reaches each complete collection without filte
   await page.emulateMedia({ reducedMotion: "reduce" });
   await loadPage(page, "/");
   const directory = page.getByRole("navigation", { name: "Project categories" });
-  for (const [label, id, count] of [["Agency", "agency", 1], ["Web apps", "web-apps", 2], ["Mobile apps", "mobile-apps", 4], ["Next chapter", "next-chapter", 1]] as const) {
+  for (const [label, id, count] of [["Agency", "agency", 1], ["A new chapter", "featured", 2], ["Web apps", "web-apps", 2], ["Mobile apps", "mobile-apps", 2], ["Next chapter", "next-chapter", 1]] as const) {
     await directory.getByRole("link", { name: new RegExp(`^${label}`) }).click();
     await expect(page).toHaveURL(new RegExp(`#${id}$`));
     await expect(page.locator(`#${id} article[data-project-card]`)).toHaveCount(count);
     await expect(page.locator(`#${id}`).getByRole("heading", { name: new RegExp(`^${label}`) }).first()).toBeVisible();
     await expect(projectCards(page)).toHaveCount(8);
   }
+});
+
+test("older app URLs permanently redirect to their branded homes", async ({ request, page }) => {
+  for (const [source, destination] of [["/projects/vela", "/vela"], ["/projects/iqra", "/iqra"], ["/villa", "/vela"]]) {
+    const response = await request.get(source, { maxRedirects: 0 });
+    expect(response.status()).toBe(308);
+    expect(new URL(response.headers().location, response.url()).pathname).toBe(destination);
+    await loadPage(page, source);
+    await expect(page).toHaveURL(new RegExp(`${destination}$`));
+    await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", new RegExp(`${destination}$`));
+  }
+});
+
+test("the footer gives clients, collaborators and contributors a direct way to get in touch", async ({ page }) => {
+  await loadPage(page, "/");
+  const invitations = page.locator("footer [aria-label='Ways to work together']");
+  const subjects: string[] = [];
+  for (const label of ["Build it for me.", "Build it with me.", "Be part of a project."]) {
+    const link = invitations.getByRole("link").filter({ has: page.getByRole("heading", { name: label, exact: true }) });
+    await expect(link).toBeVisible();
+    const href = new URL((await link.getAttribute("href"))!);
+    expect(href.protocol).toBe("mailto:");
+    expect(href.pathname).toBe(contactEmail);
+    expect(href.searchParams.get("subject")).toBeTruthy();
+    subjects.push(href.searchParams.get("subject")!);
+  }
+  expect(new Set(subjects).size).toBe(3);
+  await expect(invitations.getByRole("link")).toHaveCount(3);
+  await expect(page.locator("footer").getByRole("link", { name: "Privacy", exact: true })).toHaveAttribute("href", "/privacy");
 });
 
 test("all project pages load with owner attribution, useful actions, and working local imagery", async ({ page }) => {
@@ -122,13 +164,22 @@ test("all project pages load with owner attribution, useful actions, and working
     if (response.url().includes("127.0.0.1") && response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
   });
   for (const project of projects) {
-    await loadPage(page, `/projects/${project.slug}`);
+    await loadPage(page, projectPath(project));
     await expect(page).toHaveTitle(new RegExp(project.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    if (project.slug === "vela" || project.slug === "iqra") {
+      await expect(page.locator("h1")).toContainText(project.slug === "vela" ? /Just\s*say it\./ : /You don’t have\s*to know Arabic\s*to begin\./);
+      await expect(page.getByRole("link", { name: "Made by Daryan ↗", exact: true })).toHaveAttribute("href", "/");
+      await expect(page.locator(`a[href^='https://apps.apple.com/'][href*='${project.storeUrl!.split("/").pop()}']`).first()).toBeVisible();
+      await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", new RegExp(`${projectPath(project)}$`));
+      await revealAndCheckImages(page);
+      await assertNoOverflow(page);
+      continue;
+    }
     if (project.slug === "shield-family") {
       await expect(page.locator("h1")).toHaveText(/A better answer\s*to “five more\s*minutes\.”/);
       await expect(page.getByText("An independent project by Daryan Kamalifar", { exact: true })).toBeVisible();
       await expect(page.getByRole("link", { name: "Back to daryanmade", exact: true })).toHaveAttribute("href", "/");
-      await expect(page.locator(`a[href='${project.storeUrl}']`).first()).toBeVisible();
+      await expect(page.locator(`a[href^='https://apps.apple.com/'][href*='${project.storeUrl!.split("/").pop()}']`).first()).toBeVisible();
       await revealAndCheckImages(page);
       await assertNoOverflow(page);
       continue;
@@ -145,8 +196,8 @@ test("all project pages load with owner attribution, useful actions, and working
     await expect(page.locator(".maker-trust")).toContainText("Daryan Kamalifar");
     await expect(page.locator(".maker-trust a").first()).toHaveAttribute("href", "https://www.linkedin.com/in/daryan-kf/");
     const action = page.locator(".product-actions > a").first();
-    await expect(action).toHaveAttribute("href", project.storeUrl || project.url || /mailto:info@sarpoli.com\?subject=/);
-    if (!project.url) await expect(page.locator(".availability-note")).toHaveText(/Coming very soon|In the making|Public access is not available yet/);
+    await expect(action).toHaveAttribute("href", project.storeUrl || project.url || new RegExp(`mailto:${contactEmail.replace(/\./g, "\\.")}\\?subject=`));
+    if (!project.url) await expect(page.locator(".availability-note")).toHaveText(/Coming soon|in the making|Public access is not available yet/);
     await revealAndCheckImages(page);
     await assertNoOverflow(page);
   }
@@ -154,17 +205,17 @@ test("all project pages load with owner attribution, useful actions, and working
 });
 
 test("screenshot dialog supports keyboard navigation, Escape, and focus return", async ({ page }) => {
-  await loadPage(page, "/projects/iqra");
-  const preview = page.getByRole("button", { name: "Enlarge Iqra: Quran reader", exact: true });
+  await loadPage(page, "/projects/kaizencv");
+  const preview = page.getByRole("button", { name: "Enlarge KaizenCV: Nova résumé template", exact: true });
   await preview.scrollIntoViewIfNeeded();
   await preview.focus();
   await page.keyboard.press("Enter");
-  const dialog = page.getByRole("dialog", { name: "Iqra enlarged preview" });
+  const dialog = page.getByRole("dialog", { name: "KaizenCV enlarged preview" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Close enlarged preview" })).toBeFocused();
   await expect(dialog.getByRole("button", { name: /Previous/ })).toBeDisabled();
   await dialog.getByRole("button", { name: /Next/ }).click();
-  await expect(dialog.locator(".image-dialog-toolbar > span")).toHaveText("Prayer learning");
+  await expect(dialog.locator(".image-dialog-toolbar > span")).toHaveText("Flux résumé template");
   await expect(dialog.getByRole("button", { name: /Previous/ })).toBeEnabled();
   await page.keyboard.press("Escape");
   await expect(dialog).not.toBeVisible();
@@ -213,7 +264,7 @@ test("keyboard users can skip the header and navigate project categories", async
   await mobile.focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#mobile-apps$/);
-  await expect(page.locator("#mobile-apps article[data-project-card]")).toHaveCount(4);
+  await expect(page.locator("#mobile-apps article[data-project-card]")).toHaveCount(2);
 });
 
 test("FAQ answers animate open and closed, and expose keyboard controls correctly", async ({ page }) => {
@@ -246,19 +297,6 @@ test("FAQ answers animate open and closed, and expose keyboard controls correctl
   await expect(question).toBeFocused();
 });
 
-test("ambient sculpture motion can be paused and resumed by keyboard", async ({ page }) => {
-  await loadPage(page, "/");
-  const pause = page.getByRole("button", { name: "Pause motion", exact: true });
-  await expect(pause).toBeVisible();
-  await pause.focus();
-  await page.keyboard.press("Enter");
-  const play = page.getByRole("button", { name: "Play motion", exact: true });
-  await expect(play).toHaveAttribute("aria-pressed", "true");
-  await expect(play).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(pause).toHaveAttribute("aria-pressed", "false");
-});
-
 test("reduced motion preserves readable content without optional scroll motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await loadPage(page, "/");
@@ -273,11 +311,11 @@ test("reduced motion preserves readable content without optional scroll motion",
   await expect(page.getByRole("heading", { name: /There’s a person/ })).toBeVisible();
 });
 
-for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 1000 }]) {
+for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 1000 }]) {
   test(`home and project layouts do not overflow at ${viewport.width}px and have loaded imagery`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    for (const path of ["/", "/projects/shield-family", "/projects/iqra", "/projects/next-project"]) {
+    for (const path of ["/", "/projects/shield-family", "/vela", "/iqra", "/projects/next-project"]) {
       await loadPage(page, path);
       await revealAndCheckImages(page);
       await assertNoOverflow(page);
@@ -288,7 +326,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 1000
   });
 }
 
-for (const [name, path] of [["home", "/"], ["Shield Family", "/projects/shield-family"], ["Iqra", "/projects/iqra"]]) {
+for (const [name, path] of [["home", "/"], ["Shield Family", "/projects/shield-family"], ["Vela", "/vela"], ["Iqra", "/iqra"]]) {
   test(`axe accessibility: ${name}`, async ({ page }, testInfo) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await loadPage(page, path);

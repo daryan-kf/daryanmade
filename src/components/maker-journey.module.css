@@ -1,0 +1,59 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 240ms var(--ease-out, cubic-bezier(.23, 1, .32, 1));
+}
+
+.layer[data-ready="true"] { opacity: 1; }
+.canvas { display: block; width: 100%; height: 100%; pointer-events: none; }
+
+.fallback {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 240ms var(--ease-out, cubic-bezier(.23, 1, .32, 1));
+}
+
+:global(html[data-maker-motion="running"]) .fallback { opacity: 0; }
+
+.control {
+  position: fixed;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid rgb(47 55 39 / 16%);
+  border-radius: 999px;
+  background: rgb(248 246 237 / 94%);
+  color: #384032;
+  font: 500 11px/1.2 var(--font-body, sans-serif);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  box-shadow: 0 3px 16px rgb(42 41 25 / 5%);
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.control[hidden] { display: none; }
+.control svg { width: 12px; height: 12px; }
+.control:focus-visible { outline: 2px solid var(--accent, #bd4327); outline-offset: 4px; }
+@media (hover: hover) and (pointer: fine) {
+  .control:hover { background: #fffdf6; border-color: rgb(47 55 39 / 36%); }
+}
+@media (max-width: 700px) {
+  .control { right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); min-height: 44px; padding: 10px 13px; font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .layer, .control { display: none; }
+  .fallback { opacity: 1 !important; transition: none; }
+}

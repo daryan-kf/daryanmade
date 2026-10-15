@@ -1,0 +1,408 @@
+{
+  "imported": "2026-10-15",
+  "note": "Original source folders are read-only. Resized WebP copies preserve source content. Campaign and interface previews are identified separately from native captures.",
+  "assets": [
+    {
+      "file": "/images/vela-site/today.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/today.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/today-after-dump.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/today-after-dump.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/talk-to-vela.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/talk-to-vela.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/plan-calendar-top.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/plan-calendar-top.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/focus-session.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/focus-session.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/ideas-revisit.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/ideas-revisit.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/goal-impact.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/goal-impact.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/habit-year.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/habit-year.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/grow.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/captures/2026-10-15-html/grow.png",
+      "kind": "Vela 2.0 HTML interface illustration, 2026-10-15; owner-confirmed live 2026-10-15",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/icon.webp",
+      "source": "projects/Master Ads/projects/vela/brand/icon.png",
+      "kind": "Vela app icon",
+      "dimensions": [
+        256,
+        256
+      ]
+    },
+    {
+      "file": "/images/vela-site/film-poster.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/header/hdr-01-just-say-it/header-21x9.png",
+      "kind": "Vela 2.0 campaign illustration",
+      "dimensions": [
+        1920,
+        823
+      ]
+    },
+    {
+      "file": "/images/vela-site/preview-poster.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/previews/ap-meet-vela/poster-iphone.png",
+      "kind": "Vela 2.0 promo poster",
+      "dimensions": [
+        886,
+        1920
+      ]
+    },
+    {
+      "file": "/images/vela-site/campaign-01.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/iphone/set-A-one-calm-day/iphone-01.png",
+      "kind": "Vela 2.0 marketing interface illustration",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/campaign-03.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/iphone/set-A-one-calm-day/iphone-03.png",
+      "kind": "Vela 2.0 marketing interface illustration",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/campaign-05.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/iphone/set-A-one-calm-day/iphone-05.png",
+      "kind": "Vela 2.0 marketing interface illustration",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/campaign-07.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/iphone/set-A-one-calm-day/iphone-07.png",
+      "kind": "Vela 2.0 marketing interface illustration",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/vela-site/campaign-09.webp",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/iphone/set-A-one-calm-day/iphone-09.png",
+      "kind": "Vela 2.0 marketing interface illustration",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/icon.webp",
+      "source": "projects/Master Ads/projects/iqra/brand/icon.png",
+      "kind": "Iqra app icon",
+      "dimensions": [
+        256,
+        256
+      ]
+    },
+    {
+      "file": "/images/iqra-site/read.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/read.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/prayer.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/prayer.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/memorize.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/memorize.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/quran.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/quran.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/salah.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/salah.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/listen.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/listen.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/duas.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/duas.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/names.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/names.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/stories.webp",
+      "source": "projects/MY APPS/marketing/video/public/iqra/screens/stories.png",
+      "kind": "Real native Iqra capture; documented shipping build",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/iqra-site/campaign-01.webp",
+      "source": "projects/Master Ads/projects/iqra/assets/app-store/iphone/live-1.2.0/iphone-01.png",
+      "kind": "Live Iqra 1.2.0 App Store artwork; imported 2026-10-14",
+      "dimensions": [
+        900,
+        1947
+      ]
+    },
+    {
+      "file": "/images/iqra-site/campaign-03.webp",
+      "source": "projects/Master Ads/projects/iqra/assets/app-store/iphone/live-1.2.0/iphone-03.png",
+      "kind": "Live Iqra 1.2.0 App Store artwork; imported 2026-10-14",
+      "dimensions": [
+        900,
+        1947
+      ]
+    },
+    {
+      "file": "/images/iqra-site/campaign-05.webp",
+      "source": "projects/Master Ads/projects/iqra/assets/app-store/iphone/live-1.2.0/iphone-05.png",
+      "kind": "Live Iqra 1.2.0 App Store artwork; imported 2026-10-14",
+      "dimensions": [
+        900,
+        1947
+      ]
+    },
+    {
+      "file": "/images/iqra-site/campaign-09.webp",
+      "source": "projects/Master Ads/projects/iqra/assets/app-store/iphone/live-1.2.0/iphone-09.png",
+      "kind": "Live Iqra 1.2.0 App Store artwork; imported 2026-10-14",
+      "dimensions": [
+        900,
+        1947
+      ]
+    },
+    {
+      "file": "/images/iqra-site/film-poster.webp",
+      "source": "projects/Master Ads/projects/iqra/assets/videos/app-store-promos/promo-02-words.mp4",
+      "kind": "Frame at 7.2 seconds, extracted from existing promo for an accurate 9:16 poster",
+      "dimensions": [
+        864,
+        1536
+      ]
+    },
+    {
+      "file": "/images/shield-site/film-poster.webp",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/header/hdr-11-promo-earned-by-learning/header-21x9.png",
+      "kind": "Shield Family campaign illustration, 2026-10-12",
+      "dimensions": [
+        1920,
+        823
+      ]
+    },
+    {
+      "file": "/images/shield-site/campaign-01.webp",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/iphone/set-A-a-day-with-shield/iphone-01.png",
+      "kind": "Shield Family 2.3.0 submitted campaign artwork; release may differ",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/shield-site/campaign-03.webp",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/iphone/set-A-a-day-with-shield/iphone-03.png",
+      "kind": "Shield Family 2.3.0 submitted campaign artwork; release may differ",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/shield-site/campaign-04.webp",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/iphone/set-A-a-day-with-shield/iphone-04.png",
+      "kind": "Shield Family 2.3.0 submitted campaign artwork; release may differ",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/images/shield-site/campaign-06.webp",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/iphone/set-A-a-day-with-shield/iphone-06.png",
+      "kind": "Shield Family 2.3.0 submitted campaign artwork; release may differ",
+      "dimensions": [
+        900,
+        1951
+      ]
+    },
+    {
+      "file": "/videos/vela/meet-vela.mp4",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/previews/ap-meet-vela/iphone-886x1920.mp4",
+      "kind": "Existing promo, resized and encoded for web; original edit and audio preserved",
+      "bytes": 2440761
+    },
+    {
+      "file": "/videos/vela/just-say-it.mp4",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/header/hdr-01-just-say-it/header-21x9.mp4",
+      "kind": "Existing promo, resized and encoded for web; original edit and audio preserved",
+      "bytes": 424701
+    },
+    {
+      "file": "/videos/iqra/one-word.mp4",
+      "source": "projects/Master Ads/projects/iqra/assets/videos/app-store-promos/promo-02-words.mp4",
+      "kind": "Existing promo, resized and encoded for web; original edit and audio preserved",
+      "bytes": 1974008
+    },
+    {
+      "file": "/videos/shield-family/earned-by-learning.mp4",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/header/hdr-11-promo-earned-by-learning/header-21x9.mp4",
+      "kind": "Existing promo, resized and encoded for web; original edit and audio preserved",
+      "bytes": 2128213
+    },
+    {
+      "file": "/images/shield-site/today.webp",
+      "source": "public/images/shield-site/parent-home.webp",
+      "kind": "Existing actual native development capture; homepage alias"
+    },
+    {
+      "file": "/images/shield-site/child.webp",
+      "source": "public/images/shield-site/child-home.webp",
+      "kind": "Existing actual native development capture; homepage alias"
+    },
+    {
+      "file": "/images/shield-site/learn.webp",
+      "source": "public/images/shield-site/learning.webp",
+      "kind": "Existing actual native development capture; homepage alias"
+    },
+    {
+      "file": "/videos/vela/meet-vela.en.vtt",
+      "source": "projects/Master Ads/projects/vela/assets/app-store/previews/ap-meet-vela/source/audio-v2/mix.wav + mix.py",
+      "kind": "English speech transcribed locally with cached Whisper small model; cue offsets reconciled with original mix; spelling of one tap normalized"
+    },
+    {
+      "file": "/videos/iqra/one-word.en.vtt",
+      "source": "projects/MY APPS/quran-video/public/promo/02-words/manifest.json + src/video/promos/P02Words.tsx",
+      "kind": "Verbatim original narration and Arabic clips; timings derived from original measured timeline and manifest"
+    },
+    {
+      "file": "/videos/shield-family/earned-by-learning.en.vtt",
+      "source": "projects/Master Ads/projects/shield-family/assets/app-store/header/hdr-11-promo-earned-by-learning/source/vo/vo.json + cues-loop.json",
+      "kind": "Verbatim original narration; exact mix offsets and measured speech durations"
+    },
+    {
+      "file": "/videos/vela/meet-vela.da.vtt",
+      "source": "public/videos/vela/meet-vela.en.vtt",
+      "kind": "Authored Danish translation of the reviewed English caption track; original cue identifiers and timings preserved."
+    },
+    {
+      "file": "/videos/iqra/one-word.da.vtt",
+      "source": "public/videos/iqra/one-word.en.vtt",
+      "kind": "Authored Danish translation of the reviewed English caption track; original cue identifiers and timings preserved. Arabic Quran text retained exactly."
+    },
+    {
+      "file": "/videos/shield-family/earned-by-learning.da.vtt",
+      "source": "public/videos/shield-family/earned-by-learning.en.vtt",
+      "kind": "Authored Danish translation of the reviewed English caption track; original cue identifiers and timings preserved."
+    }
+  ]
+}

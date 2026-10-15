@@ -61,7 +61,7 @@ test("the chosen plan and consent survive a transient signup failure, then retry
   await expect(success).toContainText("family@example.com");
   await expect(success).toContainText("Requesting a code doesn’t start a subscription.");
   await expect(success).toBeFocused();
-  expect(requests).toEqual(Array.from({ length: 2 }, () => ({ method: "POST", body: { email: "family@example.com", plan: "quarterly", website: "", termsAccepted: true } })));
+  expect(requests).toEqual(Array.from({ length: 2 }, () => ({ method: "POST", body: { locale: "en", email: "family@example.com", plan: "quarterly", website: "", termsAccepted: true } })));
 });
 
 test("signup disables controls while sending and a double click produces one request", async ({ page }) => {
@@ -70,7 +70,7 @@ test("signup disables controls while sending and a double click produces one req
   const responseReady = new Promise<void>((resolve) => { release = resolve; });
   await page.route("**/api/shield-family/signup", async (route) => {
     calls += 1;
-    expect(route.request().postDataJSON()).toEqual({ email: "family@example.com", plan: "monthly", website: "", termsAccepted: true });
+    expect(route.request().postDataJSON()).toEqual({ locale: "en", email: "family@example.com", plan: "monthly", website: "", termsAccepted: true });
     await responseReady;
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
   });

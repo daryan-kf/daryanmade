@@ -88,3 +88,19 @@ function handleButtonPress() {
 Use the Convex CLI to push your functions to a deployment. See everything
 the Convex CLI can do by running `npx convex -h` in your project root
 directory. To learn more, launch the docs with `npx convex docs`.
+
+### Website languages
+
+English remains the default. Danish pages live under `/da`, and signup sends an
+allowlisted `locale` (`en` or `da`). Optional locale fields are additive: older
+records and queued jobs continue in English. New confirmation records capture the
+language alongside consent so a later signup cannot rewrite an earlier link’s
+language. App-update delivery freezes the full localized message before retries;
+Shield offer jobs also retain their requested language. Danish emails link to the
+corresponding Danish confirmation, unsubscribe, privacy, or redemption page.
+
+The lists remain separated by **app**, not by language. A language change does not
+subscribe a person again, create a fourth audience, or change offer inventory.
+Deploy the additive Convex schema and functions before rolling out the bilingual
+frontend. No new environment variables are needed for language support; existing
+verified-sender readiness checks still gate live signup.

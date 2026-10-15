@@ -1,10 +1,19 @@
 "use client";
 
+import { localePath, type Locale } from "@/lib/i18n";
+import { appCopy } from "@/lib/app-site-copy";
+import { LanguageSwitch } from "./language-switch";
+import { useLocale } from "./locale-provider";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ShieldOfferForm } from "./shield-offer-form";
 import { FaqAccordion } from "./faq-accordion";
+import { AppUpdatesForm } from "./app-updates-form";
+import { AppUpdatesInline } from "./app-updates-inline";
+import { ProductFilm } from "./product-film";
+import { ProductMotion } from "./product-motion";
+import { ProductGallery } from "./product-gallery";
 import styles from "./shield-family-site.module.css";
 
 const APP_STORE_URL = "https://apps.apple.com/app/shield-family-parents-control/id6782042659";
@@ -18,15 +27,21 @@ const STEPS = [
 ] as const;
 
 function ClaimLink({ children = "Explore the 3-month offer" }: { placement?: string; children?: ReactNode }) {
-  return <a href="#offer" className={styles.button}>{children} <Icon name="arrowRight" /></a>;
+  const locale = useLocale();
+  const t = appCopy(locale);
+  return <a href="#offer" className={styles.button}>{typeof children === "string" ? t(children) : children} <Icon name="arrowRight" /></a>;
 }
 
 function Brand() {
-  return <a href="#top" className={styles.brand} aria-label="Shield Family home"><Image src="/images/shield-site/icon.webp" width={36} height={36} alt="" /><span>shield<span> family</span></span></a>;
+  const locale = useLocale();
+  const t = appCopy(locale);
+  return <a href="#top" className={styles.brand} aria-label={t("Shield Family home")}><Image src="/images/shield-site/icon.webp" width={36} height={36} alt="" /><span>{t("shield")}<span>{" "}{t("family")}</span></span></a>;
 }
 
 function StepLabel({ n }: { n: number }) {
-  return <p className={styles.stepLabel}><span>Step {n} of {STEPS.length}</span>{STEPS[n - 1].label}</p>;
+  const locale = useLocale();
+  const t = appCopy(locale);
+  return <p className={styles.stepLabel}><span>{t("Step")}{" "}{n}{" "}{t("of")}{" "}{STEPS.length}</span>{t(STEPS[n - 1].label)}</p>;
 }
 
 function NextLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -42,50 +57,53 @@ const TRUST: { icon: IconName; title: string; text: string }[] = [
 
 const BUBBLES = ["Five more minutes?", "Just this level", "Pleeease", "I’m almost done", "Five more minutes?"];
 
-export function ShieldFamilySite() {
-  const availability = "Founding Families · 3 months free";
+export function ShieldFamilySite({ locale = "en" }: { locale?: Locale }) {
+  const t = appCopy(locale);
+  const availability = t("Founding Families · 3 months free");
   const faqs = [1, 2, 3, 5, 6, 7].map((i) => funnelFaqs[i]);
   return (
-    <div className={styles.site}>
-      <div className={styles.announcement}><span>{availability}</span><strong>3 months free for the first 500 families.</strong></div>
-      <div className={styles.makerBar}><Link href="/" aria-label="Back to daryanmade">← daryanmade</Link><span>An independent project by Daryan Kamalifar</span></div>
+    <ProductMotion className={styles.site}>
+      <div className={styles.announcement}><span>{availability}</span><strong>{t("3 months free for the first 500 families.")}</strong></div>
+      <div className={styles.makerBar}><Link href={localePath("/", locale)} aria-label={t("Back to daryanmade")}>{t("← daryanmade")}</Link><span>{t("An independent project by Daryan Kamalifar")}</span><LanguageSwitch locale={locale} /></div>
       <header className={styles.header}>
         <Brand />
-        <nav className={styles.headerNav} aria-label="Main"><a href="#how-it-works">How it works</a><a href="#inside">Inside the app</a><a href="#offer">The offer</a></nav>
-        <a href="#offer" className={styles.headerCta}>3 months free <Icon name="arrowRight" /></a>
+        <nav className={styles.headerNav} aria-label={t("Main")}><a href="#how-it-works">{t("How it works")}</a><a href="#inside">{t("Inside the app")}</a><a href="#updates">{t("Updates")}</a><a href="#offer">{t("The offer")}</a></nav>
+        <a href="#offer" className={styles.headerCta}>{t("3 months free")}{" "}<Icon name="arrowRight" /></a>
       </header>
 
       <main id="main-content">
         {/* Hook */}
         <section className={styles.hero} id="shield-hero" aria-labelledby="hero-title">
           <div className={styles.heroCopy}>
-            <p className={styles.heroEyebrow} data-hero-fade><span /> Screen time, without the nightly argument</p>
-            <h1 id="hero-title"><span className={styles.titleLine}><span data-hero-line>A better answer</span></span><span className={styles.titleLine}><span data-hero-line>to “five more</span></span><span className={`${styles.titleLine} ${styles.titleAccent}`}><span data-hero-line>minutes.”</span></span></h1>
-            <p className={styles.heroLead} data-hero-fade>You set the limit. They earn a little extra by learning.<br /><strong>And bedtime still wins.</strong></p>
+            <p className={styles.heroEyebrow} data-hero-fade><span />{" "}{t("Screen time, without the nightly argument")}</p>
+            <h1 id="hero-title"><span className={styles.titleLine}><span data-hero-line>{t("A better answer")}</span></span><span className={styles.titleLine}><span data-hero-line>{t("to “five more")}</span></span><span className={`${styles.titleLine} ${styles.titleAccent}`}><span data-hero-line>{t("minutes.”")}</span></span></h1>
+            <p className={styles.heroLead} data-hero-fade>{t("You set the limit. They earn a little extra by learning.")}<br /><strong>{t("And bedtime still wins.")}</strong></p>
             <div className={styles.heroAction} data-hero-fade>
               <div className={styles.heroActions}>
-                <a href="#moment" className={styles.button}>See how it works <Icon name="arrowDown" /></a>
-                <a href="#offer" className={styles.textLink}>Or get 3 months free <Icon name="arrowRight" /></a>
+                <a href="#moment" className={styles.button}>{t("See how it works")}{" "}<Icon name="arrowDown" /></a>
+                <a href="#offer" className={styles.textLink}>{t("Or get 3 months free")}{" "}<Icon name="arrowRight" /></a>
               </div>
-              <p className={styles.heroOffer}><span className={styles.offerGift}><Icon name="check" /></span><strong>3 months free</strong><span>Eligibility & renewal terms apply</span></p>
+              <p className={styles.heroOffer}><span className={styles.offerGift}><Icon name="check" /></span><strong>{t("3 months free")}</strong><span>{t("Eligibility & renewal terms apply")}</span></p>
             </div>
           </div>
-          <div className={styles.heroVisual} data-hero-fade><EarningDemo /></div>
+          <div className={styles.heroVisual} data-hero-fade><HeroProductPreview /></div>
         </section>
+
+        <div className={styles.productPrinciples}><span><Icon name="shield" />{t("Apple Screen Time underneath")}</span><span><Icon name="book" />{t("Learning that earns a little extra")}</span><span><Icon name="heart" />{t("One shared family plan")}</span></div>
 
         {/* Step 1 — the problem, in one moment */}
         <section className={`${styles.step} ${styles.momentSection}`} id="moment" aria-labelledby="moment-title">
           <div className={styles.momentGrid}>
             <div data-reveal>
               <div data-reveal-item><StepLabel n={1} /></div>
-              <h2 id="moment-title" className={styles.stepTitle} data-reveal-item>8 pm.<br /><em>“Five more minutes.”</em><br />Again.</h2>
-              <p className={styles.stepLead} data-reveal-item>It isn’t really about five minutes. It’s the same negotiation every night — and ending it is always the parent’s job.</p>
-              <p className={styles.stepLead} data-reveal-item><strong>What if the plan did the ending, and the extra minutes had to be earned?</strong></p>
-              <div data-reveal-item><NextLink href="#how-it-works">Here’s how Shield does it</NextLink></div>
+              <h2 id="moment-title" className={styles.stepTitle} data-reveal-item>{t("8 pm.")}<br /><em>{t("“Five more minutes.”")}</em><br />{t("Again.")}</h2>
+              <p className={styles.stepLead} data-reveal-item>{t("It isn’t really about five minutes. It’s the same negotiation every night — and ending it is always the parent’s job.")}</p>
+              <p className={styles.stepLead} data-reveal-item><strong>{t("What if the plan did the ending, and the extra minutes had to be earned?")}</strong></p>
+              <div data-reveal-item><NextLink href="#how-it-works">{t("Here’s how Shield does it")}</NextLink></div>
             </div>
             <div className={styles.bubbles} aria-hidden="true" data-reveal>
-              <span className={styles.bubbleTime} data-reveal-item>7:58 PM</span>
-              {BUBBLES.map((text, i) => <span key={i} className={styles.bubble} data-reveal-item>{text}</span>)}
+              <span className={styles.bubbleTime} data-reveal-item>{t("7:58 PM")}</span>
+              {BUBBLES.map((text, i) => <span key={i} className={styles.bubble} data-reveal-item>{t(text)}</span>)}
             </div>
           </div>
         </section>
@@ -94,79 +112,123 @@ export function ShieldFamilySite() {
         <section className={`${styles.step} ${styles.howSection}`} id="how-it-works" aria-labelledby="how-title">
           <div data-reveal className={styles.stepHead}>
             <div data-reveal-item><StepLabel n={2} /></div>
-            <h2 id="how-title" className={styles.stepTitle} data-reveal-item>One plan.<br /><em>Agreed once.</em></h2>
+            <h2 id="how-title" className={styles.stepTitle} data-reveal-item>{t("One plan.")}<br /><em>{t("Agreed once.")}</em></h2>
           </div>
           <div className={styles.storyTrack} data-story-track aria-hidden="true"><span data-story-progress /></div>
           <div className={styles.agreement} data-reveal>
-            <div data-story-step data-reveal-item><span className={styles.stepNo}>01</span><p><strong>You set the limit.</strong><span>Which apps, how much time each day, and when bedtime starts.</span></p><Icon name="shield" /></div>
-            <div data-story-step data-reveal-item><span className={styles.stepNo}>02</span><p><strong>They earn a little extra.</strong><span>Quiz questions and brain games add minutes, at the rate you choose, up to a daily cap.</span></p><Icon name="book" /></div>
-            <div data-story-step data-reveal-item><span className={styles.stepNo}>03</span><p><strong>Bedtime still wins.</strong><span>Earned time never overrides bedtime or a pause. Asking for more goes to your phone.</span></p><Icon name="moon" /></div>
+            <div data-story-step data-reveal-item><span className={styles.stepNo}>01</span><p><strong>{t("You set the limit.")}</strong><span>{t("Which apps, how much time each day, and when bedtime starts.")}</span></p><Icon name="shield" /></div>
+            <div data-story-step data-reveal-item><span className={styles.stepNo}>02</span><p><strong>{t("They earn a little extra.")}</strong><span>{t("Quiz questions and brain games add minutes, at the rate you choose, up to a daily cap.")}</span></p><Icon name="book" /></div>
+            <div data-story-step data-reveal-item><span className={styles.stepNo}>03</span><p><strong>{t("Bedtime still wins.")}</strong><span>{t("Earned time never overrides bedtime or a pause. Asking for more goes to your phone.")}</span></p><Icon name="moon" /></div>
           </div>
-          <div className={styles.stepFoot}><NextLink href="#inside">See it in the app</NextLink></div>
+          <div className={styles.earnedProof}>
+            <EarningDemo />
+            <div className={styles.earnedCopy} data-product-enter><p className={styles.featureKicker}>{t("A reward, with a boundary.")}</p><h3>{t("Extra minutes.")}<br /><em>{t("Never an endless day.")}</em></h3><p>{t("You choose how much learning earns a minute, and separate daily caps for quizzes and games. Your child can see the deal. Bedtime still has the last word.")}</p><div className={styles.proofTags}><span>{t("Parent-set earning caps")}</span><span>{t("Clear time balance")}</span><span>{t("Bedtime stays put")}</span></div></div>
+          </div>
+          <div className={styles.stepFoot}><NextLink href="#inside">{t("See it in the app")}</NextLink></div>
         </section>
 
         {/* Step 3 — the real app */}
         <section className={`${styles.step} ${styles.gallerySection}`} id="inside" aria-labelledby="gallery-title">
           <div className={styles.galleryHeading} data-reveal>
             <div data-reveal-item><StepLabel n={3} /></div>
-            <h2 id="gallery-title" className={styles.stepTitle} data-reveal-item>What your family<br /><em>actually sees.</em></h2>
-            <p className={styles.stepLead} data-reveal-item>Swipe through the real app — your phone, and your child’s.</p>
+            <h2 id="gallery-title" className={styles.stepTitle} data-reveal-item>{t("What your family")}<br /><em>{t("actually sees.")}</em></h2>
+            <p className={styles.stepLead} data-reveal-item>{t("Swipe through the real app — your phone, and your child’s.")}</p>
           </div>
           <AppGallery />
-          <div className={styles.stepFoot}><NextLink href="#good-to-know">Good to know before you start</NextLink></div>
+          <div className={styles.familyFeatures}>
+            <article><span className={styles.featureGlyph}><Icon name="book" /></span><h3>{t("More curiosity.")}<br /><em>{t("A little less scrolling.")}</em></h3><p>{t("Quizzes across real subjects, adaptive difficulty and brain games. Parents can see learning progress across six skills.")}</p><div className={styles.subjectChips}><span>{t("Math")}</span><span>{t("Reading & Words")}</span><span>{t("Science")}</span><span>{t("Logic & Puzzles")}</span></div></article>
+            <article><span className={styles.featureGlyph}><Icon name="handoff" /></span><h3>{t("A request.")}<br /><em>{t("Not another argument.")}</em></h3><p>{t("Children can ask for more time. Approve or decline from your phone, with the plan and its boundaries still in view.")}</p><div className={styles.requestIllustration} aria-label={t("Product illustration: a child's request needs a parent's decision")}><span><Icon name="message" />{t("Could I have a little more time?")}</span><strong>{t("Your decision.")}<Icon name="shield" /></strong></div></article>
+            <article><span className={styles.featureGlyph}><Icon name="home" /></span><h3>{t("When time ends,")}<br /><em>{t("life keeps going.")}</em></h3><p>{t("Make an offline plan together. Their own choices give them somewhere to land when it’s time to put the screen down.")}</p><div className={styles.landingIllustration}><span>{t("WHAT COMES NEXT?")}</span><p>{t("Build something.")}<br />{t("Head outside.")}<br /><em>{t("Make it their choice.")}</em></p></div></article>
+          </div>
+          <div className={styles.familyDay}>
+            <div className={styles.familyDayHeading}><p className={styles.featureKicker}>{t("For the rest of the family day.")}</p><h3>{t("Good habits.")}<br /><em>{t("A little help around them.")}</em></h3></div>
+            <div className={styles.familyDayGrid}>
+              <article><span className={styles.familyDayNumber}>{t("01 / SKILL LAB")}</span><h4>{t("Try it. Understand it.")}<br />{t("Take it into real life.")}</h4><p>{t("Short lessons combine something to try, a clear explanation and a real-life idea. Learning can be a moment of curiosity, too.")}</p></article>
+              <article><span className={styles.familyDayNumber}>{t("02 / A FAMILIAR RHYTHM")}</span><h4>{t("School. Dinner.")}<br />{t("Time to wind down.")}</h4><p>{t("Set recurring downtime and bedtime for each child or the whole family. Add practical routine jobs, with minutes awarded after a parent approves.")}</p></article>
+              <article><span className={styles.familyDayNumber}>{t("03 / WHEN YOU WANT TO KNOW")}</span><h4>{t("They’re home.")}<br />{t("You can breathe.")}</h4><p>{t("Optional family location brings a live map, arrival and departure alerts, and an activity timeline. Location sharing is opt-in and parent-controlled.")}</p></article>
+            </div>
+          </div>
+          <ProductGallery locale={locale} name="Shield Family" title={t("One family. A whole day.")} images={[
+            { src: "/images/shield-site/campaign-01.webp", label: t("A shared overview"), alt: t("Shield Family campaign artwork: family screen time at the start of the day") },
+            { src: "/images/shield-site/campaign-03.webp", label: t("Homework first"), alt: t("Shield Family campaign artwork: a weekday homework downtime window") },
+            { src: "/images/shield-site/campaign-04.webp", label: t("Earn by learning"), alt: t("Shield Family campaign artwork: learning earns minutes within the parent-set cap") },
+            { src: "/images/shield-site/campaign-06.webp", label: t("Home, safely"), alt: t("Shield Family campaign artwork: a family map with a home arrival notification") },
+          ]} disclosure={t("Update preview · Submitted-release campaign artwork with example family data. Features and interface may differ from the current App Store release.")} />
+          <AppUpdatesInline locale={locale} app="shield-family" />
+          <div className={styles.stepFoot}><NextLink href="#shield-film">{t("Watch the idea come to life")}</NextLink></div>
+        </section>
+
+        <section className={styles.filmSection} id="shield-film" aria-labelledby="shield-film-title">
+          <div className={styles.filmHeading} data-product-enter><div><p className={styles.featureKicker}>{t("A little learning changes the conversation.")}</p><h2 id="shield-film-title">{t("“Five more minutes?”")}<br /><em>{t("Here’s a different answer.")}</em></h2></div><p>{t("Calm control for you.")}<br />{t("Clear choices for them.")}</p></div>
+          <ProductFilm locale={locale} src="/videos/shield-family/earned-by-learning.mp4" captions="/videos/shield-family/earned-by-learning.en.vtt" poster="/images/shield-site/film-poster.webp" title={t("Shield Family: earned by learning")} caption={t("24 seconds · A campaign illustration of learning within parent-set limits.")} transcript={t("Five more minutes? Earn them. Every right answer adds a little time. Earned by learning. And the limit still holds. Calm control for you. Clear choices for them. Shield Family.")} />
         </section>
 
         {/* Step 4 — trust and the three questions that matter */}
         <section className={`${styles.step} ${styles.trustSection}`} id="good-to-know" aria-labelledby="trust-title">
           <div className={styles.stepHead} data-reveal>
             <div data-reveal-item><StepLabel n={4} /></div>
-            <h2 id="trust-title" className={styles.stepTitle} data-reveal-item>Made for families.<br /><em>Kept private.</em></h2>
+            <h2 id="trust-title" className={styles.stepTitle} data-reveal-item>{t("Made for families.")}<br /><em>{t("Kept private.")}</em></h2>
           </div>
           <ul className={styles.trustGrid} data-reveal>
-            {TRUST.map((t) => <li key={t.title} data-reveal-item><span className={styles.trustIcon}><Icon name={t.icon} /></span><strong>{t.title}</strong><p>{t.text}</p></li>)}
+            {TRUST.map((item) => <li key={item.title} data-reveal-item><span className={styles.trustIcon}><Icon name={item.icon} /></span><strong>{t(item.title)}</strong><p>{t(item.text)}</p></li>)}
           </ul>
-          <FaqAccordion className={styles.faqList} items={faqs.map(({ question, answer }) => ({ question, answer: <p>{answer}</p> }))} />
-          <div className={styles.stepFoot}><NextLink href="#offer">Your 3 free months</NextLink></div>
+          <FaqAccordion className={styles.faqList} items={faqs.map(({ question, answer }) => ({ question: t(question), answer: <p>{t(answer)}</p> }))} />
+          <div className={styles.stepFoot}><NextLink href="#offer">{t("Your 3 free months")}</NextLink></div>
         </section>
 
         {/* The offer */}
         <section className={styles.offerSection} id="offer" aria-labelledby="offer-title">
           <div className={styles.offerIntro} data-reveal>
-            <p className={styles.offerEyebrow} data-reveal-item>Founding Families · the first 500</p>
-            <h2 id="offer-title" data-reveal-item><span data-offer-word>3 months.</span><span data-offer-word>Free.</span></h2>
-            <p data-reveal-item>The full app for your whole family. Every child, your co-parent, and a shared plan to start with.</p>
+            <p className={styles.offerEyebrow} data-reveal-item>{t("Founding Families · the first 500")}</p>
+            <h2 id="offer-title" data-reveal-item><span data-offer-word>{t("3 months.")}</span><span data-offer-word>{t("Free.")}</span></h2>
+            <p data-reveal-item>{t("The full app for your whole family. Every child, your co-parent, and a shared plan to start with.")}</p>
           </div>
-          <ol className={styles.claimSteps} aria-label="How to get the offer" data-reveal><li data-reveal-item><b>1</b> Choose your plan</li><li data-reveal-item><b>2</b> Confirm your email</li><li data-reveal-item><b>3</b> Redeem your Apple code</li></ol>
+          <ol className={styles.claimSteps} aria-label={t("How to get the offer")} data-reveal><li data-reveal-item><b>1</b>{" "}{t("Choose your plan")}</li><li data-reveal-item><b>2</b>{" "}{t("Confirm your email")}</li><li data-reveal-item><b>3</b>{" "}{t("Redeem your Apple code")}</li></ol>
           <div className={styles.offerForm} data-reveal><ShieldOfferForm /></div>
-          <p className={styles.offerCancel}><Icon name="lock" /> Cancel anytime in your Apple settings, at least 24 hours before it renews.</p>
-          <a href="/projects/shield-family/redeem" className={styles.redeemHelp}>See how redemption works <Icon name="arrowRight" /></a>
+          <p className={styles.offerCancel}><Icon name="lock" />{" "}{t("Cancel anytime in your Apple settings, at least 24 hours before it renews.")}</p>
+          <a href={localePath("/projects/shield-family/redeem", locale)} className={styles.redeemHelp}>{t("See how redemption works")}{" "}<Icon name="arrowRight" /></a>
         </section>
 
         {/* Download */}
         <section className={styles.download} id="download" aria-labelledby="download-title" data-reveal>
-          <h2 id="download-title" className={styles.stepTitle} data-reveal-item>Get Shield<br /><em>on iPhone & iPad.</em></h2>
-          <p className={styles.stepLead} data-reveal-item>If you use a valid offer code, redeem it before starting a subscription. Apple confirms eligibility and the exact terms.</p>
+          <h2 id="download-title" className={styles.stepTitle} data-reveal-item>{t("Get Shield")}<br /><em>{t("on iPhone & iPad.")}</em></h2>
+          <p className={styles.stepLead} data-reveal-item>{t("If you use a valid offer code, redeem it before starting a subscription. Apple confirms eligibility and the exact terms.")}</p>
           <div className={styles.downloadRow} data-reveal-item>
             <div className={styles.qrCard}>
-              <a href={APP_STORE_URL} className={styles.qr} aria-label="Open Shield Family on the App Store"><Image src="/images/shield-site/app-store-qr.png" width={132} height={132} alt="QR code for Shield Family on the App Store" /></a>
-              <p><strong>Scan with your iPhone</strong>Point the camera at the code.</p>
+              <a href={APP_STORE_URL} className={styles.qr} aria-label={t("Open Shield Family on the App Store")}><Image src="/images/shield-site/app-store-qr.png" width={132} height={132} alt={t("QR code for Shield Family on the App Store")} /></a>
+              <p><strong>{t("Scan with your iPhone")}</strong>{t("Point the camera at the code.")}</p>
             </div>
             <div className={styles.downloadActions}>
-              <AppStoreLink className={styles.appStoreLink} source="download"><AppleMark /><span>Download on the<br /><strong>App Store</strong></span></AppStoreLink>
-              <ClaimLink placement="download">Get my 3 free months</ClaimLink>
+              <AppStoreLink className={styles.appStoreLink} source="download"><AppleMark /><span>{t("Download on the")}<br /><strong>{t("App Store")}</strong></span></AppStoreLink>
+              <ClaimLink placement="download">{t("Get my 3 free months")}</ClaimLink>
             </div>
           </div>
-          <p className={styles.downloadNote} data-reveal-item>A parent device and a child device · iOS / iPadOS 26 or later</p>
+          <p className={styles.downloadNote} data-reveal-item>{t("A parent device and a child device · iOS / iPadOS 26 or later")}</p>
         </section>
+        <section className={styles.updatesSection}><AppUpdatesForm app="shield-family" id="updates" /></section>
       </main>
-      <footer className={styles.footer} id="shield-footer"><Brand /><nav aria-label="Footer"><a href="/projects/shield-family#offer">Recover your code</a><a href="/projects/shield-family#inside">Setup help</a><a href="/projects/shield-family/privacy">Website privacy</a><a href="https://daryan-kf.github.io/kidshield-legal/privacy.html">App privacy</a><a href="https://daryan-kf.github.io/kidshield-legal/terms.html">Terms</a><a href="mailto:info@sarpoli.com">Contact</a></nav><p>© {new Date().getFullYear()} Shield Family</p></footer>
+      <footer className={styles.footer} id="shield-footer"><Brand /><nav aria-label={t("Footer")}><a href={localePath("/projects/shield-family#offer", locale)}>{t("Recover your code")}</a><a href={localePath("/projects/shield-family#inside", locale)}>{t("Setup help")}</a><a href={localePath("/projects/shield-family/privacy", locale)}>{t("Website privacy")}</a><a href="https://daryan-kf.github.io/kidshield-legal/privacy.html">{t("App privacy")}</a><a href="https://daryan-kf.github.io/kidshield-legal/terms.html">{t("Terms")}</a><a href="mailto:info@sarpoli.com">{t("Contact")}</a></nav><p>© {new Date().getFullYear()}{" "}{t("Shield Family")}</p></footer>
       <MobileOffer />
-    </div>
+    </ProductMotion>
   );
+}
+
+function HeroProductPreview() {
+  const locale = useLocale();
+  const t = appCopy(locale);
+  return <figure className={styles.heroStage} data-product-fan aria-label={t("Shield Family native app previews for parents and children")}>
+    <div className={styles.stageOrbit} aria-hidden="true" /><div className={styles.stageDisc} aria-hidden="true" />
+    <div className={styles.parentDevice} data-fan-phone><span>{t("YOUR PHONE")}</span><div className={styles.phone}><Image src="/images/shield-site/parent-home.webp" width={1170} height={2532} sizes="(max-width: 700px) 42vw, 235px" loading="eager" alt={t("Shield Family parent preview: family overview and a child's device setup")} /></div></div>
+    <div className={styles.childDevice} data-fan-phone><span>{t("THEIR WORLD")}</span><div className={styles.phone}><Image src="/images/shield-site/child-home.webp" width={1170} height={2532} sizes="(max-width: 700px) 43vw, 245px" loading="eager" alt={t("Shield Family child preview: time status, learning questions and brain games")} /></div></div>
+    <div className={styles.stageNote}><Icon name="heart" /><div>{t("Two perspectives.")}<br /><strong>{t("One family plan.")}</strong></div></div>
+    <figcaption>{t("Native development preview · Example family data")}</figcaption>
+  </figure>;
 }
 
 /** An explanation of the product model, deliberately separate from native app UI. */
 function EarningDemo() {
+  const locale = useLocale();
+  const t = appCopy(locale);
   const figure = useRef<HTMLElement>(null);
   const [play, setPlay] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -204,16 +266,16 @@ function EarningDemo() {
   }, [play, playing]);
 
   return (
-    <figure ref={figure} className={styles.demo} aria-label="How Shield works: parents set the daily allowance and earning cap. Children can earn extra screen time through learning. Bedtime still applies.">
+    <figure ref={figure} className={styles.demo} aria-label={t("How Shield works: parents set the daily allowance and earning cap. Children can earn extra screen time through learning. Bedtime still applies.")}>
       <div className={styles.topline}>
-        <span>A little learning. A little extra.</span>
+        <span>{t("A little learning. A little extra.")}</span>
         <button
           type="button"
           className={styles.replay}
           hidden={!ready}
           disabled={playing}
           aria-busy={playing}
-          aria-label="Replay the learning and screen-time illustration"
+          aria-label={t("Replay the learning and screen-time illustration")}
           onClick={() => {
             if (reducedMotion.current) return;
             setPlay((value) => value + 1);
@@ -221,7 +283,7 @@ function EarningDemo() {
           }}
         >
           <Icon name="refresh" />
-          <span>Replay</span>
+          <span>{t("Replay")}</span>
         </button>
       </div>
 
@@ -236,15 +298,15 @@ function EarningDemo() {
             <path className={styles.capMarker} d="M314.68 280.3 342.53 299.8" />
           </svg>
           <div className={styles.boundaryCopy}>
-            <span>You set the limits</span>
-            <strong>Extra time.<br /><em>Your terms.</em></strong>
-            <span className={styles.bedtime}><Icon name="moon" />Bedtime still applies</span>
+            <span>{t("You set the limits")}</span>
+            <strong>{t("Extra time.")}<br /><em>{t("Your terms.")}</em></strong>
+            <span className={styles.bedtime}><Icon name="moon" />{t("Bedtime still applies")}</span>
           </div>
-          <span className={styles.cap}><Icon name="lock" />Your cap</span>
+          <span className={styles.cap}><Icon name="lock" />{t("Your cap")}</span>
         </div>
 
         <div className={styles.learning}>
-          <span className={styles.learningEyebrow}>A little learning</span>
+          <span className={styles.learningEyebrow}>{t("A little learning")}</span>
           <svg className={styles.bookArt} viewBox="0 0 180 126" fill="none">
             <path d="M21 38 82 28 153 46 145 106 80 90 16 100 21 38Z" fill="#332C9E" />
             <path d="M28 25C48 18 69 19 88 28L82 83C63 74 41 74 22 82L28 25Z" fill="#CECAFF" stroke="#5856D6" strokeWidth="1.5" strokeLinejoin="round" />
@@ -255,8 +317,8 @@ function EarningDemo() {
             <path d="m151 8 2 8 8 2-8 2-2 8-2-8-8-2 8-2 2-8Z" fill="#5856D6" />
             <circle cx="21" cy="17" r="3" fill="#F08A18" />
           </svg>
-          <strong>Learn. Earn.</strong>
-          <span className={styles.learningNote}>Extra minutes through learning.</span>
+          <strong>{t("Learn. Earn.")}</strong>
+          <span className={styles.learningNote}>{t("Extra minutes through learning.")}</span>
           <span className={styles.learningCheck}><Icon name="check" /></span>
         </div>
 
@@ -264,15 +326,15 @@ function EarningDemo() {
           <path d="M5 30C35 2 88 7 112 25c18 13 24 31 22 53" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 5" />
           <path d="m126 70 8 10 10-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className={styles.token}><Icon name="clock" /><b>+ time</b></span>
-        <span className={styles.extraLabel}>They earn the extra.</span>
+        <span className={styles.token}><Icon name="clock" /><b>{t("+ time")}</b></span>
+        <span className={styles.extraLabel}>{t("They earn the extra.")}</span>
       </div>
 
       <div className={styles.legend} aria-hidden="true">
-        <span><i />Daily allowance</span>
-        <span><i />Earned extra</span>
+        <span><i />{t("Daily allowance")}</span>
+        <span><i />{t("Earned extra")}</span>
       </div>
-      <figcaption className={styles.caption}>Illustration · You choose the limits. Bedtime still applies.</figcaption>
+      <figcaption className={styles.caption}>{t("Illustration · You choose the limits. Bedtime still applies.")}</figcaption>
     </figure>
   );
 }
@@ -307,15 +369,17 @@ const appScreens: { file: string; title: string; alt: string }[] = [
 ];
 
 function AppGallery() {
+  const locale = useLocale();
+  const t = appCopy(locale);
   return <>
-    <div className={styles.gallery} role="region" aria-label="Shield Family app screenshots" tabIndex={0} data-reveal>
+    <div className={styles.gallery} role="region" aria-label={t("Shield Family app screenshots")} tabIndex={0} data-reveal>
       {appScreens.map((screen) => <figure key={screen.file} data-gallery-item data-reveal-item>
-        <a href={`/images/shield-site/${screen.file}`} target="_blank" rel="noopener noreferrer" aria-label={`Open full-size ${screen.title} screenshot`}>
-          <div className={styles.phone}><Image src={`/images/shield-site/${screen.file}`} alt={screen.alt} width={1170} height={2532} quality={85} sizes="(max-width: 600px) 215px, 205px" /></div>
-        </a><figcaption>{screen.title}</figcaption>
+        <a href={`/images/shield-site/${screen.file}`} target="_blank" rel="noopener noreferrer" aria-label={locale === "da" ? `Åbn skærmbilledet ${t(screen.title)} i fuld størrelse` : `Open full-size ${screen.title} screenshot`}>
+          <div className={styles.phone}><Image src={`/images/shield-site/${screen.file}`} alt={t(screen.alt)} width={1170} height={2532} quality={85} sizes="(max-width: 600px) 215px, 205px" /></div>
+        </a><figcaption>{t(screen.title)}</figcaption>
       </figure>)}
     </div>
-    <p className={styles.note}>Development preview · Actual native app with example family data.<br />Screens may differ from the current App Store release.</p>
+    <p className={styles.note}>{t("Development preview · Actual native app with example family data.")}<br />{t("Screens may differ from the current App Store release.")}</p>
   </>;
 }
 
@@ -326,10 +390,14 @@ function AppleMark({ className }: { className?: string }) {
 
 
 function AppStoreLink({ children, className }: { children?: ReactNode; className?: string; source?: string }) {
-  return <a href={APP_STORE_URL} className={className}>{children ?? <><AppleMark /><span>Download on the<strong>App Store</strong></span></>}</a>;
+  const locale = useLocale();
+  const t = appCopy(locale);
+  return <a href={APP_STORE_URL} className={className}>{children ?? <><AppleMark /><span>{t("Download on the")}<strong>{t("App Store")}</strong></span></>}</a>;
 }
 
 function MobileOffer() {
+  const locale = useLocale();
+  const t = appCopy(locale);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const hero = document.getElementById("shield-hero");
@@ -347,7 +415,7 @@ function MobileOffer() {
     for (const element of [hero, offer, footer]) if (element) observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  return <aside className={styles.sticky} hidden={!visible} aria-label="Shield Family offer"><span>Three months of family time<small>For eligible new subscribers · conditions apply</small></span><a href="#offer" className={styles.button}>See the offer <Icon name="arrowRight" /></a></aside>;
+  return <aside className={styles.sticky} hidden={!visible} aria-label={t("Shield Family offer")}><span>{t("Three months of family time")}<small>{t("For eligible new subscribers · conditions apply")}</small></span><a href="#offer" className={styles.button}>{t("See the offer")}{" "}<Icon name="arrowRight" /></a></aside>;
 }
 
 type IconName =

@@ -1,3 +1,7 @@
 import type { MetadataRoute } from "next";
-import { projects, siteUrl } from "@/lib/projects";
-export default function sitemap(): MetadataRoute.Sitemap { return [{ url: siteUrl(), changeFrequency: "monthly", priority: 1 }, ...projects.map((p) => ({ url: `${siteUrl()}/projects/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.8 })), { url: `${siteUrl()}/privacy`, changeFrequency: "yearly", priority: 0.2 }]; }
+import { projects, projectPath, siteUrl } from "@/lib/projects";
+import { localePath } from "@/lib/i18n";
+export default function sitemap(): MetadataRoute.Sitemap {
+  const paths = ["/", ...projects.map(projectPath), "/privacy", ...["/vela", "/iqra", "/projects/shield-family"].map(base => `${base}/updates/privacy`), "/projects/shield-family/privacy", "/projects/shield-family/redeem"];
+  return [...new Set(paths)].flatMap(path => (["en", "da"] as const).map(locale => ({ url: `${siteUrl()}${localePath(path, locale)}`, changeFrequency: "monthly" as const, priority: path === "/" ? 1 : path.includes("privacy") ? .2 : .8, alternates: { languages: { en: `${siteUrl()}${localePath(path, "en")}`, da: `${siteUrl()}${localePath(path, "da")}` } } })));
+}

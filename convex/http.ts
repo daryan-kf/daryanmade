@@ -2,8 +2,11 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { normalizeEmail } from "./lib/validators";
+import { isEmailLocale } from "./lib/emailLocale";
+import { registerAppUpdateRoutes } from "./appUpdateHttp";
 
 const http = httpRouter();
+registerAppUpdateRoutes(http);
 const json = (body: object, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 const authorized = (request: Request) => {
   const secret = process.env.SHIELD_API_SECRET;
@@ -17,9 +20,10 @@ http.route({ path: "/shield-family/signup", method: "POST", handler: httpAction(
   try {
     const raw = await request.text(); if (raw.length > 4096) return json({ ok: false, error: "Request too large." }, 413);
     const input = JSON.parse(raw);
+    if (input.locale !== undefined && !isEmailLocale(input.locale)) return json({ ok: false, error: "Choose English or Danish." }, 400);
     const email = normalizeEmail(input.email);
     if (!email || !["annual", "quarterly", "monthly"].includes(input.plan) || input.termsAccepted !== true || !/^[a-f0-9]{64}$/.test(input.requestKey)) return json({ ok: false, error: "Enter your email, choose a plan and accept the offer terms." }, 400);
-    const response = await ctx.runAction(internal.shieldActions.request, { email, plan: input.plan, termsAccepted: true, requestKey: input.requestKey });
+    const response = await ctx.runAction(internal.shieldActions.request, { email, plan: input.plan, termsAccepted: true, locale: input.locale ?? "en", requestKey: input.requestKey });
     if (response.result === "limited") return json({ ok: false, error: "Too many requests. Please try again in an hour." }, 429);
     if (response.result === "unavailable") return json({ ok: false, error: "This offer is not available right now. Please try another plan or check back later." }, 409);
     if (response.result === "invalid") return json({ ok: false, error: "Please check your email and the offer terms." }, 400);

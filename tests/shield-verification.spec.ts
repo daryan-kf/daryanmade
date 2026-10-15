@@ -29,7 +29,7 @@ test("verification removes the private fragment and waits for an explicit confir
 
   await confirm.click();
   await expect(main(page).getByRole("heading", { name: "Your code is ready." })).toBeVisible();
-  expect(calls).toEqual([{ method: "POST", body: { token: TOKEN } }]);
+  expect(calls).toEqual([{ method: "POST", body: { locale: "en", token: TOKEN } }]);
   await expect(main(page).locator("code")).toHaveText(CODE);
   await expect(main(page)).toContainText("We’re also sending a copy to your inbox.");
   await expect(main(page)).toContainText("full annual price");
@@ -46,7 +46,7 @@ test("a failed confirmation keeps the request available for a deliberate retry",
   let calls = 0;
   await page.route("**/api/shield-family/verify", async (route) => {
     calls += 1;
-    expect(route.request().postDataJSON()).toEqual({ token: TOKEN });
+    expect(route.request().postDataJSON()).toEqual({ locale: "en", token: TOKEN });
     await route.fulfill({ status: calls === 1 ? 503 : 200, contentType: "application/json", body: JSON.stringify(calls === 1 ? { ok: false, error: "Confirmation is temporarily unavailable. Please try again." } : result("monthly")) });
   });
   await page.goto(`${VERIFY}#token=${TOKEN}`);
@@ -96,4 +96,29 @@ test("Shield privacy and redemption help remain internal and fit a phone screen"
   }
   await expect(main(page).getByRole("link", { name: "Read Apple’s cancellation instructions" })).toHaveAttribute("href", "https://support.apple.com/en-us/118428");
   await expect(main(page)).toContainText("24 hours before it ends");
+});
+
+test("Shield offer confirmation keeps its private link when changing to Danish", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  let calls = 0;
+  await page.route("**/api/shield-family/verify", async route => {
+    calls++;
+    expect(route.request().postDataJSON()).toEqual({ locale: "da", token: TOKEN });
+    await route.fulfill({ status: 410, contentType: "application/json", body: JSON.stringify({ ok: false, error: "This confirmation link has expired or is invalid. Request a new link to continue." }) });
+  });
+  await page.goto(`/projects/shield-family/verify#token=${TOKEN}`);
+  await expect(page.getByRole("button", { name: "Confirm my email" })).toBeVisible();
+  await page.evaluate(() => { (window as Window & { privateFlowDocument?: string }).privateFlowDocument = "preserved"; });
+  let documentRequests = 0;
+  page.on("request", request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documentRequests++; });
+  await page.getByRole("link", { name: "Dansk", exact: true }).click();
+  await expect(page).toHaveURL(/\/da\/projects\/shield-family\/verify$/);
+  await expect(page.getByRole("button", { name: "Bekræft min e-mail" })).toBeVisible();
+  expect(await page.evaluate(() => (window as Window & { privateFlowDocument?: string }).privateFlowDocument)).toBe("preserved");
+  expect(documentRequests).toBe(0);
+  expect(calls).toBe(0);
+  await page.getByRole("button", { name: "Bekræft min e-mail" }).click();
+  await expect(page.locator("main").getByRole("alert")).toContainText("Bekræftelseslinket er udløbet");
+  expect(calls).toBe(1);
+  await expect(page.getByRole("link", { name: "Brug for et nyt link? Gå tilbage til tilbuddet." })).toHaveAttribute("href", "/da/projects/shield-family#offer");
 });
