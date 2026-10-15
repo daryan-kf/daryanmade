@@ -30,7 +30,7 @@
 .button { display: inline-flex; justify-content: center; align-items: center; gap: 14px; min-height: 58px; padding: 16px 24px; border-radius: 14px; background: var(--f-primary); color: var(--surface); font-size: 16px; font-weight: 700; line-height: 1.3; transition: background 180ms ease, transform 180ms var(--ease-out); }
 .button svg { width: 20px; height: 20px; }
 .textLink { display: inline-flex; align-items: center; gap: 8px; color: var(--f-primary-deep); font-size: 15px; font-weight: 650; white-space: nowrap; }
-.textLink svg { width: 17px; height: 17px; transition: transform 180ms var(--ease-out); }
+.textLink svg { width: 17px; height: 17px; }
 .step { padding: 112px max(40px, calc((100vw - 1160px)/2)); }
 .stepHead { max-width: 760px; }
 .stepLabel { display: flex; align-items: center; gap: 10px; color: var(--f-muted); font-size: 13px; font-weight: 650; letter-spacing: .01em; }
@@ -159,7 +159,6 @@
   .appStoreLink:hover { background: #3b3630; }
   .headerNav a:hover { color: var(--f-primary); }
   .headerCta:hover, .redeemHelp:hover, .footer nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .textLink:hover svg { transform: translateX(3px); }
   .nextLink:hover .nextCircle { transform: translateY(3px); }
   .qrCard { display: flex; }
 }

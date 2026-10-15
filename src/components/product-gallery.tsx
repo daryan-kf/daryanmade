@@ -23,7 +23,7 @@ export function ProductGallery({ name, title, images, disclosure, locale: explic
     <div className={styles.track}>
       {images.map((item, index) => <button type="button" key={item.src} className={styles.card} onClick={() => { setSelected(index); dialog.current?.showModal(); }} aria-label={t(`Enlarge ${name}: ${item.label}`, `Forstør ${name}: ${item.label}`)}>
         <Image src={item.src} width={900} height={1951} alt={item.alt} sizes="(max-width: 700px) 44vw, 180px" />
-        <span><b>{String(index + 1).padStart(2, "0")}</b>{item.label}<i aria-hidden="true">↗</i></span>
+        <span><b>{String(index + 1).padStart(2, "0")}</b>{item.label}<i data-link-arrow="diagonal" aria-hidden="true">↗</i></span>
       </button>)}
     </div>
     <p className={styles.disclosure}>{disclosure}</p>

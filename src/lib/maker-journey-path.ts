@@ -39,12 +39,29 @@ export function dampMakerValue(current: number, target: number, dt: number, maxS
   return current + Math.sign(distance) * step;
 }
 
+/** Shape and position share one travel response. Ease the final two percent
+ * into a complete logo before the sculpture finishes docking, rather than
+ * leaving tiny remnants of the previous form in a readable section hold.
+ * Normalizing also keeps interrupted, multi-section journeys convex.
+ */
+export function resolveMakerWeights(weights: ArrayLike<number>, out: number[]) {
+  let total = 0;
+  let dominant = 0;
+  for (let i = 0; i < weights.length; i++) {
+    out[i] = smooth((weights[i] - .02) / .96);
+    total += out[i];
+    if (weights[i] > weights[dominant]) dominant = i;
+  }
+  for (let i = 0; i < weights.length; i++) out[i] = total > 0 ? out[i] / total : i === dominant ? 1 : 0;
+  return dominant;
+}
+
 /** Measured art slots and empty crossing bands define the path. The complete
  * sculpture remains inside the viewport throughout margin travel. It reaches
- * its next art slot before the next product form unfolds. No offscreen detour.
- * Positions are continuous; only the requested logo changes at arrival.
- * This target pose is stateless; timed morphing and bounded following belong to
- * the renderer, so fast scroll changes retarget one animation without a queue.
+ * the next art slot with its next form already complete. The morph unfolds
+ * across departure and travel; both section holds contain a readable logo.
+ * This target pose is stateless. One bounded response follows its position and
+ * shape together, so fast scrolling and reversal retarget without a queue.
  */
 export function sampleMakerJourney(
   anchors: readonly MakerAnchor[],
@@ -86,7 +103,7 @@ export function sampleMakerJourney(
     out.x = mix(a.x, b.x, progress);
     out.y = mix(a.y, b.y, progress) - scroll;
     out.size = mix(a.size, b.size, progress);
-    out.morph = t >= .90 ? 1 : 0;
+    out.morph = progress;
     out.docked = 1;
     return out;
   }
@@ -136,10 +153,9 @@ export function sampleMakerJourney(
     out.size = mix(railSize, Math.min(railSize, crossing.height * .8), inBand);
     out.crossing = t >= crossStart && t <= crossEnd;
   }
-  // This is a target selection, never a scroll-scrubbed morph. The renderer
-  // interpolates toward it in real time after arrival, including when scrolling
-  // stops, so a quick wheel gesture cannot rush the visible transformation.
-  out.morph = t >= arrivalAt ? 1 : 0;
+  // Begin with departure and resolve during the approach. The short lead
+  // before docking lets the new mark read clearly as it reaches its art slot.
+  out.morph = smooth((t - exitStart) / (arrivalAt - .04 - exitStart));
   out.docked = departing ? 1 - exit : enter;
   return out;
 }

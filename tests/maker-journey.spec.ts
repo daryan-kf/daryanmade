@@ -92,6 +92,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
       await jumpTo(page, destination);
       await expect(canvas(page)).toHaveAttribute("data-maker-stage", stage);
       await expect(canvas(page)).toHaveAttribute("data-maker-form", "settled");
+      await expect(canvas(page)).toHaveAttribute("data-maker-location", "docked");
       const art = await paintedBounds(page, stage);
       const bounds = (await slot.boundingBox())!;
       expect(art.count).toBeGreaterThan(30);
@@ -105,13 +106,18 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
   });
 }
 
-test("mobile arrival resolves promptly, survives toolbar resize, and holds the complete logo on departure", async ({ page }) => {
+test("mobile morph unfolds before arrival, survives toolbar resize, and docks as a complete logo", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openJourney(page);
-  const slot = page.locator("[data-maker-anchor='vela']");
-  await slot.evaluate(element => scrollTo({ top: element.getBoundingClientRect().top + scrollY + element.clientHeight / 2 - innerHeight * .52, behavior: "instant" }));
-  await expect(canvas(page)).toHaveAttribute("data-maker-stage", "vela");
+  const slotScroll = (stage: string) => page.locator(`[data-maker-anchor='${stage}']`).evaluate(element => element.getBoundingClientRect().top + scrollY + element.clientHeight / 2 - innerHeight * .52);
+  const from = await slotScroll("sarpoli");
+  const to = await slotScroll("vela");
+  await jumpTo(page, from);
+  await expect(canvas(page)).toHaveAttribute("data-maker-stage", "sarpoli");
+  await expect(canvas(page)).toHaveAttribute("data-maker-location", "docked");
+  await jumpTo(page, from + (to - from) * .58);
   await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
+  await expect(canvas(page)).toHaveAttribute("data-maker-location", "travelling");
   await page.waitForTimeout(250);
   await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
   // A mobile toolbar can change the viewport height while a logo unfolds.
@@ -119,10 +125,75 @@ test("mobile arrival resolves promptly, survives toolbar resize, and holds the c
   await page.setViewportSize({ width: 390, height: 900 });
   await page.waitForTimeout(150);
   await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
-  await expect(canvas(page)).toHaveAttribute("data-maker-form", "settled", { timeout: 1800 });
+  await jumpTo(page, await slotScroll("vela"));
+  await expect(canvas(page)).toHaveAttribute("data-maker-location", "docked");
+  expect(await canvas(page).getAttribute("data-maker-stage")).toBe("vela");
+  expect(await canvas(page).getAttribute("data-maker-form")).toBe("settled");
   await page.evaluate(() => scrollBy({ top: 150, behavior: "instant" }));
   await expect(canvas(page)).toHaveAttribute("data-maker-stage", "vela");
   await expect(canvas(page)).toHaveAttribute("data-maker-form", "settled");
+});
+
+test("continuous mobile travel completes the morph before docking in both scroll directions", async ({ page }) => {
+  test.setTimeout(45_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openJourney(page);
+  const [from, to] = await page.locator("[data-maker-anchor='sarpoli'], [data-maker-anchor='vela']").evaluateAll(elements => elements.map(element => {
+    const bounds = element.getBoundingClientRect();
+    return bounds.top + scrollY + bounds.height / 2 - innerHeight * .52;
+  }));
+  await jumpTo(page, from);
+  await expect(canvas(page)).toHaveAttribute("data-maker-stage", "sarpoli");
+  await expect(canvas(page)).toHaveAttribute("data-maker-location", "docked");
+  for (const [start, end, stage] of [[from, to, "vela"], [to, from, "sarpoli"]] as const) {
+    const result = await page.evaluate(async ({ start, end }) => {
+      const element = document.querySelector<HTMLCanvasElement>("canvas[data-maker-canvas]")!;
+      let sawForming = false;
+      let unfinishedDock = false;
+      const started = performance.now();
+      await new Promise<void>(resolve => {
+        function step(now: number) {
+          const progress = Math.min(1, (now - started) * .4 / Math.abs(end - start));
+          scrollTo({ top: start + (end - start) * progress, behavior: "instant" });
+          sawForming ||= element.dataset.makerLocation === "travelling" && element.dataset.makerForm === "forming";
+          unfinishedDock ||= element.dataset.makerLocation === "docked" && element.dataset.makerForm !== "settled";
+          if (progress < 1) requestAnimationFrame(step); else resolve();
+        }
+        requestAnimationFrame(step);
+      });
+      return { sawForming, unfinishedDock };
+    }, { start, end });
+    expect(result).toEqual({ sawForming: true, unfinishedDock: false });
+    await expect(canvas(page)).toHaveAttribute("data-maker-location", "docked");
+    expect(await canvas(page).getAttribute("data-maker-stage")).toBe(stage);
+    expect(await canvas(page).getAttribute("data-maker-form")).toBe("settled");
+  }
+});
+
+test("a toolbar resize during fast arrival preserves travel until the new logo is complete", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openJourney(page);
+  const destination = await page.locator("[data-maker-anchor='vela']").evaluate(element => element.getBoundingClientRect().top + scrollY + element.clientHeight / 2 - innerHeight * .52);
+  await jumpTo(page, destination);
+  await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
+  await expect(canvas(page)).toHaveAttribute("data-maker-location", "travelling");
+  await page.setViewportSize({ width: 390, height: 900 });
+  const arrival = await canvas(page).evaluate(async element => {
+    let unfinishedDock = false;
+    const started = performance.now();
+    return new Promise<{ unfinishedDock: boolean; arrived: boolean }>(resolve => {
+      function frame() {
+        const docked = element.dataset.makerLocation === "docked";
+        unfinishedDock ||= docked && element.dataset.makerForm !== "settled";
+        if (docked || performance.now() - started > 4000) resolve({ unfinishedDock, arrived: docked });
+        else requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    });
+  });
+  expect(arrival).toEqual({ unfinishedDock: false, arrived: true });
+  expect(await canvas(page).getAttribute("data-maker-stage")).toBe("vela");
+  expect(await canvas(page).getAttribute("data-maker-form")).toBe("settled");
 });
 
 test("resize and restored scroll preserve the current project artwork", async ({ page }) => {

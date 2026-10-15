@@ -53,7 +53,7 @@ export function MakerJourney() {
       if (reduced.matches || disposed) return;
       let release: (() => void) | undefined;
       try {
-        const [THREE, { gsap }, { ScrollTrigger }, { createMakerGeometry, MAKER_STAGES }, { sampleMakerJourney, dampMakerValue }] = await Promise.all([
+        const [THREE, { gsap }, { ScrollTrigger }, { createMakerGeometry, MAKER_STAGES }, { sampleMakerJourney, dampMakerValue, resolveMakerWeights }] = await Promise.all([
           import("three"), import("gsap"), import("gsap/ScrollTrigger"), import("@/lib/maker-geometry"), import("@/lib/maker-journey-path"),
         ]);
         if (disposed || reduced.matches || thisGeneration !== generation) return;
@@ -174,7 +174,9 @@ export function MakerJourney() {
         let shown = false;
         const pose: MakerPose = { x: 0, y: 0, size: 0, from: 0, to: 0, morph: 0, docked: 1 };
         const displayed = { x: 0, y: 0, size: 0, docked: 1 };
+        const travelTarget = { x: 0, y: 0, size: 0, docked: 1 };
         const targetWeights = new Float32Array(MAKER_STAGES.length);
+        const travelWeights = new Float64Array(MAKER_STAGES.length);
         const pointer = { x: 0, y: 0 };
         const pointerPosition = { x: 0, y: 0 };
         const pointerVelocity = { x: 0, y: 0 };
@@ -198,8 +200,9 @@ export function MakerJourney() {
           const nextHeight = Math.max(1, window.innerHeight);
           // Lazy images and ScrollTrigger refresh can change measurements while
           // reading. They update targets without resetting the motion clock.
-          // Resizing needs an immediate layout snapshot, but must preserve an
-          // unfolding logo (including mobile browser toolbar height changes).
+          // A resize rebases the existing distance to the layout target. It
+          // must preserve travel and an unfolding logo, including mobile
+          // browser toolbar height changes during arrival.
           reframe ||= width !== nextWidth || height !== nextHeight;
           width = nextWidth;
           height = nextHeight;
@@ -240,16 +243,17 @@ export function MakerJourney() {
           const actualScroll = window.scrollY;
           const scrollDistance = actualScroll - previousScroll;
           previousScroll = actualScroll;
-          // Wheel velocity never teleports the object. Only initial layout,
-          // restored position and a viewport resize take an exact snapshot.
+          // Wheel velocity never teleports the object. Only initial layout
+          // and restored position take an exact snapshot.
           if (Math.abs(scrollDistance) / dt > height * 2) fastUntil = time + .2;
-          const reposition = seek || reframe;
+          const reposition = seek;
+          const reframed = reframe;
           reframe = false;
           sampleMakerJourney(anchors, actualScroll, width, compact, pose, crossings);
           if (pose.crossing && pose.crossingBand && passage?.band !== pose.crossingBand) {
             passage = { band: pose.crossingBand, from: pose.crossingFromX!, to: pose.crossingToX!, scroll: pose.crossingScroll! };
           }
-          if (passage && (reposition || passage.band.y - actualScroll < -passage.band.height || passage.band.y - actualScroll > height + passage.band.height)) passage = undefined;
+          if (passage && (reposition || reframed || passage.band.y - actualScroll < -passage.band.height || passage.band.y - actualScroll > height + passage.band.height)) passage = undefined;
           const passageX = passage ? (pose.crossing ? pose.x : actualScroll >= passage.scroll ? passage.to : passage.from) : pose.x;
           const heroAmbient = pose.from === 0 && pose.docked > 0.98;
           if (heroAmbient) elapsed += dt;
@@ -268,33 +272,17 @@ export function MakerJourney() {
           targetWeights[pose.from] = 1 - pose.morph;
           targetWeights[pose.to] += pose.morph;
           let weightDistance = 0;
-          for (let i = 0; i < influences.length; i++) weightDistance = Math.max(weightDistance, Math.abs(targetWeights[i] - influences[i]));
-          // Resolve the incoming logo in about 1.1 seconds, then retain that
-          // complete form throughout departure until the next section arrives.
-          // One blend factor preserves a convex combination of all GPU shapes.
-          const blend = seek ? 1 : Math.min(1 - Math.exp(-dt * 10), 1.15 * dt / Math.max(weightDistance, 0.0001));
-          let rotationX = 0, rotationY = 0, rotationZ = 0;
-          material!.uniforms.pigment.value.setRGB(0, 0, 0);
-          material!.uniforms.secondaryPigment.value.setRGB(0, 0, 0);
-          material!.uniforms.shadowPigment.value.setRGB(0, 0, 0);
-          for (let i = 0; i < influences.length; i++) {
-            influences[i] = weightDistance < .0005 ? targetWeights[i] : influences[i] + (targetWeights[i] - influences[i]) * blend;
-            addColor(material!.uniforms.pigment.value, pigments[i].primary, influences[i]);
-            addColor(material!.uniforms.secondaryPigment.value, pigments[i].secondary, influences[i]);
-            addColor(material!.uniforms.shadowPigment.value, pigments[i].shadow, influences[i]);
-            rotationX += rotations[i][0] * influences[i];
-            rotationY += rotations[i][1] * influences[i];
-            rotationZ += rotations[i][2] * influences[i];
-          }
-          material!.uniforms.detailPigment.value.copy(cream).lerp(ink, influences[MAKER_STAGES.indexOf("shield-family")]);
-          canvas.dataset.makerStage = MAKER_STAGES[pose.morph >= .5 ? pose.to : pose.from];
-          canvas.dataset.makerForm = weightDistance < .005 ? "settled" : "forming";
+          for (let i = 0; i < influences.length; i++) weightDistance = Math.max(weightDistance, Math.abs(targetWeights[i] - travelWeights[i]));
           // Docked artwork follows the document exactly. Once travelling, its
           // fixed-space arc owns vertical movement; mixing both coordinate
           // systems here would pull it up, then visibly chase it back down.
-          if (!reposition && Math.abs(scrollDistance) < height * .35 && pose.docked > 0.999 && displayed.docked > 0.999) displayed.y -= scrollDistance;
-          let distance = weightDistance;
+          if (!reposition && !reframed && Math.abs(scrollDistance) < height * .35 && pose.docked > 0.999 && displayed.docked > 0.999) displayed.y -= scrollDistance;
           const catchUp = time < fastUntil && Math.hypot(displayed.x - pose.x, displayed.y - pose.y) > height * .3;
+          const response = pose.docked < displayed.docked - .01 ? 4.8 : pose.docked > displayed.docked + .01 ? 7 : 6;
+          // Position, scale and the convex shape mixture advance with one
+          // bounded travel response. A rapid jump can shorten the route, but
+          // cannot park the sculpture in its slot and morph it afterwards.
+          let blend = Math.min(1 - Math.exp(-dt * response), .9 * dt / Math.max(weightDistance, .0001));
           for (const field of ["x", "y", "size", "docked"] as const) {
             const speed = field === "size" ? (compact ? 160 : 320) : field === "docked" ? 1.3 : Math.max(width, height) * (Math.abs(scrollDistance) > height * .15 ? 1.8 : .85);
             let target = field === "size" && catchUp ? Math.min(pose.size, compact ? 44 : width < 1100 ? 56 : 72) : pose[field];
@@ -304,10 +292,42 @@ export function MakerJourney() {
               if (field === "size") target = Math.min(compact ? 44 : width < 1100 ? 56 : 72, passage.band.height * .8);
               if (field === "docked") target = 0;
             }
-            const response = pose.docked < displayed.docked - .01 ? 4.8 : pose.docked > displayed.docked + .01 ? 7 : 6;
-            displayed[field] = reposition ? target : dampMakerValue(displayed[field], target, dt, speed, response);
-            distance += Math.abs(displayed[field] - target);
+            // Move the coordinate frame, not the playhead: a toolbar resize
+            // during arrival retains the same remaining travel distance.
+            if (reframed && !seek) {
+              if (field === "size") displayed.size *= target / Math.max(1, travelTarget.size);
+              else if (field !== "docked") displayed[field] += target - travelTarget[field];
+            }
+            travelTarget[field] = target;
+            if (!reposition) blend = Math.min(blend, speed * dt / Math.max(Math.abs(target - displayed[field]), .0001));
           }
+          if (seek) blend = 1;
+          let distance = weightDistance;
+          for (const field of ["x", "y", "size", "docked"] as const) {
+            const delta = travelTarget[field] - displayed[field];
+            displayed[field] = reposition || Math.abs(delta) < .0001 ? travelTarget[field] : displayed[field] + delta * blend;
+            distance += Math.abs(travelTarget[field] - displayed[field]);
+          }
+          for (let i = 0; i < influences.length; i++) {
+            travelWeights[i] = weightDistance < .0001 ? targetWeights[i] : travelWeights[i] + (targetWeights[i] - travelWeights[i]) * blend;
+          }
+          const dominant = resolveMakerWeights(travelWeights, influences);
+          let rotationX = 0, rotationY = 0, rotationZ = 0;
+          material!.uniforms.pigment.value.setRGB(0, 0, 0);
+          material!.uniforms.secondaryPigment.value.setRGB(0, 0, 0);
+          material!.uniforms.shadowPigment.value.setRGB(0, 0, 0);
+          for (let i = 0; i < influences.length; i++) {
+            addColor(material!.uniforms.pigment.value, pigments[i].primary, influences[i]);
+            addColor(material!.uniforms.secondaryPigment.value, pigments[i].secondary, influences[i]);
+            addColor(material!.uniforms.shadowPigment.value, pigments[i].shadow, influences[i]);
+            rotationX += rotations[i][0] * influences[i];
+            rotationY += rotations[i][1] * influences[i];
+            rotationZ += rotations[i][2] * influences[i];
+          }
+          material!.uniforms.detailPigment.value.copy(cream).lerp(ink, influences[MAKER_STAGES.indexOf("shield-family")]);
+          canvas.dataset.makerStage = MAKER_STAGES[dominant];
+          canvas.dataset.makerForm = influences[dominant] > .995 ? "settled" : "forming";
+          canvas.dataset.makerLocation = !passage && (pose.morph < .0001 || pose.morph > .9999) && pose.docked > .999 && Math.hypot(displayed.x - pose.x, displayed.y - pose.y) < 3 && Math.abs(displayed.size - pose.size) < 1 ? "docked" : "travelling";
           // The shrinking form reaches the margin progressively; its body
           // never exits the viewport while position and scale catch up.
           const inset = displayed.size * .47 + 1;

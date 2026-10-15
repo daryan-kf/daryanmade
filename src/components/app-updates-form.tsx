@@ -74,7 +74,7 @@ export function AppUpdatesForm({ app, id = "updates", variant = "default" }: { a
       <div className={styles.trap} aria-hidden="true"><label htmlFor={`${fieldId}-website`}>{t("Website")}</label><input id={`${fieldId}-website`} name="website" tabIndex={-1} autoComplete="off" value={website} onChange={event => setWebsite(event.target.value)} /></div>
       <label className={styles.consent} htmlFor={`${fieldId}-consent`}><input id={`${fieldId}-consent`} name="consentAccepted" type="checkbox" required checked={consent} disabled={pending} aria-invalid={!!consentError} aria-describedby={consentError ? `${fieldId}-consent-error` : undefined} onChange={event => { setConsent(event.target.checked); setConsentError(null); setSummary(false); setServerError(null); }} /><span>{updateConsent(app, locale)}</span></label>
       {consentError && <p className={styles.error} id={`${fieldId}-consent-error`}>{consentError}</p>}
-      <button type="submit" disabled={pending} className={styles.button}>{pending ? t("Requesting your link…") : serverError ? t("Try again") : t("Keep me in the loop")}<span aria-hidden="true">↗</span></button>
+      <button type="submit" disabled={pending} className={styles.button}>{pending ? t("Requesting your link…") : serverError ? t("Try again") : t("Keep me in the loop")}<span data-link-arrow="diagonal" aria-hidden="true">↗</span></button>
       <p className={styles.small}>{locale === "da" ? "Vi beder dig bekræfte din e-mail. " : "We’ll ask you to confirm your email. "}<a href={`${product.base}/privacy`}>{t("How we use your details")}</a>.{app === "shield-family" && (locale === "da" ? " Denne liste er adskilt fra tilbuddet om gratis måneder." : " This list is separate from the free-months offer.")}</p>
     </form>}
   </section>;
