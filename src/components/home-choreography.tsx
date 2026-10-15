@@ -51,6 +51,16 @@ export function HomeChoreography() {
           const drawing = page.querySelector("[data-home-blueprint]");
           if (hero && drawing) {
             gsap.to(drawing, { opacity: .25, y: -8, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom 15%", scrub: true } });
+            const orbits = gsap.timeline({ repeat: -1, defaults: { ease: "none" } });
+            orbits.to(select('[data-home-orbit="outer"]'), { rotation: 360, svgOrigin: "300 300", duration: 72 }, 0)
+              .to(select('[data-home-orbit="inner"]'), { rotation: -360, svgOrigin: "300 300", duration: 72 }, 0);
+            const orbitTrigger = ScrollTrigger.create({
+              trigger: hero,
+              start: "top bottom",
+              end: "bottom top",
+              onToggle: self => { if (self.isActive) orbits.play(); else orbits.pause(); },
+            });
+            orbits.paused(!orbitTrigger.isActive);
           }
 
           select("[data-home-heading]").forEach((element: HTMLElement) => {

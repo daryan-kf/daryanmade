@@ -3,7 +3,12 @@ import AxeBuilder from "@axe-core/playwright";
 import { contactEmail, projectPath, projects } from "../src/lib/projects";
 
 const projectCards = (page: Page) => page.locator("#work article[data-project-card]");
-const expectedPaths = () => ["/", "/privacy", ...projects.map(projectPath)].sort();
+const expectedPaths = () => [
+  "/", "/privacy", ...projects.map(projectPath),
+  "/vela/updates/privacy", "/iqra/updates/privacy",
+  "/projects/shield-family/updates/privacy",
+  "/projects/shield-family/privacy", "/projects/shield-family/redeem",
+].flatMap(path => [path, path === "/" ? "/da" : `/da${path}`]).sort();
 const expectedCardLinks = [
   ["sarpoli", "https://sarpoli.com"],
   ["vela", "/vela"],

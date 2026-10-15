@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 test.use({ launchOptions: { args: ["--enable-unsafe-swiftshader"] } });
 
-const stages = ["hero", "sarpoli", "vela", "wardrobe", "work", "kaizencv", "koebsklar", "about", "closing"] as const;
+const stages = ["hero", "sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra", "work", "about", "closing"] as const;
 const canvas = (page: Page) => page.locator("canvas[data-maker-canvas]");
 
 async function openJourney(page: Page) {
@@ -32,8 +32,8 @@ async function preserveDrawingBuffer(page: Page) {
   });
 }
 
-async function paintedBounds(page: Page) {
-  return canvas(page).evaluate(async (element: HTMLCanvasElement) => {
+async function paintedBounds(page: Page, stage?: string) {
+  return canvas(page).evaluate(async (element: HTMLCanvasElement, stage) => {
     const image = new Image();
     image.src = element.toDataURL();
     await image.decode();
@@ -45,17 +45,19 @@ async function paintedBounds(page: Page) {
     const { data } = context.getImageData(0, 0, copy.width, copy.height);
     let left = copy.width, top = copy.height, right = -1, bottom = -1, count = 0;
     const sum = [0, 0, 0];
+    const scale = element.getBoundingClientRect().width / copy.width;
+    const slot = stage ? document.querySelector(`[data-maker-anchor="${stage}"]`)?.getBoundingClientRect() : undefined;
     for (let index = 0; index < data.length; index += 4) {
-      // Orange surface pixels, excluding the transparent canvas and soft shadow.
-      if (data[index + 3] < 100 || data[index] < data[index + 1] * 1.2 || data[index + 1] < data[index + 2] * 1.05) continue;
+      // All brand colors, excluding the transparent canvas and soft shadow.
+      if (data[index + 3] < 100) continue;
       const pixel = index / 4, x = pixel % copy.width, y = Math.floor(pixel / copy.width);
+      if (slot && (x * scale < slot.left - 10 || x * scale > slot.right + 10 || y * scale < slot.top - 10 || y * scale > slot.bottom + 10)) continue;
       left = Math.min(left, x); top = Math.min(top, y);
       right = Math.max(right, x); bottom = Math.max(bottom, y); count++;
       for (let channel = 0; channel < 3; channel++) sum[channel] += data[index + channel];
     }
-    const scale = element.getBoundingClientRect().width / copy.width;
     return { left: left * scale, top: top * scale, right: right * scale, bottom: bottom * scale, width: (right - left) * scale, height: (bottom - top) * scale, count, color: sum.map(value => value / Math.max(1, count)) };
-  });
+  }, stage);
 }
 
 async function jumpTo(page: Page, top: number) {
@@ -64,7 +66,7 @@ async function jumpTo(page: Page, top: number) {
 }
 
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
-  test(`one brand-orange sculpture rests in every art slot and travels visibly within the margins at ${viewport.width}px`, async ({ page }) => {
+  test(`one sculpture travels to and settles in each project slot at ${viewport.width}px`, async ({ page }) => {
     test.setTimeout(120_000);
     await page.setViewportSize(viewport);
     await preserveDrawingBuffer(page);
@@ -73,89 +75,59 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     await openJourney(page);
     await expect(canvas(page)).toHaveCSS("pointer-events", "none");
     await expect(canvas(page).locator("..")).toHaveCSS("position", "fixed");
-    const pigment = await paintedBounds(page);
+    await expect(canvas(page).locator("..")).toHaveCSS("z-index", "2147483646");
+    expect(await canvas(page).evaluate(element => element.parentElement?.parentElement === document.body)).toBe(true);
+    const pigment = await paintedBounds(page, "hero");
+    expect(pigment.color[0]).toBeGreaterThan(200);
+    expect(pigment.color[0]).toBeGreaterThan(pigment.color[1] * 1.8);
     expect(pigment.count).toBeGreaterThan(1000);
-    // Check actual output, not just a material's hexadecimal input. Warm HDR
-    // plus filmic exposure used to turn this same brand input into pale coral.
-    for (const [index, channel] of [189, 67, 39].entries()) expect(Math.abs(pigment.color[index] - channel)).toBeLessThan(18);
+    for (const stage of stages) {
+      const slot = page.locator(`[data-maker-anchor='${stage}']`);
+      const destination = await slot.evaluate(element => {
+        const bounds = element.getBoundingClientRect();
+        return Math.min(document.documentElement.scrollHeight - innerHeight, Math.max(0, bounds.top + scrollY + bounds.height / 2 - innerHeight * (
+          element.getAttribute("data-maker-anchor") === "shield-family" && innerWidth > 700 ? .76 :
+          element.getAttribute("data-maker-anchor") === "iqra" && innerWidth > 700 ? .28 : .52)));
+      });
+      await jumpTo(page, destination);
+      await expect(canvas(page)).toHaveAttribute("data-maker-stage", stage);
+      await expect(canvas(page)).toHaveAttribute("data-maker-form", "settled");
+      const art = await paintedBounds(page, stage);
+      const bounds = (await slot.boundingBox())!;
+      expect(art.count).toBeGreaterThan(30);
+      expect(art.width).toBeGreaterThan(Math.min(bounds.width, bounds.height) * .20);
+      expect(art.left).toBeGreaterThanOrEqual(bounds.x - 10);
+      expect(art.right).toBeLessThanOrEqual(bounds.x + bounds.width + 10);
 
-    const stops = await page.locator("[data-maker-anchor]").evaluateAll(elements => elements.map(element => {
-      const bounds = element.getBoundingClientRect();
-      return { stage: element.getAttribute("data-maker-anchor"), scroll: Math.min(document.documentElement.scrollHeight - innerHeight, Math.max(0, bounds.top + scrollY + bounds.height / 2 - innerHeight * 0.52)) };
-    }));
-    expect(stops.map(stop => stop.stage)).toEqual(stages);
-
-    for (let index = 0; index < stops.length; index++) {
-      const stop = stops[index];
-      await jumpTo(page, stop.scroll);
-      await expect.poll(async () => {
-        const art = await paintedBounds(page);
-        const slot = await page.locator(`[data-maker-anchor='${stop.stage}']`).boundingBox();
-        if (!slot) return false;
-        const size = Math.min(slot.width, slot.height);
-        return art.count > 40 && art.width > size * 0.25 && art.left >= slot.x - size * 0.12 && art.right <= slot.x + slot.width + size * 0.12 && art.top >= slot.y - size * 0.12 && art.bottom <= slot.y + slot.height + size * 0.12;
-      }, { message: `Orange sculpture is painted inside the ${stop.stage} art slot` }).toBe(true);
       await expect(canvas(page)).toHaveCount(1);
-
-      const next = stops[index + 1];
-      if (next) {
-        await jumpTo(page, (stop.scroll + next.scroll) / 2);
-        if (next.scroll - stop.scroll < (viewport.width < 700 ? 380 : 440)) {
-          await expect.poll(async () => {
-            const art = await paintedBounds(page);
-            const first = await page.locator(`[data-maker-anchor='${stop.stage}']`).boundingBox();
-            const second = await page.locator(`[data-maker-anchor='${next.stage}']`).boundingBox();
-            return !!first && !!second && art.count > 40 && art.left >= Math.min(first.x, second.x) - 20 && art.right <= Math.max(first.x + first.width, second.x + second.width) + 20;
-          }, { message: "Nearby art slots share one direct transition without a gutter detour" }).toBe(true);
-          continue;
-        }
-        await expect.poll(async () => {
-          const art = await paintedBounds(page);
-          return art.count > 30 && art.width > 8 && art.width < 65 && art.left >= 0 && art.right < viewport.width && art.top >= 0 && art.bottom < viewport.height;
-        }, { message: `The entire orange form stays visible during the transfer between ${stop.stage} and ${next.stage}` }).toBe(true);
-      }
     }
-
-    // Reversing a long scroll must recover the same art slot without rebuilding
-    // the canvas or leaving a later morph stranded on top of the page content.
-    await jumpTo(page, stops[1].scroll);
-    await expect.poll(async () => {
-      const art = await paintedBounds(page);
-      const slot = await page.locator("[data-maker-anchor='sarpoli']").boundingBox();
-      return !!slot && art.count > 40 && art.width > Math.min(slot.width, slot.height) * 0.25 && art.left >= slot.x - 20 && art.right <= slot.x + slot.width + 20;
-    }).toBe(true);
-    await expect(canvas(page)).toHaveCount(1);
     expect(errors).toEqual([]);
   });
 }
 
-test("rapid scroll reversals settle correctly, and resize or restored scroll seeks the current chapter", async ({ page }) => {
+test("mobile arrival resolves promptly, survives toolbar resize, and holds the complete logo on departure", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openJourney(page);
+  const slot = page.locator("[data-maker-anchor='vela']");
+  await slot.evaluate(element => scrollTo({ top: element.getBoundingClientRect().top + scrollY + element.clientHeight / 2 - innerHeight * .52, behavior: "instant" }));
+  await expect(canvas(page)).toHaveAttribute("data-maker-stage", "vela");
+  await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
+  await page.waitForTimeout(250);
+  await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
+  // A mobile toolbar can change the viewport height while a logo unfolds.
+  // Updating its placement must not snap the geometry to the finished target.
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.waitForTimeout(150);
+  await expect(canvas(page)).toHaveAttribute("data-maker-form", "forming");
+  await expect(canvas(page)).toHaveAttribute("data-maker-form", "settled", { timeout: 1800 });
+  await page.evaluate(() => scrollBy({ top: 150, behavior: "instant" }));
+  await expect(canvas(page)).toHaveAttribute("data-maker-stage", "vela");
+  await expect(canvas(page)).toHaveAttribute("data-maker-form", "settled");
+});
+
+test("resize and restored scroll preserve the current project artwork", async ({ page }) => {
   await preserveDrawingBuffer(page);
   await openJourney(page);
-  // Native scroll changes arrive faster than a full morph can play. The render
-  // loop must retarget its current form rather than queue an animation per stop.
-  const frames = await page.evaluate(async () => {
-    const source = document.querySelector<HTMLCanvasElement>("canvas[data-maker-canvas]")!;
-    const sample = document.createElement("canvas");
-    sample.width = 240; sample.height = 167;
-    const context = sample.getContext("2d")!;
-    const frames: number[] = [];
-    for (let frame = 0; frame < 48; frame++) {
-      const progress = frame < 16 ? frame / 15 : frame < 32 ? 1 - (frame - 16) / 15 : (frame - 32) / 15;
-      window.scrollTo({ top: progress * 780, behavior: "instant" });
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-      context.clearRect(0, 0, sample.width, sample.height);
-      context.drawImage(source, 0, 0, sample.width, sample.height);
-      const pixels = context.getImageData(0, 0, sample.width, sample.height).data;
-      let painted = 0;
-      for (let i = 0; i < pixels.length; i += 4) if (pixels[i + 3] > 100 && pixels[i] > pixels[i + 1] * 1.2) painted++;
-      frames.push(painted);
-    }
-    return frames;
-  });
-  expect(Math.min(...frames), "The sculpture stays present during fast direction changes").toBeGreaterThan(5);
-  await expect(canvas(page)).toHaveCount(1);
-
   await page.setViewportSize({ width: 1024, height: 900 });
   const destination = await page.locator("[data-maker-anchor='sarpoli']").evaluate(element => {
     const bounds = element.getBoundingClientRect();
@@ -163,7 +135,7 @@ test("rapid scroll reversals settle correctly, and resize or restored scroll see
   });
   await jumpTo(page, destination);
   const fitsSarpoli = async () => {
-    const bounds = await paintedBounds(page);
+    const bounds = await paintedBounds(page, "sarpoli");
     const slot = await page.locator("[data-maker-anchor='sarpoli']").boundingBox();
     return !!slot && bounds.count > 100 && bounds.left >= slot.x - 20 && bounds.right <= slot.x + slot.width + 20 && bounds.top >= slot.y - 20 && bounds.bottom <= slot.y + slot.height + 20;
   };

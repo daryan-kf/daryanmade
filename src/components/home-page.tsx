@@ -18,7 +18,7 @@ export function HomePage({ locale = "en" }: { locale?: Locale }) {
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(person).replace(/</g, "\\u003c") }} />
     <MakerJourney />
     <HomeChoreography />
-    <section className={styles.hero} aria-labelledby="hero-title" data-home-hero>
+    <section className={styles.hero} aria-labelledby="hero-title" data-home-hero data-maker-chapter="hero">
       <div className={styles.heroKicker} data-home-note><span><i /> DARYAN KAMALIFAR</span><span>{t("Independent developer.")}<br className={styles.mobileBreak} /> {t("Intentional maker.")}</span></div>
       <div className={styles.heroComposition}>
         <div className={styles.heroCopy}>
@@ -38,7 +38,7 @@ export function HomePage({ locale = "en" }: { locale?: Locale }) {
       <div className={styles.sectionHeading} data-home-heading><span className={styles.sectionIndex}>{t("01 / SELECTED WORK")}</span><h2 id="work-title"><span className={styles.headingMask}><span data-home-heading-line>{t("Different ideas.")}</span></span><span className={styles.headingMask}><em data-home-heading-line>{t("The same care.")}</em></span></h2><p>{t("Independent products, practical businesses,")}<br />{t("and a few things still becoming.")}</p><span className={styles.headingRule} data-home-rule aria-hidden="true" /></div>
       <ProjectGallery locale={locale} />
     </section>
-    <section className={styles.about} id="about" aria-labelledby="about-title">
+    <section className={styles.about} id="about" aria-labelledby="about-title" data-maker-chapter="about">
       <div className={styles.aboutInner}>
         <div className={styles.aboutTop}><span className={styles.sectionIndex}>{t("02 / THE PERSON")}</span><div className={styles.aboutAnchor} data-maker-anchor="about"><MakerFallback variant="about" /></div></div>
         <div className={styles.aboutGrid}>
@@ -60,7 +60,7 @@ export function HomePage({ locale = "en" }: { locale?: Locale }) {
         { question: t("How can I get help with a project?"), answer: <p>{t("Each app page links to its own support and privacy information. You can also reach me directly at")} <a href={contact}>{contactEmail}</a>{t(". Tell me which project you’re using and what you need a hand with.")}</p> },
       ]} /></div>
     </section>
-    <section className={styles.closing} aria-label={t("Let’s make something together")}>
+    <section className={styles.closing} aria-label={t("Let’s make something together")} data-maker-chapter="closing">
       <div className={styles.closingAnchor} data-maker-anchor="closing"><MakerFallback variant="closing" /></div>
       <div className={styles.closingCopy} data-home-heading><span className={styles.sectionIndex}>{t("EVERYTHING STARTS SOMEWHERE.")}</span><p><span className={styles.headingMask}><span data-home-heading-line>{t("A small thought.")}</span></span><span className={styles.headingMask}><em data-home-heading-line>{t("A whole new possibility.")}</em></span></p><a href="#contact">{t("Let’s see what yours could become")} <Arrow diagonal width={18} height={18} /></a></div>
     </section>

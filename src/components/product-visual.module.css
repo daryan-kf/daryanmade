@@ -68,11 +68,12 @@
 }
 
 .deviceAssembly { position: absolute; inset: 0; z-index: 2; }
+.homePreview .deviceAssembly { top:18px; bottom:-18px; }
 
 .phone {
   position: absolute;
   width: 29%;
-  aspect-ratio: 1000 / 2167;
+  aspect-ratio: auto;
   padding: 4px;
   border-radius: clamp(18px, 4.6cqw, 32px);
   background: linear-gradient(130deg, #5a5b51, #252823 30%, #171b17 70%, #66665c);
@@ -88,6 +89,7 @@
   object-fit: cover;
   border-radius: clamp(15px, 4cqw, 28px);
 }
+.phone>[data-app-screen]{border-radius:clamp(15px,4cqw,28px)}
 
 .phoneEdge {
   position: absolute;

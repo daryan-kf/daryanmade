@@ -8,6 +8,7 @@ import { AppleIcon, Arrow } from "./icons";
 import { MakerFallback } from "./maker-journey";
 import { ProductVisual } from "./product-visual";
 import { ProjectStoryScene } from "./project-story-scene";
+import { HomeAppScreen } from "./home-app-screen";
 import styles from "./project-gallery.module.css";
 
 const groupsFor = (locale: Locale) => { const t = portfolioCopy(locale); return [
@@ -93,8 +94,8 @@ function VelaCard({ project, index, locale }: { project: Project; index: number;
       <div className={styles.velaArt} data-home-device-stack>
         <div className={styles.velaSun} /><div className={styles.velaArc} />
         <div className={styles.velaOrbit} data-maker-anchor="vela"><MakerFallback variant="vela" /></div>
-        <div className={`${styles.velaPhone} ${styles.velaPhoneBack}`} data-home-phone="back"><Image src="/images/vela-site/talk-to-vela.webp" alt={t("Vela 2.0 interface: talk to Vela and review proposed changes")} width={1290} height={2796} sizes="(max-width: 700px) 42vw, 280px" /></div>
-        <div className={`${styles.velaPhone} ${styles.velaPhoneFront}`} data-home-phone="front"><Image src="/images/vela-site/today.webp" alt={t("Vela 2.0 interface: today’s plan and priorities")} width={1290} height={2796} sizes="(max-width: 700px) 48vw, 310px" /></div>
+        <div className={`${styles.velaPhone} ${styles.velaPhoneBack}`} data-home-phone="back"><HomeAppScreen screen="vela-talk" src="/images/vela-site/talk-to-vela.webp" alt={t("Vela 2.0 interface: talk to Vela and review proposed changes")} width={1290} height={2796} sizes="(max-width: 700px) 42vw, 280px" /></div>
+        <div className={`${styles.velaPhone} ${styles.velaPhoneFront}`} data-home-phone="front"><HomeAppScreen screen="vela-today" src="/images/vela-site/today.webp" alt={t("Vela 2.0 interface: today’s plan and priorities")} width={1290} height={2796} sizes="(max-width: 700px) 48vw, 310px" /></div>
         <span className={styles.velaCaption}>{t("ONE SENTENCE.")}<br /><em>{t("Your day, planned.")}</em></span>
       </div>
     </Link>
@@ -104,7 +105,7 @@ function VelaCard({ project, index, locale }: { project: Project; index: number;
 function WardrobeCard({ project, index, locale }: { project: Project; index: number; locale: Locale }) {
   const t = portfolioCopy(locale);
   return <article className={`${styles.card} ${styles.wardrobe}`} data-project-card="wardrobe" data-project-disabled="true" aria-disabled="true">
-    <div className={styles.wardrobeImage}><Image src="/images/wardrobe/current-ui.webp" width={1000} height={2167} alt={t("A development glimpse of Wardrobe’s outfit styling interface")} sizes="180px" /></div>
+    <div className={styles.wardrobeImage}><HomeAppScreen screen="wardrobe" src="/images/wardrobe/current-ui.webp" width={1000} height={2167} alt={t("A development glimpse of Wardrobe’s outfit styling interface")} sizes="180px" /></div>
     <div className={styles.wardrobeCopy}><span className={styles.wardrobeEyebrow}>0{index} {t("/ QUIETLY TAKING SHAPE")}</span><h4>{project.name}</h4><p>{t("Your closet. A fresh perspective.")}<br />{t("A more thoughtful way to get dressed is in the making.")}</p></div>
     <div className={styles.wardrobeEnd}><span className={styles.comingSoon}><span aria-hidden="true">◷</span> {t("Coming soon")}</span><div className={styles.wardrobeOrbit} data-maker-anchor="wardrobe"><MakerFallback variant="wardrobe" /></div></div>
   </article>;
@@ -118,9 +119,10 @@ function ProjectCard({ project, index, locale }: { project: Project; index: numb
   if (project.slug === "wardrobe") return <WardrobeCard project={project} index={index} locale={locale} />;
   const destination = projectDestination(project, locale);
   const next = project.slug === "next-project";
+  const mobileStage = project.slug === "shield-family" || project.slug === "iqra" ? project.slug : undefined;
   return <article className={`${styles.card} ${next ? styles.next : ""}`} data-project-card={project.slug} style={{ "--card-color": project.color, "--card-ink": project.ink } as CSSProperties}>
     <Link href={destination.href} className={styles.mainLink} data-project-link aria-label={`${project.name} — ${destination.label}`} {...(destination.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-      <div className={styles.art} data-reveal><ProductVisual locale={locale} project={project} large={project.slug === "shield-family"} /><span className={styles.open}><Arrow diagonal /></span></div>
+      <div className={styles.art} data-reveal><ProductVisual locale={locale} project={project} large={project.slug === "shield-family"} homePreview={Boolean(mobileStage) || next} />{mobileStage && <div className={styles.mobileOrbit} data-maker-anchor={mobileStage}><MakerFallback variant={mobileStage} /></div>}<span className={styles.open}><Arrow diagonal /></span></div>
       <div className={styles.copy} data-reveal><div className={styles.meta}><span>{String(index).padStart(2, "0")} / {project.category}</span><Status project={project} locale={locale} /></div><h4>{project.name}</h4><p className={styles.summary}>{project.summary}</p>{!next && <p className={styles.description}>{project.description}</p>}</div>
     </Link>
     {!next && <div className={styles.bottom}><Link href={destination.href} className={styles.textAction} {...(destination.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{destination.label}<Arrow diagonal width={16} height={16} /></Link>{project.storeUrl && <a href={project.storeUrl} target="_blank" rel="noopener noreferrer" className={styles.store} aria-label={locale === "da" ? `Hent ${project.name} i App Store` : `Download ${project.name} on the App Store`}><AppleIcon width={17} height={20} /><span>App Store</span><Arrow diagonal width={12} height={12} /></a>}</div>}
@@ -133,9 +135,18 @@ export function ProjectGallery({ locale = "en" }: { locale?: Locale }) {
   let index = 0;
   return <div className={styles.collection}>
     <nav className={styles.directory} aria-label={t("Project categories")}><span>{t("THE COLLECTION / 08")}</span><div>{groups.map(group => <a key={group.id} href={`#${group.id}`}>{group.title}<span>{String(group.slugs.length).padStart(2, "0")}</span></a>)}</div></nav>
-    {groups.map((group, groupIndex) => <section className={styles.group} id={group.id} aria-labelledby={`${group.id}-title`} key={group.id}>
-      <div className={styles.crossing} data-maker-crossing aria-hidden="true" /><div className={styles.groupHeading}><span className={styles.groupIndex} data-reveal>0{groupIndex + 1}</span><h3 id={`${group.id}-title`} data-reveal>{group.title}</h3><p data-reveal>{group.note}</p>{group.id === "web-apps" && <div className={styles.workOrbit} data-maker-anchor="work"><MakerFallback variant="work" /></div>}</div>
-      <div className={styles.grid}>{group.slugs.map((slug, position) => <Fragment key={slug}>{group.id === "web-apps" && position > 0 && <div className={styles.webCrossing} data-maker-crossing aria-hidden="true" />}<ProjectCard project={getProject(slug, locale)!} locale={locale} index={++index} /></Fragment>)}</div>
+    {groups.map((group, groupIndex) => <section className={styles.group} id={group.id} aria-labelledby={`${group.id}-title`} key={group.id} data-maker-neutral={group.id === "mobile-apps" || group.id === "next-chapter" ? "true" : undefined}>
+      <div className={styles.crossing} data-maker-crossing aria-hidden="true" /><div className={styles.groupHeading}><span className={styles.groupIndex} data-reveal>0{groupIndex + 1}</span><h3 id={`${group.id}-title`} data-reveal>{group.title}</h3><p data-reveal>{group.note}</p></div>
+      <div className={styles.grid}>{group.slugs.map((slug, position) => {
+        const primary = ["sarpoli", "vela", "kaizencv", "koebsklar"].includes(slug);
+        const chapterStage = primary || slug === "wardrobe" ? slug : undefined;
+        return <Fragment key={slug}>
+          {group.id === "web-apps" && position > 0 && <div className={styles.webCrossing} data-maker-crossing aria-hidden="true" />}
+          <div className={`${styles.chapter} ${primary ? styles.primaryChapter : ""} ${slug === "wardrobe" || slug === "next-project" ? styles.quietChapter : ""}`} data-home-chapter={slug} data-maker-chapter={chapterStage}>
+            <div className={styles.chapterContent} data-maker-chapter-content><ProjectCard project={getProject(slug, locale)!} locale={locale} index={++index} /></div>
+          </div>
+        </Fragment>;
+      })}</div>
     </section>)}
   </div>;
 }

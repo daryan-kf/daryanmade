@@ -1,0 +1,9 @@
+.screen{position:relative;width:100%;height:auto;border-radius:inherit;overflow:hidden;isolation:isolate;line-height:0}
+.screen>.source{display:block;position:relative;width:100%;height:auto;border-radius:inherit}
+.regions{position:absolute;inset:0;pointer-events:none}
+.region{position:absolute;left:0;right:0;overflow:hidden}
+.content{display:block;position:absolute;inset:0;background-repeat:no-repeat;opacity:0;transform:translateY(12px)}
+.screen[data-screen-motion=playing] .content{animation:screen-content-enter 650ms var(--ease-out,cubic-bezier(.23,1,.32,1)) both}
+@keyframes screen-content-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+:global(html[data-maker-motion=paused]) .regions{display:none}
+@media(prefers-reduced-motion:reduce){.regions{display:none}.content{animation:none!important;transform:none;opacity:1}}

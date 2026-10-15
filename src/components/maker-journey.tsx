@@ -1,55 +1,20 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import type { MakerAnchor, MakerCrossing, MakerPose, MakerStage } from "@/lib/maker-geometry";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { MakerStage } from "@/lib/maker-geometry";
+import type { MakerAnchor, MakerCrossing, MakerPose } from "@/lib/maker-journey-path";
 import { useLocale } from "./locale-provider";
+import { MAKER_PALETTES } from "@/lib/maker-appearance";
 import styles from "./maker-journey.module.css";
 
 export type { MakerStage } from "@/lib/maker-geometry";
 
-const FALLBACK_PATHS: Record<MakerStage, string> = {
-  hero: "M300 139C367 68 451 98 460 183C468 263 406 343 300 379C194 416 119 379 133 295C148 211 216 172 300 139C389 104 447 183 401 264C355 347 289 442 210 419C133 397 158 311 213 259C267 207 350 210 389 287C430 368 373 446 300 379C225 311 234 209 300 139Z",
-  sarpoli: "M106 365L106 228Q106 174 157 174L216 174Q256 174 282 246L322 354Q344 418 388 418L443 418Q492 418 492 367L492 229Q492 174 443 174L384 174Q344 174 318 246L278 354Q256 418 212 418L159 418Q106 418 106 365Z",
-  vela: "M160 170H430Q470 170 470 212Q470 250 430 250H195Q155 250 155 290Q155 330 195 330H430Q470 330 470 372Q470 412 430 412H165Q125 412 125 370V210Q125 170 160 170Z",
-  wardrobe: "M113 317C158 270 220 227 268 194C304 173 330 230 355 255L476 319Q501 352 451 371L157 371Q96 368 113 317Z",
-  work: "M143 372C86 301 131 191 218 154C303 117 429 155 472 238C522 333 444 420 351 439C258 457 181 423 143 372Z",
-  kaizencv: "M175 450V145H345L425 225V450Z",
-  koebsklar: "M160 440V250L300 125L440 250V440H345V335H255V440Z",
-  about: "M129 311C108 222 199 137 292 139C389 139 472 210 475 292C478 388 384 449 290 442C201 435 150 391 129 311Z",
-  closing: "M300 139C367 68 451 98 460 183C468 263 406 343 300 379C194 416 119 379 133 295C148 211 216 172 300 139C389 104 447 183 401 264C355 347 289 442 210 419C133 397 158 311 213 259C267 207 350 210 389 287C430 368 373 446 300 379C225 311 234 209 300 139Z",
-};
-
-/** Always present in server HTML. Use inside each reserved data-maker-anchor slot.
- * The SVG remains the complete artwork for reduced motion, no JS or lost WebGL.
- */
+/** Pre-rendered with the exact live geometry and studio material. Loading,
+ * paused, reduced-motion and no-WebGL states keep the same sculptural finish. */
 export function MakerFallback({ variant = "hero", className = "" }: { variant?: MakerStage; className?: string }) {
-  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const knot = variant === "hero" || variant === "closing" || variant === "about";
-  const path = variant === "about" ? FALLBACK_PATHS.hero : FALLBACK_PATHS[variant];
-  return (
-    <svg className={`${styles.fallback} ${className}`} viewBox="0 0 600 600" fill="none" aria-hidden="true" focusable="false" data-maker-fallback={variant}>
-      <defs>
-        <linearGradient id={`${id}-orange`} x1="140" y1="100" x2="445" y2="466" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#c94b2d" /><stop offset=".3" stopColor="#bd4327" /><stop offset=".65" stopColor="#bd4327" /><stop offset="1" stopColor="#8d2f1b" />
-        </linearGradient>
-        <linearGradient id={`${id}-gloss`} x1="180" y1="100" x2="380" y2="365" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#cd5637" /><stop offset=".35" stopColor="#c84b2d" /><stop offset="1" stopColor="#ad3921" />
-        </linearGradient>
-        <radialGradient id={`${id}-shadow`}><stop stopColor="#5d3625" stopOpacity=".15" /><stop offset="1" stopColor="#5d3625" stopOpacity="0" /></radialGradient>
-      </defs>
-      <ellipse cx="302" cy="504" rx="165" ry="27" fill={`url(#${id}-shadow)`} />
-      <g transform={knot ? "rotate(-13 300 290)" : "rotate(-8 300 290)"} strokeLinecap="round" strokeLinejoin="round">
-        <path d={path} stroke="#84341f" strokeWidth={knot ? 68 : 51} opacity=".08" transform="translate(3 13)" />
-        <path d={path} stroke={`url(#${id}-orange)`} strokeWidth={knot ? 66 : 48} />
-        {knot ? <>
-          <path d="M300 139C367 68 451 98 460 183C465 230 447 276 406 314" stroke={`url(#${id}-gloss)`} strokeWidth="66" />
-          <path d="M210 419C133 397 158 311 213 259C248 225 292 215 331 235" stroke={`url(#${id}-gloss)`} strokeWidth="66" />
-          <path d="M300 379C261 343 244 297 248 254" stroke={`url(#${id}-orange)`} strokeWidth="66" />
-          <path d="M310 123C367 78 430 110 440 173" stroke="#d26345" strokeOpacity=".42" strokeWidth="4" />
-        </> : <path d={path} stroke={`url(#${id}-gloss)`} strokeOpacity=".24" strokeWidth="5" transform="translate(-8 -10)" />}
-      </g>
-    </svg>
-  );
+  const asset = variant === "about" || variant === "closing" || variant === "work" ? "hero" : variant;
+  return <img className={`${styles.fallback} ${className}`} src={`/images/maker/${asset}.webp`} width={800} height={800} alt="" aria-hidden="true" draggable={false} decoding="async" data-maker-fallback={variant} />;
 }
 
 /** One page-level transparent canvas. The parent owns layout and art slots;
@@ -59,6 +24,8 @@ export function MakerFallback({ variant = "hero", className = "" }: { variant?: 
 export function MakerJourney() {
   const locale = useLocale();
   const hostRef = useRef<HTMLDivElement>(null);
+  const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
+  useEffect(() => setPortalHost(document.body), []);
   const pausedRef = useRef(false);
   const wakeRef = useRef<(() => void) | null>(null);
   const [ready, setReady] = useState(false);
@@ -86,8 +53,8 @@ export function MakerJourney() {
       if (reduced.matches || disposed) return;
       let release: (() => void) | undefined;
       try {
-        const [THREE, { gsap }, { ScrollTrigger }, { createMakerGeometry, sampleMakerJourney, dampMakerValue, MAKER_STAGES }] = await Promise.all([
-          import("three"), import("gsap"), import("gsap/ScrollTrigger"), import("@/lib/maker-geometry"),
+        const [THREE, { gsap }, { ScrollTrigger }, { createMakerGeometry, MAKER_STAGES }, { sampleMakerJourney, dampMakerValue }] = await Promise.all([
+          import("three"), import("gsap"), import("gsap/ScrollTrigger"), import("@/lib/maker-geometry"), import("@/lib/maker-journey-path"),
         ]);
         if (disposed || reduced.matches || thisGeneration !== generation) return;
 
@@ -122,17 +89,21 @@ export function MakerJourney() {
         };
 
         geometry = createMakerGeometry(compact);
-        // Art-directed satin keeps the actual brand pigment. Warm HDR lighting
-        // plus filmic tone mapping previously turned #bd4327 into pale coral.
-        // This bounded, neutral studio response changes value rather than hue,
-        // with the same sRGB conversion as the surrounding CSS logo and type.
         material = new THREE.ShaderMaterial({
-          uniforms: { pigment: { value: new THREE.Color("#bd4327") } },
+          uniforms: {
+            pigment: { value: new THREE.Color(MAKER_PALETTES.hero.primary) },
+            secondaryPigment: { value: new THREE.Color(MAKER_PALETTES.hero.secondary) },
+            shadowPigment: { value: new THREE.Color(MAKER_PALETTES.hero.shadow) },
+            detailPigment: { value: new THREE.Color("#fff7e8") },
+          },
           vertexShader: `
             #include <common>
             #include <morphtarget_pars_vertex>
+            attribute float part;
+            varying float surfacePart;
             varying vec3 studioNormal;
             void main() {
+              surfacePart = part;
               #include <beginnormal_vertex>
               #include <morphnormal_vertex>
               #include <defaultnormal_vertex>
@@ -144,15 +115,27 @@ export function MakerJourney() {
           `,
           fragmentShader: `
             uniform vec3 pigment;
+            uniform vec3 shadowPigment;
+            uniform vec3 secondaryPigment;
+            uniform vec3 detailPigment;
+            varying float surfacePart;
             varying vec3 studioNormal;
             void main() {
               vec3 normal = normalize(studioNormal);
-              vec3 light = normalize(vec3(-0.45, 0.6, 1.0));
+              vec3 light = normalize(vec3(-0.55, 0.7, 1.0));
+              vec3 fill = normalize(vec3(0.5, -0.8, 0.65));
+              vec3 view = vec3(0.0, 0.0, 1.0);
               float diffuse = max(dot(normal, light), 0.0);
-              float facing = max(normal.z, 0.0);
-              float shade = 0.67 + 0.34 * diffuse + 0.04 * facing;
-              float highlight = pow(max(dot(normal, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 28.0);
-              gl_FragColor = vec4(pigment * (shade + 0.16 * highlight), 1.0);
+              float bounce = max(dot(normal, fill), 0.0);
+              float gloss = pow(max(dot(normal, normalize(light + view)), 0.0), 64.0);
+              float softbox = pow(max(dot(normal, normalize(vec3(-0.85, 0.15, 1.2))), 0.0), 22.0);
+              float rim = pow(max(dot(normal, normalize(fill + view)), 0.0), 45.0);
+              vec3 base = surfacePart > 2.5 ? vec3(1.0, .62, .08) : surfacePart > 1.5 ? detailPigment : surfacePart > .5 ? secondaryPigment : pigment;
+              vec3 shade = surfacePart > .5 ? base * .3 : shadowPigment;
+              vec3 color = mix(shade, base, pow(diffuse, 0.7));
+              color += base * bounce * 0.16;
+              color += vec3(1.0, 0.91, 0.79) * (gloss * 0.65 + softbox * 0.14 + rim * 0.28);
+              gl_FragColor = vec4(color, 1.0);
               #include <colorspace_fragment>
             }
           `,
@@ -183,6 +166,7 @@ export function MakerJourney() {
         let contextAvailable = true;
         let previousScroll = window.scrollY;
         let seek = true;
+        let reframe = false;
         let previousTime = 0;
         let fastUntil = 0;
         let passage: { band: MakerCrossing; from: number; to: number; scroll: number } | undefined;
@@ -194,10 +178,11 @@ export function MakerJourney() {
         const pointer = { x: 0, y: 0 };
         const pointerPosition = { x: 0, y: 0 };
         const pointerVelocity = { x: 0, y: 0 };
-        const rotations = [
-          [0.16, -0.36, -0.24], [0.18, 0.14, -0.12], [-0.08, -0.3, -0.14],
-          [0.25, 0.22, 0.08], [0.2, -0.35, -0.3], [.06, -.12, -.08], [.04, .12, .06], [0.16, -0.36, -0.24], [0.16, -0.36, -0.24],
-        ];
+        const rotations = MAKER_STAGES.map(stage => stage === "hero" || stage === "work" || stage === "about" || stage === "closing" ? [.16, -.36, -.24] : [.06, -.10, -.025]);
+        const pigments = MAKER_STAGES.map(stage => ({ primary: new THREE.Color(MAKER_PALETTES[stage].primary), secondary: new THREE.Color(MAKER_PALETTES[stage].secondary), shadow: new THREE.Color(MAKER_PALETTES[stage].shadow) }));
+        const cream = new THREE.Color("#fff7e8"), ink = new THREE.Color("#212245");
+        const addColor = (value: import("three").Color, color: import("three").Color, weight: number) => { value.r += color.r * weight; value.g += color.g * weight; value.b += color.b * weight; };
+
 
         const clear = () => { renderer.setScissorTest(false); renderer.clear(); };
         const stop = () => { if (ticking) gsap.ticker.remove(tick); ticking = false; previousTime = 0; };
@@ -213,8 +198,9 @@ export function MakerJourney() {
           const nextHeight = Math.max(1, window.innerHeight);
           // Lazy images and ScrollTrigger refresh can change measurements while
           // reading. They update targets without resetting the motion clock.
-          // Only a real viewport change needs an immediate layout snapshot.
-          seek ||= width !== nextWidth || height !== nextHeight;
+          // Resizing needs an immediate layout snapshot, but must preserve an
+          // unfolding logo (including mobile browser toolbar height changes).
+          reframe ||= width !== nextWidth || height !== nextHeight;
           width = nextWidth;
           height = nextHeight;
           renderer.setSize(width, height, false);
@@ -231,6 +217,12 @@ export function MakerJourney() {
             const y = bounds.top + bounds.height / 2 + scroll;
             return [{ stage, x: bounds.left + bounds.width / 2, y, size: Math.min(bounds.width, bounds.height), scroll: Math.min(maxScroll, Math.max(0, y - height * 0.52)) }];
           }).sort((a, b) => a.y - b.y);
+          const shield = anchors.find(anchor => anchor.stage === "shield-family");
+          const iqra = anchors.find(anchor => anchor.stage === "iqra");
+          if (shield && iqra && Math.abs(shield.y - iqra.y) < 80) {
+            shield.scroll = Math.max(0, shield.y - height * .76);
+            iqra.scroll = Math.max(shield.scroll + 1, iqra.y - height * .28);
+          }
           for (let i = 1; i < anchors.length; i++) anchors[i].scroll = Math.max(anchors[i].scroll, anchors[i - 1].scroll + 1);
           crossings = Array.from(document.querySelectorAll<HTMLElement>("[data-maker-crossing]")).map(element => {
             const bounds = element.getBoundingClientRect();
@@ -243,7 +235,7 @@ export function MakerJourney() {
         function tick(time: number) {
           if (released || disposed || pausedRef.current || reduced.matches || document.hidden || !contextAvailable) { stop(); return; }
           if (measuring) measure();
-          const dt = Math.min(previousTime ? time - previousTime : 1 / 60, 1 / 30);
+          const dt = Math.min(previousTime ? time - previousTime : 1 / 60, .1);
           previousTime = time;
           const actualScroll = window.scrollY;
           const scrollDistance = actualScroll - previousScroll;
@@ -251,7 +243,8 @@ export function MakerJourney() {
           // Wheel velocity never teleports the object. Only initial layout,
           // restored position and a viewport resize take an exact snapshot.
           if (Math.abs(scrollDistance) / dt > height * 2) fastUntil = time + .2;
-          const reposition = seek;
+          const reposition = seek || reframe;
+          reframe = false;
           sampleMakerJourney(anchors, actualScroll, width, compact, pose, crossings);
           if (pose.crossing && pose.crossingBand && passage?.band !== pose.crossingBand) {
             passage = { band: pose.crossingBand, from: pose.crossingFromX!, to: pose.crossingToX!, scroll: pose.crossingScroll! };
@@ -262,8 +255,13 @@ export function MakerJourney() {
           if (heroAmbient) elapsed += dt;
           for (const axis of ["x", "y"] as const) {
             const target = heroAmbient ? pointer[axis] : 0;
-            pointerVelocity[axis] += ((target - pointerPosition[axis]) * 100 - pointerVelocity[axis] * 20) * dt;
-            pointerPosition[axis] += pointerVelocity[axis] * dt;
+            // Exact critically damped response stays stable even on slow
+            // frames; an Euler spring can diverge when a frame takes 100ms.
+            const offset = pointerPosition[axis] - target;
+            const impulse = pointerVelocity[axis] + 10 * offset;
+            const decay = Math.exp(-10 * dt);
+            pointerPosition[axis] = target + (offset + impulse * dt) * decay;
+            pointerVelocity[axis] = (pointerVelocity[axis] - 10 * impulse * dt) * decay;
           }
           const influences = sculpture.morphTargetInfluences!;
           targetWeights.fill(0);
@@ -271,16 +269,26 @@ export function MakerJourney() {
           targetWeights[pose.to] += pose.morph;
           let weightDistance = 0;
           for (let i = 0; i < influences.length; i++) weightDistance = Math.max(weightDistance, Math.abs(targetWeights[i] - influences[i]));
+          // Resolve the incoming logo in about 1.1 seconds, then retain that
+          // complete form throughout departure until the next section arrives.
           // One blend factor preserves a convex combination of all GPU shapes.
-          // A full fold takes at least 1.5 seconds, even after a wheel flick.
-          const blend = seek ? 1 : Math.min(1 - Math.exp(-dt * 5), 0.65 * dt / Math.max(weightDistance, 0.0001));
+          const blend = seek ? 1 : Math.min(1 - Math.exp(-dt * 10), 1.15 * dt / Math.max(weightDistance, 0.0001));
           let rotationX = 0, rotationY = 0, rotationZ = 0;
+          material!.uniforms.pigment.value.setRGB(0, 0, 0);
+          material!.uniforms.secondaryPigment.value.setRGB(0, 0, 0);
+          material!.uniforms.shadowPigment.value.setRGB(0, 0, 0);
           for (let i = 0; i < influences.length; i++) {
-            influences[i] += (targetWeights[i] - influences[i]) * blend;
+            influences[i] = weightDistance < .0005 ? targetWeights[i] : influences[i] + (targetWeights[i] - influences[i]) * blend;
+            addColor(material!.uniforms.pigment.value, pigments[i].primary, influences[i]);
+            addColor(material!.uniforms.secondaryPigment.value, pigments[i].secondary, influences[i]);
+            addColor(material!.uniforms.shadowPigment.value, pigments[i].shadow, influences[i]);
             rotationX += rotations[i][0] * influences[i];
             rotationY += rotations[i][1] * influences[i];
             rotationZ += rotations[i][2] * influences[i];
           }
+          material!.uniforms.detailPigment.value.copy(cream).lerp(ink, influences[MAKER_STAGES.indexOf("shield-family")]);
+          canvas.dataset.makerStage = MAKER_STAGES[pose.morph >= .5 ? pose.to : pose.from];
+          canvas.dataset.makerForm = weightDistance < .005 ? "settled" : "forming";
           // Docked artwork follows the document exactly. Once travelling, its
           // fixed-space arc owns vertical movement; mixing both coordinate
           // systems here would pull it up, then visibly chase it back down.
@@ -289,14 +297,15 @@ export function MakerJourney() {
           const catchUp = time < fastUntil && Math.hypot(displayed.x - pose.x, displayed.y - pose.y) > height * .3;
           for (const field of ["x", "y", "size", "docked"] as const) {
             const speed = field === "size" ? (compact ? 160 : 320) : field === "docked" ? 1.3 : Math.max(width, height) * (Math.abs(scrollDistance) > height * .15 ? 1.8 : .85);
-            let target = field === "size" && catchUp ? Math.min(pose.size, compact ? 24 : 62) : pose[field];
+            let target = field === "size" && catchUp ? Math.min(pose.size, compact ? 44 : width < 1100 ? 56 : 72) : pose[field];
             if (passage) {
               if (field === "x") target = passageX;
               if (field === "y") target = passage.band.y - actualScroll;
-              if (field === "size") target = Math.min(compact ? 24 : 62, passage.band.height * .8);
+              if (field === "size") target = Math.min(compact ? 44 : width < 1100 ? 56 : 72, passage.band.height * .8);
               if (field === "docked") target = 0;
             }
-            displayed[field] = reposition ? target : dampMakerValue(displayed[field], target, dt, speed, 6);
+            const response = pose.docked < displayed.docked - .01 ? 4.8 : pose.docked > displayed.docked + .01 ? 7 : 6;
+            displayed[field] = reposition ? target : dampMakerValue(displayed[field], target, dt, speed, response);
             distance += Math.abs(displayed[field] - target);
           }
           // The shrinking form reaches the margin progressively; its body
@@ -310,9 +319,9 @@ export function MakerJourney() {
             if (!pose.crossing && Math.abs(displayed.x - passageX) < 3) { passage = undefined; distance += 1; }
           }
           const ambient = heroAmbient ? displayed.docked : 0;
-          rotationX += pointerPosition.y * 0.08 + Math.sin(elapsed * 0.3) * 0.025 * ambient;
-          rotationY += pointerPosition.x * 0.12 + Math.sin(elapsed * 0.24) * 0.06 * ambient;
-          rotationZ += Math.sin(elapsed * 0.21) * 0.015 * ambient;
+          rotationX += pointerPosition.y * .18 + Math.sin(elapsed * .42) * .15 * ambient;
+          rotationY += pointerPosition.x * .28 + Math.sin(elapsed * .32) * .24 * ambient;
+          rotationZ += Math.sin(elapsed * .27) * .08 * ambient;
           sculpture.rotation.set(
             seek ? rotationX : dampMakerValue(sculpture.rotation.x, rotationX, dt, 0.65),
             seek ? rotationY : dampMakerValue(sculpture.rotation.y, rotationY, dt, 0.65),
@@ -320,9 +329,9 @@ export function MakerJourney() {
           );
           seek = false;
           const visible = displayed.size > 0 && displayed.y + displayed.size * 0.6 > 0 && displayed.y - displayed.size * 0.6 < height;
-          if (!visible) { clear(); if (distance < .02) stop(); return; }
+          if (!visible) { clear(); if (distance < .0005) stop(); return; }
           sculpture.scale.setScalar(displayed.size / 5.7);
-          sculpture.position.set(displayed.x - width / 2, height / 2 - displayed.y + Math.sin(elapsed * 0.6) * displayed.size * 0.003 * ambient, 0);
+          sculpture.position.set(displayed.x - width / 2, height / 2 - displayed.y + Math.sin(elapsed * .7) * displayed.size * .014 * ambient, 0);
           shadow.position.set(displayed.x - width / 2, height / 2 - displayed.y - displayed.size * 0.39, -4);
           shadow.scale.set(displayed.size * 0.72, displayed.size * 0.1, 1);
           shadow.material.opacity = displayed.docked;
@@ -340,7 +349,7 @@ export function MakerJourney() {
           }
           // Scrolling wakes the ticker. Outside the hero, a settled sculpture
           // costs no continuous rendering or allocation while someone reads.
-          if (!heroAmbient && distance < 0.02 && Math.abs(pointerVelocity.x) + Math.abs(pointerVelocity.y) < 0.002) stop();
+          if (!heroAmbient && distance < .0005 && Math.abs(pointerVelocity.x) + Math.abs(pointerVelocity.y) < 0.002) stop();
         }
 
         const onPointer = (event: PointerEvent) => {
@@ -362,6 +371,7 @@ export function MakerJourney() {
         ScrollTrigger.addEventListener("refresh", queueMeasure);
         window.addEventListener("scroll", wake, { passive: true });
         window.addEventListener("resize", queueMeasure, { passive: true });
+        window.addEventListener("maker-layout-change", queueMeasure);
         window.visualViewport?.addEventListener("resize", queueMeasure, { passive: true });
         window.addEventListener("pointermove", onPointer, { passive: true });
         document.addEventListener("pointerleave", resetPointer);
@@ -376,6 +386,7 @@ export function MakerJourney() {
           ScrollTrigger.removeEventListener("refresh", queueMeasure);
           window.removeEventListener("scroll", wake);
           window.removeEventListener("resize", queueMeasure);
+          window.removeEventListener("maker-layout-change", queueMeasure);
           window.visualViewport?.removeEventListener("resize", queueMeasure);
           window.removeEventListener("pointermove", onPointer);
           document.removeEventListener("pointerleave", resetPointer);
@@ -415,7 +426,7 @@ export function MakerJourney() {
       cleanupScene?.(); wakeRef.current = null;
       delete root.dataset.makerMotion;
     };
-  }, []);
+  }, [portalHost]);
 
   function toggleMotion() {
     const next = !pausedRef.current;
@@ -427,13 +438,13 @@ export function MakerJourney() {
     window.dispatchEvent(new CustomEvent("maker-motion-change", { detail: { paused: next } }));
   }
 
-  return <>
+  return portalHost ? createPortal(<>
     <div className={styles.layer} ref={hostRef} data-ready={ready && !paused} aria-hidden="true" />
     <button className={styles.control} type="button" hidden={!available} aria-pressed={paused} onClick={toggleMotion}>
       <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">{paused ? <path d="m5 2 9 6-9 6Z" /> : <path d="M4 2h3v12H4zm5 0h3v12H9z" />}</svg>
       {locale === "da" ? (paused ? "Afspil bevægelse" : "Sæt bevægelse på pause") : (paused ? "Play motion" : "Pause motion")}
     </button>
-  </>;
+  </>, portalHost) : null;
 }
 
 export default MakerJourney;

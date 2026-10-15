@@ -4,8 +4,10 @@ import type { CSSProperties } from "react";
 import type { Project } from "@/lib/projects";
 import styles from "./product-visual.module.css";
 import { MakerMark } from "./icons";
+import { MakerFallback } from "./maker-journey";
+import { HomeAppScreen, type HomeAppScreenKind } from "./home-app-screen";
 
-type ProductVisualProps = { project: Project; large?: boolean; locale?: Locale };
+type ProductVisualProps = { project: Project; large?: boolean; locale?: Locale; homePreview?: boolean };
 
 function Mark({ project, inverse = false }: { project: Project; inverse?: boolean }) {
   return (
@@ -17,9 +19,16 @@ function Mark({ project, inverse = false }: { project: Project; inverse?: boolea
 }
 
 function Phone({ project, screen, className = "" }: { project: Project; screen: number; className?: string }) {
+  const screens: Record<string, HomeAppScreenKind[]> = {
+    "shield-family": ["shield-today", "shield-child", "shield-learn"],
+    iqra: ["iqra-read", "iqra-prayer", "iqra-memorize"],
+    vela: ["vela-today", "vela-talk", "vela-today"],
+  };
+  const kind = screens[project.slug]?.[screen - 1];
+  const src = project.screenshots?.[screen - 1] || `/images/${project.slug}/screen-${screen}.webp`;
   return (
     <div className={`${styles.phone} ${className}`}>
-      <Image src={project.screenshots?.[screen - 1] || `/images/${project.slug}/screen-${screen}.webp`} alt="" width={1000} height={2167} sizes="(max-width: 700px) 36vw, (max-width: 1100px) 24vw, 300px" />
+      {kind ? <HomeAppScreen screen={kind} src={src} width={1000} height={2167} delay={(screen - 1) * 180} sizes="(max-width: 700px) 36vw, (max-width: 1100px) 24vw, 300px" /> : <Image src={src} alt="" width={1000} height={2167} sizes="(max-width: 700px) 36vw, (max-width: 1100px) 24vw, 300px" />}
       <span className={styles.phoneEdge} />
     </div>
   );
@@ -29,7 +38,7 @@ function BrowserBar({ label }: { label: string }) {
   return <div className={styles.browserBar}><span className={styles.browserDots}><i /><i /><i /></span><span>{label}</span><span className={styles.browserPlus}>+</span></div>;
 }
 
-function MobileScene({ project, large, locale = "en" }: ProductVisualProps) {
+function MobileScene({ project, large, locale = "en", homePreview = false }: ProductVisualProps) {
   const isIqra = project.slug === "iqra";
   const previews: Record<string, string> = { "Latest update preview": "Forhåndsvisning af seneste opdatering", "Read · Learn · Remember": "Læs · Lær · Husk", "Vela 2.0": "Vela 2.0" };
   const preview = project.previewLabel || "Interface preview";
@@ -37,8 +46,8 @@ function MobileScene({ project, large, locale = "en" }: ProductVisualProps) {
     <>
       <div className={styles.halo} />
       <div className={styles.orbitLine} />
-      <Mark project={project} />
-      <span className={styles.previewLabel}>{locale === "da" ? previews[preview] || project.previewLabel || "Forhåndsvisning af brugerfladen" : preview}</span>
+      {!homePreview && <Mark project={project} />}
+      {!homePreview && <span className={styles.previewLabel}>{locale === "da" ? previews[preview] || project.previewLabel || "Forhåndsvisning af brugerfladen" : preview}</span>}
       <div className={styles.deviceAssembly} data-parallax>
         <Phone project={project} screen={2} className={styles.phoneBack} />
         <Phone project={project} screen={1} className={styles.phoneFront} />
@@ -64,7 +73,7 @@ function WardrobeScene({ project, locale = "en" }: ProductVisualProps) {
   return <>
     <div className={styles.fashionRule} /><Mark project={project} />
     <span className={styles.fashionWords}>{locale === "da" ? <>Din stil.<br /><em>På din måde.</em></> : <>Wear it.<br /><em>Your way.</em></>}</span>
-    <div className={styles.wardrobePhone}><Image src="/images/wardrobe/current-ui.webp" alt="" width={1000} height={2167} sizes="(max-width: 700px) 52vw, 360px" /></div>
+    <div className={styles.wardrobePhone}><HomeAppScreen screen="wardrobe" src="/images/wardrobe/current-ui.webp" width={1000} height={2167} sizes="(max-width: 700px) 52vw, 360px" /></div>
     <div className={`${styles.fashionPhoto} ${styles.fashionShirt}`}><Image src="/images/wardrobe/hero.webp" alt="" fill sizes="(max-width: 700px) 28vw, 220px" /></div>
     <span className={styles.conceptLabel}>{locale === "da" ? "Under udvikling" : "In the making"}</span>
   </>;
@@ -106,18 +115,18 @@ function IdentityScene({ project, locale = "en" }: ProductVisualProps) {
   );
 }
 
-export function ProductVisual({ project, large = false, locale = "en" }: ProductVisualProps) {
+export function ProductVisual({ project, large = false, locale = "en", homePreview = false }: ProductVisualProps) {
   const isMobile = ["shield-family", "iqra", "vela"].includes(project.slug);
   const concept = project.slug === "wardrobe";
   return (
     <div
-      className={`${styles.scene} ${large ? styles.large : ""}`}
+      className={`${styles.scene} ${large ? styles.large : ""} ${homePreview ? styles.homePreview : ""}`}
       data-project={project.slug}
       style={{ "--project-color": project.color, "--project-ink": project.ink } as CSSProperties}
       role="img"
       aria-label={locale === "da" ? `${project.name}: ${concept ? "forhåndsvisning af brugerflade under udvikling og stilbilleder" : isMobile ? "appens brugerflade" : "produktvisning"}` : `${project.name} ${concept ? "development interface preview and styling imagery" : isMobile ? "product interface" : "product preview"}`}
     >
-      {project.slug === "next-project" ? <><Mark project={project} /><MakerMark className={styles.surpriseMark} /><span className={styles.surpriseYear}>2027</span><span className={styles.sceneNote}>{locale === "da" ? "Noget godt er ved at tage form." : "Something good is taking shape."}</span></> : isMobile ? <MobileScene project={project} large={large} locale={locale} />
+      {project.slug === "next-project" ? <><Mark project={project} />{homePreview ? <div className={styles.surpriseMark} data-maker-anchor="work"><MakerFallback variant="work" /></div> : <MakerMark className={styles.surpriseMark} />}<span className={styles.surpriseYear}>2027</span><span className={styles.sceneNote}>{locale === "da" ? "Noget godt er ved at tage form." : "Something good is taking shape."}</span></> : isMobile ? <MobileScene project={project} large={large} locale={locale} homePreview={homePreview} />
         : project.slug === "kaizencv" ? <ResumeScene project={project} />
         : project.slug === "wardrobe" ? <WardrobeScene project={project} locale={locale} />
         : project.slug === "koebsklar" ? <PropertyScene project={project} />
