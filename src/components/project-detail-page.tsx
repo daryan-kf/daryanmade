@@ -1,7 +1,6 @@
 import { portfolioCopy } from "@/lib/portfolio-copy";
 import { localePath, type Locale } from "@/lib/i18n";
 import type { CSSProperties } from "react";
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -10,12 +9,16 @@ import { Arrow, Check, MakerMark, AppleIcon } from "@/components/icons";
 import { ProductVisual } from "@/components/product-visual";
 import { ShieldFamilySite } from "@/components/shield-family-site";
 import { FaqAccordion } from "@/components/faq-accordion";
+import { TwillbySite } from "./twillby-site";
+import { AppUpdatesForm } from "./app-updates-form";
+import { isUpdateApp } from "@/lib/app-updates";
 import { ScreenshotGallery } from "@/components/screenshot-gallery";
 
 export function ProjectDetailPage({ slug, locale = "en" }: { slug: string; locale?: Locale }) {
   const t = portfolioCopy(locale);
   const p = getProject(slug, locale); if (!p) notFound();
   if (slug === "vela" || slug === "iqra") permanentRedirect(localePath(projectPath(p), locale));
+  if (slug === "wardrobe") return <TwillbySite locale={locale} />;
   if (slug === "shield-family") return <ShieldFamilySite locale={locale} />;
   if (slug === "next-project") return <main id="main-content" className="next-teaser"><Link href={localePath("/#work", locale)} className="underlined-link">{t("← All projects")}</Link><div className="teaser-content"><span className="eyebrow">{t("NEXT PROJECT / 2027")}</span><MakerMark className="teaser-mark" width={120} height={120} /><h1>{t("Something good")}<br />{t("is taking")} <em>{t("shape.")}</em></h1><p>{t("A new project, quietly in the making.")}<br />{t("I’ll share more in 2027.")}</p><a className="round-link" href={linkedin} target="_blank" rel="noopener noreferrer">{t("Follow along on LinkedIn")}<span className="round-arrow"><Arrow diagonal /></span></a><span className="teaser-byline">{t("A little surprise by Daryan Kamalifar.")}</span></div></main>;
   const available = !!p.url;
@@ -31,10 +34,12 @@ export function ProjectDetailPage({ slug, locale = "en" }: { slug: string; local
     <section className="product-features" aria-label={locale === "da" ? `${p.name}: højdepunkter` : `${p.name} highlights`}>{p.features.map((feature, index) => <div key={feature.title} data-reveal><span className="feature-number">0{index + 1}</span><h3>{feature.title}</h3><p>{feature.text}</p></div>)}</section>
     <ScreenshotGallery locale={locale} slug={slug} name={p.name} />
     <section className="project-faq"><div data-reveal><span className="eyebrow">{t("A FEW THINGS TO KNOW")}</span><h2>{t("Clear from")}<br />{t("the")} <em>{t("start.")}</em></h2></div><div data-reveal><FaqAccordion items={[
+      ...(p.faqs ?? []).map(faq => ({ question: faq.question, answer: <p>{faq.answer}</p> })),
       { question: locale === "da" ? `Er ${p.name} tilgængelig?` : `Is ${p.name} available?`, answer: <p>{available ? <>{p.name} {t("is live. You can")} <a href={p.url} target="_blank" rel="noopener noreferrer">{t("visit the website")}</a>{p.storeUrl && <> {t("or")} <a href={p.storeUrl} target="_blank" rel="noopener noreferrer">{t("download it from the App Store")}</a></>}. {p.storeUrl ? t("Screenshots show a development preview; the current App Store version may differ.") : t("The product website has the latest information on availability and features.")}</> : <>{p.name} {t("is still in the making.")} <a href={inquiry}>{t("Get in touch")}</a> {t("if you’d like to learn more.")}</>}</p> },
       { question: t("Who is behind the project?"), answer: <p>{t("I’m Daryan Kamalifar, an independent developer and the founder of")} <a href="https://sarpoli.com" target="_blank" rel="noopener noreferrer">Sarpoli</a>{t(". I’ve been coding for over ten years.")} <a href={linkedin} target="_blank" rel="noopener noreferrer">{t("Find me on LinkedIn.")}</a></p> },
       { question: t("How can I get help or ask a question?"), answer: <p>{t("You can")} {p.support?.startsWith("https:") ? <a href={p.support} target="_blank" rel="noopener noreferrer">{t("visit the product support page")}</a> : <a href={p.support || contact}>{t("email")} {p.support?.replace("mailto:", "") || contactEmail}</a>} {t("with questions about this project.")}{p.privacyUrl && <> {t("Read the")} <a href={p.privacyUrl} target="_blank" rel="noopener noreferrer">{t("product privacy policy")}</a>{p.termsUrl && <> {t("and")} <a href={p.termsUrl} target="_blank" rel="noopener noreferrer">{t("terms")}</a></>}.</>}</p> },
     ]} /></div></section>
+    {isUpdateApp(slug) && <div className="project-updates"><AppUpdatesForm app={slug} /></div>}
     <div className="next-project"><span className="eyebrow">{t("ONE MORE THING I’VE BEEN MAKING")}</span><Link href={projectDestination(next, locale).href} {...(projectDestination(next, locale).external ? { target: "_blank", rel: "noopener noreferrer" } : {})}><span>{next.name}</span><Arrow diagonal /></Link></div>
   </main>;
 }

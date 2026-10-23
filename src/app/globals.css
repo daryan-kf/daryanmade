@@ -115,3 +115,54 @@
 @media(prefers-reduced-motion:reduce) and (hover:hover) and (pointer:fine){
   :is(a,button:not(:disabled),[role="link"],[role="button"]):hover [data-link-arrow]{transform:rotate(var(--link-arrow-turn))}
 }
+
+.project-updates { margin:60px 0 90px; }
+
+/* Phone reading and input sizes: preserve pinch zoom and avoid input-focus zoom. */
+@media(max-width:700px){
+  .header-actions>.menu-button{min-height:44px}
+  .header>.navigation a{min-height:48px;font-size:16px}
+  .product-description,.project-story-copy p,.product-features p,.legal-page p{font-size:15px;line-height:1.75}
+  .product-actions .button{min-height:48px;font-size:14px}
+  .project-text-action,.product-text-action{min-height:44px;font-size:14px;display:inline-flex;align-items:center}
+  .product-features h3{font-size:22px;line-height:1.25}
+  .maker-trust{font-size:12px;line-height:1.75}
+  .availability-note{font-size:11px;line-height:1.65}
+  input[type="email"],input[type="text"],input[type="search"],textarea,select{font-size:16px}
+  .footer{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  .footer-meta>div{font-size:11px;row-gap:16px;flex-wrap:wrap}
+  .footer-meta>div>a{display:inline-flex;align-items:center;min-height:44px}
+}
+@media(pointer:coarse){a,button,summary,input,textarea,select{touch-action:manipulation}}
+
+/* Locking the menu keeps the reading surface at exactly the same width. */
+html{scrollbar-gutter:stable}
+:where(a,button,summary,[role="button"]){-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+:where(a,button,summary):focus:not(:focus-visible){outline:none}
+@media(max-width:1100px){
+  .header-actions>.menu-button{gap:6px;white-space:nowrap;min-width:0}
+  .header-actions>.menu-button .menu-label{font-size:10px;line-height:1.3;min-width:0}
+}
+@media(max-width:370px){
+  .header-actions>.menu-button .menu-glyph{width:12px}
+  .header-actions>.menu-button .menu-glyph::before,.header-actions>.menu-button .menu-glyph::after{left:0}
+}
+.contact-arrow{color:#fff}
+@media(max-width:600px){
+  .header{height:84px}
+  .header>.founder-link{display:none}
+  .header>.navigation{top:76px;max-height:calc(100dvh - 100px)}
+  .footer-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 12px;align-items:center}
+  .footer-meta>.footer-brand{font-size:15px;gap:7px}
+  .footer-meta>span{margin:0;font-size:10px;text-align:right;line-height:1.5}
+  .footer-meta>div{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 76px;align-items:center;gap:12px 14px;width:100%;margin:0;font-size:12px}
+  .footer-meta>div>[data-language-switch]{justify-self:end}
+  .footer-meta>div>a:last-child{grid-column:2/-1;justify-self:end}
+}
+@media(max-width:350px){.footer-meta>.footer-brand{font-size:14px}.footer-meta>span{font-size:9px}}
+
+/* Scroll subjects have no ghosted preview before their one-time entrance. */
+[data-entrance-state="pending"]{visibility:hidden}
+html[data-maker-motion="paused"] [data-entrance-state="pending"]{visibility:visible}
+@media(prefers-reduced-motion:reduce){[data-entrance-state="pending"]{visibility:visible}}
+@media print{[data-entrance-state="pending"]{visibility:visible!important;opacity:1!important}}

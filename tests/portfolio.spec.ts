@@ -1,18 +1,18 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { appUpdates, updateApps } from "../src/lib/app-updates";
 import { contactEmail, projectPath, projects } from "../src/lib/projects";
 
 const projectCards = (page: Page) => page.locator("#work article[data-project-card]");
 const expectedPaths = () => [
   "/", "/privacy", ...projects.map(projectPath),
-  "/vela/updates/privacy", "/iqra/updates/privacy",
-  "/projects/shield-family/updates/privacy",
+  ...updateApps.map(app => `${appUpdates[app].base}/privacy`),
   "/projects/shield-family/privacy", "/projects/shield-family/redeem",
 ].flatMap(path => [path, path === "/" ? "/da" : `/da${path}`]).sort();
 const expectedCardLinks = [
   ["sarpoli", "https://sarpoli.com"],
   ["vela", "/vela"],
-  ["wardrobe", null],
+  ["wardrobe", "/projects/wardrobe"],
   ["kaizencv", "https://www.kaizencv.com"],
   ["koebsklar", "https://koebsklar.vercel.app/"],
   ["shield-family", "/projects/shield-family"],
@@ -39,7 +39,7 @@ async function assertNoOverflow(page: Page) {
   expect(widths.body, JSON.stringify(widths)).toBeLessThanOrEqual(widths.viewport + 1);
 }
 
-test("homepage presents eight full project cards with the intended live destinations", async ({ page }) => {
+test("homepage presents each project, its product preview and its live destination without an extra click", async ({ page }) => {
   await loadPage(page, "/");
   await expect(page).toHaveTitle(/daryanmade/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Good ideas\.\s*Made real\./);
@@ -50,16 +50,21 @@ test("homepage presents eight full project cards with the intended live destinat
   for (const [slug, href] of expectedCardLinks) {
     const card = page.locator(`#work article[data-project-card='${slug}']`);
     const project = projects.find(item => item.slug === slug)!;
-    await expect(card.getByRole("heading", { name: project.name, exact: true })).toBeVisible();
+    await expect(card.getByRole("heading", { name: slug === "next-project" ? project.summary : project.name, exact: true })).toBeVisible();
     if (!["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar"].includes(slug)) await expect(card).toContainText(project.summary);
     await expect(card).toContainText(project.status);
-    if (href === null) {
-      await expect(card).toHaveAttribute("aria-disabled", "true");
-      await expect(card.locator("a, button, [tabindex='0']")).toHaveCount(0);
-      await expect(card).toContainText("Coming soon");
-      continue;
-    }
     const primaryLink = card.locator("a[data-project-link]");
+    await expect(primaryLink).toBeVisible();
+    expect(await primaryLink.evaluate(link => link.closest("details"))).toBeNull();
+    if (slug !== "next-project") {
+      const preview = card.locator("figure").first();
+      await expect(preview).toBeVisible();
+      expect(await preview.evaluate(figure => figure.closest("details"))).toBeNull();
+      await preview.scrollIntoViewIfNeeded();
+      const productImage = preview.locator("img").first();
+      await expect(productImage).toBeVisible();
+      await expect.poll(() => productImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+    }
     if (href.startsWith("https://")) {
       expect(new URL((await primaryLink.getAttribute("href"))!).href).toBe(new URL(href).href);
       await expect(card.locator("a[data-project-link]")).toHaveAttribute("target", "_blank");
@@ -67,15 +72,16 @@ test("homepage presents eight full project cards with the intended live destinat
     } else {
       await expect(primaryLink).toHaveAttribute("href", href);
     }
-    if (project.storeUrl && slug !== "vela") await expect(card.getByRole("link", { name: `Download ${project.name} on the App Store` })).toHaveAttribute("href", project.storeUrl);
+
   }
-  await expect(page.locator("[data-project-card='vela']")).toContainText("Vela 2.0 · Available for iPhone & iPad");
+  await expect(page.locator("#work details")).toHaveCount(7);
+  await expect(page.locator("#work details[open]")).toHaveCount(0);
+  await expect(page.locator("[data-project-card='vela']")).toContainText("Vela 2.0 · iPhone & iPad");
   await expect(page.locator("[data-project-card='sarpoli']")).toContainText("I founded Sarpoli");
-  await expect(page.locator("[data-project-card='kaizencv']")).toContainText("review suggestions before they become your words");
-  await expect(page.locator("[data-project-card='koebsklar']")).toContainText("Estimated reduction, depending on the case");
-  await expect(page.locator("[data-project-card='koebsklar']")).toContainText("Professional review remains essential");
+  await expect(page.locator("[data-project-card='kaizencv']")).toContainText("review suggestions before applying them");
+  await expect(page.locator("[data-project-card='koebsklar']")).toContainText("professional judgment");
   await expect(page.locator("main")).not.toContainText(/co-founder/i);
-  await expect(page.locator("#work").getByRole("link", { name: /^Download .+ on the App Store$/ })).toHaveCount(2);
+
   await expect(page.getByRole("button", { name: /^(Live|All work|In the making)/ })).toHaveCount(0);
 });
 
@@ -119,16 +125,18 @@ test("social previews render PNGs, the sitemap lists current projects, and remov
   expect(removed.status()).toBe(404);
 });
 
-test("project category navigation reaches each complete collection without filtering cards", async ({ page }) => {
+test("project details expand independently while every project destination remains available", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await loadPage(page, "/");
-  const directory = page.getByRole("navigation", { name: "Project categories" });
-  for (const [label, id, count] of [["Agency", "agency", 1], ["A new chapter", "featured", 2], ["Web apps", "web-apps", 2], ["Mobile apps", "mobile-apps", 2], ["Next chapter", "next-chapter", 1]] as const) {
-    await directory.getByRole("link", { name: new RegExp(`^${label}`) }).click();
-    await expect(page).toHaveURL(new RegExp(`#${id}$`));
-    await expect(page.locator(`#${id} article[data-project-card]`)).toHaveCount(count);
-    await expect(page.locator(`#${id}`).getByRole("heading", { name: new RegExp(`^${label}`) }).first()).toBeVisible();
+  let opened = 0;
+  for (const slug of ["wardrobe", "shield-family", "sarpoli"]) {
+    const card = page.locator(`[data-project-card="${slug}"]`);
+    await card.locator("summary").click();
+    await expect(card.locator("[data-project-link]")).toBeVisible();
+    await expect(card.locator("details")).toHaveAttribute("open", "");
+    await expect(page.locator("#work details[open]")).toHaveCount(++opened);
     await expect(projectCards(page)).toHaveCount(8);
+    await expect(page).toHaveURL(/\/$/);
   }
 });
 
@@ -185,6 +193,15 @@ test("all project pages load with owner attribution, useful actions, and working
       await expect(page.getByText("An independent project by Daryan Kamalifar", { exact: true })).toBeVisible();
       await expect(page.getByRole("link", { name: "Back to daryanmade", exact: true })).toHaveAttribute("href", "/");
       await expect(page.locator(`a[href^='https://apps.apple.com/'][href*='${project.storeUrl!.split("/").pop()}']`).first()).toBeVisible();
+      await revealAndCheckImages(page);
+      await assertNoOverflow(page);
+      continue;
+    }
+    if (project.slug === "wardrobe") {
+      await expect(page.locator("h1")).toHaveText(/A little more\s*you\./);
+      await expect(page.getByText("Made with care by Daryan Kamalifar", { exact: true })).toBeVisible();
+      await expect(page.getByLabel("App availability")).toContainText("Coming soon");
+      await expect(page.locator('#updates[data-updates-app="wardrobe"]')).toBeAttached();
       await revealAndCheckImages(page);
       await assertNoOverflow(page);
       continue;
@@ -258,18 +275,30 @@ test("mobile menu closes on Escape, restores focus, and reaches section anchors"
   await expect.poll(() => page.locator("#work").evaluate((element) => Math.abs(element.getBoundingClientRect().top))).toBeLessThan(130);
 });
 
-test("keyboard users can skip the header and navigate project categories", async ({ page }) => {
+test("keyboard users can skip the header, follow a project and read its optional details", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await loadPage(page, "/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#main-content$/);
-  const mobile = page.getByRole("navigation", { name: "Project categories" }).getByRole("link", { name: /^Mobile apps/ });
-  await mobile.focus();
+  const card = page.locator('[data-project-card="shield-family"]');
+  const link = card.locator("[data-project-link]");
+  await link.focus();
+  await expect(link).toBeFocused();
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute("href", "/projects/shield-family");
+  const summary = card.locator("summary");
+  await summary.focus();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/#mobile-apps$/);
-  await expect(page.locator("#mobile-apps article[data-project-card]")).toHaveCount(2);
+  await expect(page.locator('[data-project-card="shield-family"] details')).toHaveAttribute("open", "");
+  await expect(summary).toBeFocused();
+  await expect(card.locator("details li").first()).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(card.locator("details")).not.toHaveAttribute("open");
+  await link.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL("/projects/shield-family");
 });
 
 test("FAQ answers animate open and closed, and expose keyboard controls correctly", async ({ page }) => {
@@ -320,7 +349,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 
   test(`home and project layouts do not overflow at ${viewport.width}px and have loaded imagery`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    for (const path of ["/", "/projects/shield-family", "/vela", "/iqra", "/projects/next-project"]) {
+    for (const path of ["/", "/projects/shield-family", "/projects/wardrobe", "/vela", "/iqra", "/projects/next-project"]) {
       await loadPage(page, path);
       await revealAndCheckImages(page);
       await assertNoOverflow(page);

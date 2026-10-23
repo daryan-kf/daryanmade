@@ -68,7 +68,6 @@
 }
 
 .deviceAssembly { position: absolute; inset: 0; z-index: 2; }
-.homePreview .deviceAssembly { top:18px; bottom:-18px; }
 
 .phone {
   position: absolute;

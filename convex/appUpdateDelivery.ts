@@ -21,7 +21,7 @@ function createMessage(app: UpdateApp, lease: Lease, config: NonNullable<ReturnT
   const privacyUrl = `${base}/privacy`;
   const topics = updateTopics(app);
   if (da) {
-    const topicsDa = app === "vela" ? "nyheder, nye funktioner og produktopdateringer" : "nyheder, nye funktioner og lanceringsnyheder";
+    const topicsDa = "appnyheder, lanceringsnyheder og invitationer til at teste kommende versioner";
     const heading = `Lidt mere fra ${product.name}.`;
     const explanation = `Du har bedt om ${topicsDa} fra ${product.name}. Bekræft din e-mail for at tilmelde dig appens nyhedsliste.`;
     const terms = `Linket udløber 24 timer efter din anmodning. Det tilmelder dig ikke alene at åbne linket; tryk på bekræftelsesknappen på siden. Dette gælder kun ${product.name}-listen. Det opretter ikke en appkonto, starter ikke et betalt abonnement og bestiller ikke en tilbudskode.`;

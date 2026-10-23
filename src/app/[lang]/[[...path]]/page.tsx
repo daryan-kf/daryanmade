@@ -10,15 +10,18 @@ import { ShieldOfferPage, shieldOfferMetadata } from "@/components/shield-offer-
 import { getProject, projects, siteUrl } from "@/lib/projects";
 import { projectMetadata } from "@/lib/route-metadata";
 import { languageAlternates, localePath, type Locale } from "@/lib/i18n";
-import type { UpdateApp } from "@/lib/app-updates";
+import { appUpdates, updateApps } from "@/lib/app-updates";
 
-const paths = ["", "privacy", "vela", "iqra", ...projects.filter(p => !["vela", "iqra"].includes(p.slug)).map(p => `projects/${p.slug}`), ...["vela", "iqra", "projects/shield-family"].flatMap(base => ["verify", "unsubscribe", "privacy"].map(action => `${base}/updates/${action}`)), ...["verify", "redeem", "privacy"].map(action => `projects/shield-family/${action}`)];
+const paths = ["", "privacy", "vela", "iqra", ...projects.filter(p => !["vela", "iqra"].includes(p.slug)).map(p => `projects/${p.slug}`), ...updateApps.flatMap(app => ["verify", "unsubscribe", "privacy"].map(action => `${appUpdates[app].base.slice(1)}/${action}`)), ...["verify", "redeem", "privacy"].map(action => `projects/shield-family/${action}`)];
 export function generateStaticParams() { return (["en", "da"] as const).flatMap(lang => paths.map(path => ({ lang, path: path ? path.split("/") : [] }))); }
 export const dynamicParams = false;
 type Props = { params: Promise<{ lang: string; path?: string[] }> };
 function updateRoute(path: string) {
-  const match = /^(vela|iqra|projects\/shield-family)\/updates\/(verify|unsubscribe|privacy)$/.exec(path);
-  return match ? { app: match[1].replace("projects/", "") as UpdateApp, page: match[2] as "verify" | "unsubscribe" | "privacy" } : null;
+  for (const app of updateApps) {
+    const base = appUpdates[app].base.slice(1);
+    if (["verify", "unsubscribe", "privacy"].some(action => path === `${base}/${action}`)) return { app, page: path.slice(base.length + 1) as "verify" | "unsubscribe" | "privacy" };
+  }
+  return null;
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const values = await params;

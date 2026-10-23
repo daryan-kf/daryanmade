@@ -29,6 +29,26 @@ async function queueVerification(ctx: MutationCtx, app: UpdateApp, emailId: stri
     const verificationId = await ctx.db.insert("iqraVerifications", { emailId: id, ...details });
     return ctx.db.insert("iqraEmailJobs", { emailId: id, verificationId, ...job });
   }
+  if (app === "wardrobe") {
+    const id = ctx.db.normalizeId("twillBuyEmails", emailId); if (!id) throw new Error("Invalid app email reference");
+    const verificationId = await ctx.db.insert("twillBuyVerifications", { emailId: id, ...details });
+    return ctx.db.insert("twillBuyEmailJobs", { emailId: id, verificationId, ...job });
+  }
+  if (app === "kaizencv") {
+    const id = ctx.db.normalizeId("kaizenCVEmails", emailId); if (!id) throw new Error("Invalid app email reference");
+    const verificationId = await ctx.db.insert("kaizenCVVerifications", { emailId: id, ...details });
+    return ctx.db.insert("kaizenCVEmailJobs", { emailId: id, verificationId, ...job });
+  }
+  if (app === "koebsklar") {
+    const id = ctx.db.normalizeId("koebsklarEmails", emailId); if (!id) throw new Error("Invalid app email reference");
+    const verificationId = await ctx.db.insert("koebsklarVerifications", { emailId: id, ...details });
+    return ctx.db.insert("koebsklarEmailJobs", { emailId: id, verificationId, ...job });
+  }
+  if (app === "sarpoli") {
+    const id = ctx.db.normalizeId("sarpoliEmails", emailId); if (!id) throw new Error("Invalid app email reference");
+    const verificationId = await ctx.db.insert("sarpoliVerifications", { emailId: id, ...details });
+    return ctx.db.insert("sarpoliEmailJobs", { emailId: id, verificationId, ...job });
+  }
   const id = ctx.db.normalizeId("shieldFamilyUpdateEmails", emailId); if (!id) throw new Error("Invalid app email reference");
   const verificationId = await ctx.db.insert("shieldFamilyUpdateVerifications", { emailId: id, ...details });
   return ctx.db.insert("shieldFamilyUpdateEmailJobs", { emailId: id, verificationId, ...job });

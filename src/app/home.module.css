@@ -29,3 +29,106 @@
   .aboutCopy a:not(.linkedin):hover{background-size:100% 100%;color:var(--ink)}
   .aboutCopy .linkedin:hover::after{transform:scaleX(1)}
 }
+
+/* The sculpture stays within its own artwork frames. */
+.page>section{position:relative;z-index:auto}
+.aboutInner{position:relative;z-index:2}
+.heroArt,.closingAnchor{z-index:2}
+.heroComposition{margin-top:48px;min-height:620px}
+.heroArt{width:46%;right:0;top:-8px;height:580px}
+.heroAnchor{inset:28px -8px 40px;width:auto;height:auto}
+.artEdition{position:absolute;left:11%;top:0;font:8px monospace;letter-spacing:1.5px;color:#6b695f}
+.artNote{left:11%;right:8%;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.artNote p{font-size:10px;line-height:1.9;color:#6b695f}
+.artNote em{font-size:25px;color:#514238;letter-spacing:-.2px}
+.artNote>span{width:auto;height:auto;transform:none;background:none;font:27px var(--font-serif),serif;color:var(--accent)}
+.work{max-width:1600px;padding-top:112px;padding-bottom:115px}
+.work .sectionHeading{grid-template-columns:1fr auto;gap:30px}
+.work .sectionHeading h2{font-size:clamp(60px,6.7vw,98px);line-height:1.05;letter-spacing:-.06em}
+.work .sectionHeading h2 em{color:var(--accent)}
+.work .sectionHeading>p{font-size:13px;line-height:1.9;max-width:33ch;margin-bottom:8px}
+.work .headingRule{display:none}
+.aboutSignature{color:#e58a64}
+.closingAnchor{position:relative}
+
+@media(min-width:1600px){.heroArt{height:640px;top:-24px}.heroComposition{min-height:685px}}
+@media(min-width:701px) and (max-width:1100px){
+  .heroComposition{min-height:550px}
+  .heroArt{height:485px;top:0}
+  .artEdition{left:4%;font-size:7px;letter-spacing:1px}
+  .artNote{left:4%;right:0}
+  .artNote em{font-size:22px}
+  .work{padding-top:84px;padding-bottom:85px}
+  .work .sectionHeading h2{font-size:7.2vw}
+  .work .sectionHeading>p{font-size:11px}
+}
+@media(min-width:701px) and (max-width:800px){
+  .heroComposition{min-height:490px}
+  .heroArt{height:420px}
+  .artEdition{font-size:6px;letter-spacing:.7px}
+  .artNote p{font-size:9px}
+  .artNote em{font-size:20px}
+}
+@media(max-width:700px){
+  .heroComposition{display:flex;flex-direction:column;min-height:0;margin-top:34px}
+  .heroArt{position:relative;inset:auto;width:100%;height:375px;margin:38px 0 27px}
+  .heroAnchor{inset:10px 0 58px}
+  .artEdition{top:0;left:0;font-size:7px;letter-spacing:1.1px}
+  .artNote{bottom:0;left:0;right:0;gap:10px}
+  .artNote p{font-size:9px;line-height:1.9}
+  .artNote em{font-size:23px}
+  .artNote>span{font-size:25px}
+  .work{padding-top:72px;padding-bottom:64px}
+  .work .sectionHeading h2{font-size:15vw;line-height:1.07}
+  .work .sectionHeading>p{font-size:12px;line-height:1.8;margin-top:25px}
+  .aboutSignature{width:28px;height:28px}
+}
+@media(max-width:370px){.heroArt{height:335px;margin-top:30px}.artEdition{font-size:6px}.artNote em{font-size:21px}}
+
+.greetingCopy{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.closing>aside{grid-column:1/-1;width:100%}
+
+@media(max-width:700px){
+  .page{--home-gutter:max(24px,env(safe-area-inset-left),env(safe-area-inset-right))}
+  .heroDescription p{font-size:15px;line-height:1.75}
+  .heroDescription p>span{display:inline-block;margin-top:7px;font-size:13px;line-height:1.6}
+  .heroActions{margin-left:0;gap:22px;justify-content:space-between}
+  .heroCta{min-height:48px;font-size:13px;gap:13px}
+  .heroCta>span{width:44px;height:44px}
+  .heroContact{min-height:44px;font-size:12px;gap:6px}
+  .heroArt{margin-top:30px}
+  .artNote p{font-size:11px;line-height:1.65}
+  .artNote em{font-size:23px}
+  .work .sectionHeading>p{font-size:15px;line-height:1.7}
+  .aboutHeading>p{font-size:15px;line-height:1.7}
+  .aboutCopy{font-size:16px;line-height:1.75}
+  .aboutCopy .linkedin{min-height:44px;font-size:13px;flex-wrap:wrap;row-gap:8px}
+  .principles p{font-size:15px;line-height:1.7}
+  .faqIntro>p,.faqAnswers p{font-size:15px;line-height:1.75}
+  .closingCopy>a{min-height:44px;font-size:14px;line-height:1.6;gap:14px}
+  .closing{padding-bottom:calc(75px + env(safe-area-inset-bottom))}
+  .heroBaseline{gap:10px}
+  .heroBaseline>a{min-height:44px}
+}
+@media(max-width:350px){
+  .heroDescription p{font-size:14px}
+  .heroDescription p>span{font-size:12px}
+  .heroActions{gap:12px}.heroCta{font-size:12px;gap:10px}.heroContact{font-size:11px}
+  .artNote{flex-wrap:wrap;row-gap:0}.artNote em{font-size:21px}
+}
+.mobileCopy{display:none}
+@media(max-width:700px){
+  .hero{padding-top:20px}
+  .heroKicker{align-items:center;min-height:20px}
+  .heroKicker>span+span{display:none}
+  .heroComposition{margin-top:26px}
+  .heroCopy h1{font-size:clamp(55px,17.4vw,96px);line-height:1.02}
+  .heroDescription{margin:20px 0 0;display:block}
+  .heroDescription>svg,.heroDescription>.desktopCopy{display:none}
+  .heroDescription>.mobileCopy{display:block;max-width:32ch;font-size:15px;line-height:1.7}
+  .heroActions{margin-top:20px}
+  .heroCopy>aside{display:none}
+  .heroArt{margin-top:26px;margin-bottom:18px}
+  .heroBaseline>a{letter-spacing:.3px}
+  .aboutGrid{gap:26px}
+}

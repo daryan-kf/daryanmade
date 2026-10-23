@@ -75,12 +75,25 @@ export function HomeAppScreen({ screen, src, alt = "", width = 1000, height = 21
     let started = false;
     let complete = false;
     let timer = 0;
+    let checkFrame = 0;
     let observer: IntersectionObserver | undefined;
     const finish = () => {
       complete = true;
       window.clearTimeout(timer);
+      window.cancelAnimationFrame(checkFrame);
+      window.removeEventListener("scroll", checkSkipped);
       observer?.disconnect();
       if (!disposed) setState("complete");
+    };
+    // IntersectionObserver need not report a jump from below to above the
+    // viewport: both positions are non-intersecting. Settle skipped screens
+    // so a later chapter never carries their temporary entrance masks.
+    const checkSkipped = () => {
+      if (checkFrame || complete || disposed) return;
+      checkFrame = window.requestAnimationFrame(() => {
+        checkFrame = 0;
+        if (element.getBoundingClientRect().bottom <= 0) finish();
+      });
     };
     const start = async () => {
       if (started || complete || disposed) return;
@@ -103,15 +116,20 @@ export function HomeAppScreen({ screen, src, alt = "", width = 1000, height = 21
     } else {
       setState("waiting");
       observer = new IntersectionObserver(entries => {
-        if (entries.some(entry => entry.isIntersecting)) void start();
+        if (entries.some(entry => entry.boundingClientRect.bottom <= 0)) finish();
+        else if (entries.some(entry => entry.isIntersecting)) void start();
       }, { threshold: .15, rootMargin: "0px 0px -12% 0px" });
       observer.observe(element);
+      window.addEventListener("scroll", checkSkipped, { passive: true });
+      checkSkipped();
     }
     reduced.addEventListener("change", preference);
     window.addEventListener("maker-motion-change", pause);
     return () => {
       disposed = true;
       window.clearTimeout(timer);
+      window.cancelAnimationFrame(checkFrame);
+      window.removeEventListener("scroll", checkSkipped);
       observer?.disconnect();
       reduced.removeEventListener("change", preference);
       window.removeEventListener("maker-motion-change", pause);

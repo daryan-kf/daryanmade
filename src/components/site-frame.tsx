@@ -8,7 +8,7 @@ import { Footer } from "./footer";
 
 export function SiteFrame({ children }: { children: ReactNode }) {
   const pathname = stripLocale(usePathname());
-  const isProductWebsite = ["/projects/shield-family", "/vela", "/iqra"].some(base => pathname === base || pathname.startsWith(`${base}/`));
-  if (isProductWebsite) return <>{children}</>;
+  const isProductWebsite = ["/projects/shield-family", "/projects/wardrobe", "/vela", "/iqra"].some(base => pathname === base || pathname.startsWith(`${base}/`));
+  if (isProductWebsite || /\/updates\/(verify|unsubscribe|privacy)$/.test(pathname)) return <>{children}</>;
   return <><Header />{children}<Footer /></>;
 }

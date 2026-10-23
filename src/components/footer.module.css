@@ -24,7 +24,7 @@
   height: 80px;
   border-radius: 50%;
   background: var(--signal);
-  color: var(--ink);
+  color: #fff;
   transition: background-color .3s, color .3s, box-shadow .45s;
 }
 
@@ -82,4 +82,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .arrow, .contactPaths>a::before, .contactPaths h3 { transition:none; }
+}
+.mobileCopy{display:none}
+@media(max-width:600px){
+  .details>.desktopCopy{display:none}
+  .details>.mobileCopy{display:block;font-size:15px;line-height:1.7;max-width:30ch}
+  .details>a{min-height:44px;font-size:14px;white-space:normal;overflow-wrap:anywhere}
+  .contactPaths{gap:0;margin-top:30px}
+  .contactPaths>a{min-height:80px;padding:18px 0}
+  .contactPaths h3{margin-top:8px}
+  .contactPaths p{display:none}
 }

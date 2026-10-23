@@ -1,0 +1,37 @@
+.soundButton{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:36px;height:36px;padding:0;border:1px solid rgb(47 55 39 / 16%);border-radius:50%;background:rgb(248 246 237 / 96%);color:#384032;box-shadow:0 2px 10px rgb(42 41 25 / 4%);transition:background 180ms ease,border-color 180ms ease,transform 160ms var(--ease-out)}
+.soundButton::before{content:"";position:absolute;inset:-4px;border-radius:50%}
+.controlLabel{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.soundButton:active{transform:scale(.94)}
+.soundButton[aria-pressed="true"]{background:#eee2d5;border-color:#b58f76;color:#78391f}
+.soundButton:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.soundBars{display:flex;align-items:center;justify-content:center;gap:2px;width:16px;height:16px}
+.soundBars i{display:block;width:2px;height:3px;background:currentColor;border-radius:2px;transition:transform 240ms var(--ease-out)}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(1){transform:scaleY(2)}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(2){transform:scaleY(4)}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(3){transform:scaleY(3)}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(4){transform:scaleY(1.7)}
+.sculpturePlay{display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 0;border:0;background:none;color:#80513b;font:10px/1.4 var(--font-sans),sans-serif;white-space:nowrap}
+.sculpturePlay>svg{transition:transform 500ms var(--ease-out)}
+.sculpturePlay>span:last-child{font-size:18px;transition:transform 500ms var(--ease-out)}
+.sculpturePlay:active>svg{transform:rotate(120deg) scale(.92)}
+.sculpturePlay:disabled{opacity:.65}
+.pressEcho{position:fixed;z-index:150;display:block;width:27px;height:27px;border:1px solid #bd4327;border-radius:45% 55% 48% 52%;pointer-events:none}
+.pressEcho::before,.pressEcho::after{content:"";position:absolute;inset:5px -4px;border:1px solid #bd4327;border-radius:50%;transform:rotate(60deg)}
+.pressEcho::after{transform:rotate(-60deg)}
+@media(hover:hover) and (pointer:fine){.soundButton:hover{border-color:#8d7965;background:#fffdf6}.sculpturePlay:hover>svg{transform:rotate(20deg)}.sculpturePlay:hover>span:last-child{transform:rotate(90deg)}
+:global(html[data-studio-experience="true"]) :global(.brand) svg{transition:transform 500ms var(--ease-out)}
+:global(html[data-studio-experience="true"]) :global(.brand):hover svg{transform:rotate(18deg) scale(1.08)}}
+@media(max-width:700px){.soundButton{width:36px;height:36px}.sculpturePlay{font-size:9px;gap:6px}.sculpturePlay>svg{width:18px;height:18px}}
+@media(prefers-reduced-motion:reduce){.soundBars i,.sculpturePlay>svg,.sculpturePlay>span:last-child{transition:none}.sculpturePlay:active>svg,.sculpturePlay:hover>svg,.sculpturePlay:hover>span:last-child{transform:none}.pressEcho{display:none}}
+:global(html[data-maker-motion="paused"]) .sculpturePlay>svg,:global(html[data-maker-motion="paused"]) .sculpturePlay>span:last-child{transition:none;transform:none}
+@media(prefers-reduced-motion:reduce){:global(html[data-studio-experience="true"]) :global(.brand) svg{transition:none;transform:none}}
+:global(html[data-maker-motion="paused"]) :global(.brand) svg{transition:none;transform:none}
+
+.soundButton[aria-pressed="true"] .soundBars i{animation:studioMeter 1500ms ease-in-out infinite alternate}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(1){--level:2;animation-delay:-.4s}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(2){--level:4;animation-delay:-.9s}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(3){--level:3;animation-delay:-.2s}
+.soundButton[aria-pressed="true"] .soundBars i:nth-child(4){--level:1.7;animation-delay:-.7s}
+@keyframes studioMeter{from{transform:scaleY(1)}to{transform:scaleY(var(--level,3))}}
+@media(prefers-reduced-motion:reduce){.soundButton[aria-pressed="true"] .soundBars i{animation:none}.soundButton:active{transform:none}}
+:global(html[data-maker-motion="paused"]) .soundBars i{animation-play-state:paused}

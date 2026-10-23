@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { useLocale } from "./locale-provider";
 import styles from "./product-film.module.css";
+import disclosure from "./native-disclosure.module.css";
 
 /** Media is fetched only when requested. Native controls remain available throughout. */
 export function ProductFilm({ src, poster, title, caption, ratio = "21 / 9", transcript, captions, locale: explicitLocale }: {
@@ -39,7 +40,7 @@ export function ProductFilm({ src, poster, title, caption, ratio = "21 / 9", tra
         video.current?.play().catch(() => setFailed(true));
       }}><span aria-hidden="true">▶</span><span>{t("Watch the film", "Se filmen")}</span></button>}
     </div>
-    <figcaption><span>{caption}{locale === "da" && captions && <small className={styles.languageNote}>Engelsk tale · danske undertekster</small>}</span><details><summary>{t("Film description", "Beskrivelse af filmen")}</summary><p>{transcript}</p></details></figcaption>
+    <figcaption><span>{caption}{locale === "da" && captions && <small className={styles.languageNote}>Engelsk tale · danske undertekster</small>}</span><details className={disclosure.disclosure}><summary>{t("Film description", "Beskrivelse af filmen")}</summary><p>{transcript}</p></details></figcaption>
     {failed && <p role="status" className={styles.error}>{t("The film could not play here.", "Filmen kunne ikke afspilles her.")} <a href={src}>{t("Open the video directly", "Åbn videoen direkte")}</a>.</p>}
   </figure>;
 }

@@ -11,7 +11,7 @@ export type FaqAccordionProps = {
   defaultOpen?: number | null;
 };
 
-function FaqRow({ item, open, instant, onToggle }: { item: FaqItem; open: boolean; instant: boolean; onToggle: (keyboard: boolean) => void }) {
+function FaqRow({ item, open, onToggle }: { item: FaqItem; open: boolean; onToggle: () => void }) {
   const id = useId();
   const answerRef = useRef<HTMLDivElement>(null);
   const [answerHeight, setAnswerHeight] = useState<number | null>(null);
@@ -27,7 +27,7 @@ function FaqRow({ item, open, instant, onToggle }: { item: FaqItem; open: boolea
   }, []);
 
   return (
-    <div className={styles.item} data-open={open} data-instant={instant}>
+    <div className={styles.item} data-open={open}>
       <h3 className={styles.heading}>
         <button
           type="button"
@@ -36,7 +36,7 @@ function FaqRow({ item, open, instant, onToggle }: { item: FaqItem; open: boolea
           aria-expanded={open}
           aria-controls={`${id}-answer`}
           data-faq-trigger
-          onClick={(event) => onToggle(event.detail === 0)}
+          onClick={onToggle}
         >
           <span>{item.question}</span>
           <span className={styles.indicator} aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg></span>
@@ -59,7 +59,6 @@ function FaqRow({ item, open, instant, onToggle }: { item: FaqItem; open: boolea
 
 export function FaqAccordion({ items, className, defaultOpen = 0 }: FaqAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(defaultOpen);
-  const [instant, setInstant] = useState(false);
 
   function navigateQuestions(event: KeyboardEvent<HTMLDivElement>) {
     if (!(event.target instanceof HTMLButtonElement) || !event.target.hasAttribute("data-faq-trigger")) return;
@@ -73,8 +72,8 @@ export function FaqAccordion({ items, className, defaultOpen = 0 }: FaqAccordion
 
   return (
     <div className={[styles.accordion, className].filter(Boolean).join(" ")} onKeyDown={navigateQuestions}>
-      {items.map((item, index) => <FaqRow key={item.question} item={item} open={openIndex === index} instant={instant} onToggle={(keyboard) => {
-        setInstant(keyboard);
+      {items.map((item, index) => <FaqRow key={item.question} item={item} open={openIndex === index} onToggle={() => {
+        window.dispatchEvent(new CustomEvent("studio-feedback", { detail: { kind: openIndex === index ? "close" : "open" } }));
         setOpenIndex((current) => current === index ? null : index);
       }} />)}
     </div>

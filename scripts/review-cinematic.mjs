@@ -3,20 +3,25 @@ import fs from 'node:fs/promises';
 
 const directory = 'artifacts/cinematic';
 await fs.mkdir(directory, { recursive: true });
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--enable-unsafe-swiftshader'] });
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000';
 const results = [];
 try {
   for (const width of [1440, 768, 390]) {
     const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1000 }, reducedMotion: 'reduce' });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto('http://127.0.0.1:3000', { waitUntil: 'networkidle' });
+    await page.goto(baseURL, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `${directory}/home-${width}-hero.png` });
-    for (const target of ['sarpoli', 'vela', 'wardrobe', 'kaizencv', 'koebsklar']) {
-      await page.locator(`[data-project-card="${target}"]`).scrollIntoViewIfNeeded();
-      await page.waitForTimeout(250);
-      await page.locator(`[data-project-card="${target}"]`).screenshot({ path: `${directory}/home-${width}-${target}.png` });
+    for (const target of ['sarpoli', 'vela', 'wardrobe', 'kaizencv', 'koebsklar', 'shield-family', 'iqra']) {
+      const project = page.locator(`[data-project-card="${target}"]`);
+      await project.scrollIntoViewIfNeeded();
+      await project.locator('figure').first().scrollIntoViewIfNeeded();
+      for (const image of await project.locator('img').all()) {
+        await image.evaluate(image => image.decode().catch(() => {}));
+      }
+      await project.screenshot({ path: `${directory}/home-${width}-${target}.png` });
     }
     await page.locator('#about').scrollIntoViewIfNeeded();
     await page.waitForTimeout(250);
@@ -31,20 +36,18 @@ try {
     await page.close();
   }
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-  await page.goto('http://127.0.0.1:3000', { waitUntil: 'networkidle' });
+  await page.goto(baseURL, { waitUntil: 'networkidle' });
   await page.locator('html[data-maker-motion="running"]').waitFor();
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
   await page.screenshot({ path: `${directory}/home-1440-animated.png` });
-  for (const story of ['sarpoli', 'kaizencv', 'koebsklar']) {
-    const scene = page.locator(`[data-project-story="${story}"]`);
-    await scene.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(4000);
-    await scene.getByRole('button', { name: /^Replay / }).click();
-    await page.waitForTimeout(900);
-    await scene.screenshot({ path: `${directory}/home-1440-${story}-motion-start.png` });
-    await page.waitForTimeout(3200);
-    await scene.screenshot({ path: `${directory}/home-1440-${story}-motion-complete.png` });
-  }
+  await page.mouse.wheel(0, 220);
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: `${directory}/home-1440-sculpture-scroll.png` });
+  await page.locator('#work').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `${directory}/home-1440-exhibition.png` });
+  await page.locator('[data-maker-anchor="closing"]').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: `${directory}/home-1440-closing.png` });
   await page.close();
 } finally {
   await browser.close();

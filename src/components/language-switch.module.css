@@ -1,7 +1,23 @@
-.switch{position:relative;display:inline-flex!important;flex:none;gap:0!important;align-items:center;border:1px solid #bd43274d;border-radius:30px;padding:3px;font-size:11px;font-weight:700;letter-spacing:.06em;white-space:nowrap;color:var(--ink,#242520);background:var(--paper,#f4f2eb);isolation:isolate}
-.thumb{position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px)/2);border-radius:20px;background:#bd4327;pointer-events:none;z-index:-1;transition:transform 380ms cubic-bezier(.22,.8,.24,1)}
+.switch{position:relative;display:inline-flex!important;flex:none;gap:0!important;align-items:center;border:1px solid color-mix(in srgb,var(--language-accent,#bd4327) 30%,transparent);border-radius:30px;padding:3px;font-size:11px;font-weight:700;letter-spacing:.06em;white-space:nowrap;color:var(--ink,#242520);background:var(--paper,#f4f2eb);isolation:isolate}
+.thumb{position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px)/2);border-radius:20px;background:var(--language-accent,#bd4327);pointer-events:none;z-index:-1;overflow:hidden;transition:transform 500ms var(--ease-out,cubic-bezier(.23,1,.32,1))}
 .switch[data-active="da"] .thumb{transform:translateX(100%)}
 .switch a{display:grid;place-items:center;min-width:34px;min-height:30px;padding:4px 7px!important;color:inherit!important;border-radius:20px;text-decoration:none!important;line-height:1!important;opacity:1;transition:color 220ms}
 .switch[data-active="en"] a[lang="en"],.switch[data-active="da"] a[lang="da"]{color:#fff!important}
-.switch a:focus-visible{outline:2px solid #bd4327;outline-offset:4px}
+.switch a:focus-visible{outline:2px solid var(--language-accent,#bd4327);outline-offset:4px}
 @media(prefers-reduced-motion:reduce){.thumb,.switch a{transition:none}}
+
+.thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.27),transparent);transform:translateX(-110%)}
+.switch[aria-busy="true"] .thumb::after{animation:languageGlint 650ms ease-out both}
+@keyframes languageGlint{to{transform:translateX(110%)}}
+.switch a:active{transform:scale(.94)}
+@media(prefers-reduced-motion:reduce){.switch[aria-busy="true"] .thumb::after{animation:none}.switch a:active{transform:none}}
+:global(html[data-maker-motion="paused"]) .thumb,:global(html[data-maker-motion="paused"]) .switch a{transition:none}
+:global(html[data-maker-motion="paused"]) .thumb::after{animation:none!important}
+@media(max-width:700px){.switch a{min-height:38px}}
+@media(max-width:700px){
+  .switch{height:38px;min-height:0;box-sizing:border-box;align-items:stretch}
+  .switch a{position:relative;flex:1 1 0;min-width:0;min-height:0;height:30px;padding:0!important;font-size:10px;box-sizing:border-box}
+  .switch a::before{content:"";position:absolute;inset:-7px 0}
+}
+/* The component owns its geometry in every placement, including the footer. */
+.switch{width:76px;min-width:76px;flex-shrink:0;box-sizing:border-box}

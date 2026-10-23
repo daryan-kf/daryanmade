@@ -11,9 +11,11 @@ export function LanguageSwitch({ locale: supplied }: { locale?: Locale }) {
   const pathname = usePathname(), { pending, change } = useLanguageNavigation();
   return <nav className={styles.switch} data-language-switch data-active={pending ?? locale} aria-busy={Boolean(pending)} aria-label={locale === "da" ? "Vælg sprog" : "Choose language"}>
     <span className={styles.thumb} aria-hidden="true" />
-    {(["en", "da"] as const).map(language => <Link key={language} href={localePath(pathname, language)} lang={language} hrefLang={language} aria-label={language === "en" ? "English" : "Dansk"} aria-current={locale === language ? "page" : undefined} scroll={false} onClick={event => {
+    {(["en", "da"] as const).map(language => <Link data-language-choice key={language} href={localePath(pathname, language)} lang={language} hrefLang={language} aria-label={language === "en" ? "English" : "Dansk"} aria-current={locale === language ? "page" : undefined} scroll={false} onClick={event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
-      event.preventDefault(); change(language);
+      event.preventDefault();
+      if (language !== locale && !pending) window.dispatchEvent(new CustomEvent("studio-feedback", { detail: { kind: "language", note: language === "da" ? 1 : 0 } }));
+      change(language);
     }}>{language === "en" ? "EN" : "DA"}</Link>)}
   </nav>;
 }

@@ -14,10 +14,8 @@ export function AppUpdatesForm({ app, id = "updates", variant = "default" }: { a
   const compact = variant === "compact";
   const formName = `${product.name} ${locale === "da" ? "e-mailnyheder" : "email updates"}${id === "updates" ? "" : ` (${id.replace(/[-_]+/g, " ")})`}`;
   const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
   const [website, setWebsite] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [consentError, setConsentError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [summary, setSummary] = useState(false);
   const [pending, setPending] = useState(false);
@@ -32,9 +30,9 @@ export function AppUpdatesForm({ app, id = "updates", variant = "default" }: { a
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (requestRef.current) return;
-    const emailProblem = validateEmail(email), consentProblem = consent ? null : locale === "da" ? `Vælg at modtage nyheder fra ${product.name}, før du tilmelder dig.` : `Choose to receive ${product.name} updates before joining.`;
-    setEmailError(emailProblem); setConsentError(consentProblem); setServerError(null);
-    if (emailProblem || consentProblem) { setSummary(true); errorRef.current?.focus(); return; }
+    const emailProblem = validateEmail(email);
+    setEmailError(emailProblem); setServerError(null);
+    if (emailProblem) { setSummary(true); errorRef.current?.focus(); return; }
     setSummary(false); setPending(true);
     const controller = new AbortController(); requestRef.current = controller;
     const timeout = window.setTimeout(() => controller.abort(), 25_000);
@@ -64,18 +62,17 @@ export function AppUpdatesForm({ app, id = "updates", variant = "default" }: { a
       <span className={styles.successMark} aria-hidden="true">✓</span><h3>{t("Check your inbox.")}</h3>
       <p>{locale === "da" ? <>Hvis <strong>{email.trim()}</strong> skal bekræftes, sender vi et link. Åbn det, og bekræft for at tilmelde dig {product.name}. Allerede bekræftet? Så er alt klar.</> : <>If <strong>{email.trim()}</strong> needs confirmation, we’ll send a link. Open it and confirm to join the {product.name} list. Already confirmed? You’re all set.</>}</p>
       <p className={styles.small}>{t("Check your spam folder too. You can ignore the email if you change your mind.")}</p>
-    </div> : <form onSubmit={submit} className={styles.form} noValidate aria-label={formName} aria-busy={pending}>
+    </div> : <form onSubmit={submit} className={styles.form} noValidate aria-describedby={`${fieldId}-consent`} aria-label={formName} aria-busy={pending}>
       {(summary || serverError) && <div className={styles.errorSummary} role="alert" tabIndex={-1} ref={errorRef}>
-        {serverError ? <p>{serverError}</p> : <><p>{t("Please check these details.")}</p><ul>{emailError && <li><a href={`#${fieldId}-email`}>{emailError}</a></li>}{consentError && <li><a href={`#${fieldId}-consent`}>{consentError}</a></li>}</ul></>}
+        {serverError ? <p>{serverError}</p> : <><p>{t("Please check these details.")}</p><ul>{emailError && <li><a href={`#${fieldId}-email`}>{emailError}</a></li>}</ul></>}
       </div>}
       <label className={styles.label} htmlFor={`${fieldId}-email`}>{t("Your email address")}</label>
       <input className={styles.email} id={`${fieldId}-email`} name="email" type="email" autoComplete="email" inputMode="email" maxLength={254} required placeholder={locale === "da" ? "dig@eksempel.dk" : "you@example.com"} value={email} disabled={pending} aria-invalid={!!emailError} aria-describedby={emailError ? `${fieldId}-email-error` : undefined} onBlur={() => { if (email.trim()) setEmailError(validateEmail(email)); }} onChange={event => { setEmail(event.target.value); setEmailError(null); setSummary(false); setServerError(null); }} />
       {emailError && <p className={styles.error} id={`${fieldId}-email-error`}>{emailError}</p>}
       <div className={styles.trap} aria-hidden="true"><label htmlFor={`${fieldId}-website`}>{t("Website")}</label><input id={`${fieldId}-website`} name="website" tabIndex={-1} autoComplete="off" value={website} onChange={event => setWebsite(event.target.value)} /></div>
-      <label className={styles.consent} htmlFor={`${fieldId}-consent`}><input id={`${fieldId}-consent`} name="consentAccepted" type="checkbox" required checked={consent} disabled={pending} aria-invalid={!!consentError} aria-describedby={consentError ? `${fieldId}-consent-error` : undefined} onChange={event => { setConsent(event.target.checked); setConsentError(null); setSummary(false); setServerError(null); }} /><span>{updateConsent(app, locale)}</span></label>
-      {consentError && <p className={styles.error} id={`${fieldId}-consent-error`}>{consentError}</p>}
+      <p className={styles.consent} id={`${fieldId}-consent`}>{updateConsent(app, locale)}</p>
       <button type="submit" disabled={pending} className={styles.button}>{pending ? t("Requesting your link…") : serverError ? t("Try again") : t("Keep me in the loop")}<span data-link-arrow="diagonal" aria-hidden="true">↗</span></button>
-      <p className={styles.small}>{locale === "da" ? "Vi beder dig bekræfte din e-mail. " : "We’ll ask you to confirm your email. "}<a href={`${product.base}/privacy`}>{t("How we use your details")}</a>.{app === "shield-family" && (locale === "da" ? " Denne liste er adskilt fra tilbuddet om gratis måneder." : " This list is separate from the free-months offer.")}</p>
+      <p className={styles.small}>{locale === "da" ? "Vi beder dig bekræfte din e-mail. " : "We’ll ask you to confirm your email. "}<a href={`${product.base}/privacy`}>{t("How we use your details")}</a>.</p>
     </form>}
   </section>;
 }

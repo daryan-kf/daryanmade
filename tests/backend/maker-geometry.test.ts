@@ -1,39 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { createMakerGeometry, MAKER_STAGES } from "../../src/lib/maker-geometry";
+import { createMakerGeometry } from "../../src/lib/maker-geometry";
 
-describe("the maker sculpture", () => {
-  it.each([false, true])("keeps every morph target finite, bounded and on one closed topology (compact=%s)", (compact) => {
-    const geometry = createMakerGeometry(compact);
-    const positions = geometry.morphAttributes.position!;
-    const normals = geometry.morphAttributes.normal!;
-    expect(positions).toHaveLength(MAKER_STAGES.length);
-    expect(normals).toHaveLength(MAKER_STAGES.length);
-    const count = geometry.getAttribute("position").count;
-    const sides = geometry.userData.sides as number;
-    const segments = geometry.userData.segments as number;
-    for (let target = 0; target < positions.length; target++) {
-      expect(positions[target].count).toBe(count);
-      expect(normals[target].count).toBe(count);
-      for (let vertex = 0; vertex < count; vertex++) {
-        const x = positions[target].getX(vertex), y = positions[target].getY(vertex), z = positions[target].getZ(vertex);
-        expect(Number.isFinite(x + y + z)).toBe(true);
-        expect(Math.hypot(x, y, z)).toBeLessThan(2.65);
-        const nx = normals[target].getX(vertex), ny = normals[target].getY(vertex), nz = normals[target].getZ(vertex);
-        expect(Math.hypot(nx, ny, nz)).toBeCloseTo(1, 4);
-      }
-      for (let side = 0; side <= sides; side++) {
-        const last = segments * (sides + 1) + side;
-        expect(positions[target].getX(last)).toBe(positions[target].getX(side));
-        expect(positions[target].getY(last)).toBe(positions[target].getY(side));
-        expect(positions[target].getZ(last)).toBe(positions[target].getZ(side));
-      }
+describe("the single maker knot",()=>{
+  it.each([false,true])("has one finite closed surface and unit normals (compact=%s)",compact=>{
+    const geometry=createMakerGeometry(compact);
+    expect(geometry.morphAttributes.position).toBeUndefined();
+    const vertices=geometry.getAttribute("position"),normals=geometry.getAttribute("normal");
+    for(let i=0;i<vertices.count;i++){
+      expect(Number.isFinite(vertices.getX(i)+vertices.getY(i)+vertices.getZ(i))).toBe(true);
+      expect(Math.hypot(vertices.getX(i),vertices.getY(i),vertices.getZ(i))).toBeLessThan(2.7);
+      expect(Math.hypot(normals.getX(i),normals.getY(i),normals.getZ(i))).toBeCloseTo(1,4);
+    }
+    const {tubularSegments,radialSegments}=geometry.parameters;
+    for(let side=0;side<=radialSegments;side++)for(const field of ["getX","getY","getZ"] as const){
+      expect(vertices[field](tubularSegments*(radialSegments+1)+side)).toBeCloseTo(vertices[field](side),5);
     }
     geometry.dispose();
   });
-
-  it("uses less than half the vertices on compact devices", () => {
-    const full = createMakerGeometry(false), compact = createMakerGeometry(true);
-    expect(compact.getAttribute("position").count).toBeLessThan(full.getAttribute("position").count / 2);
-    full.dispose(); compact.dispose();
+  it("uses fewer than half the vertices on phones",()=>{
+    const full=createMakerGeometry(),mobile=createMakerGeometry(true);
+    expect(mobile.getAttribute("position").count).toBeLessThan(full.getAttribute("position").count/2);
+    full.dispose();mobile.dispose();
   });
 });

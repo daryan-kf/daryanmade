@@ -7,7 +7,6 @@ import { useLocale } from "./locale-provider";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ShieldOfferForm } from "./shield-offer-form";
 import { FaqAccordion } from "./faq-accordion";
 import { AppUpdatesForm } from "./app-updates-form";
 import { AppUpdatesInline } from "./app-updates-inline";
@@ -26,10 +25,10 @@ const STEPS = [
   { id: "good-to-know", label: "Good to know" },
 ] as const;
 
-function ClaimLink({ children = "Explore the 3-month offer" }: { placement?: string; children?: ReactNode }) {
+function UpdatesLink({ children = "Keep me updated" }: { children?: ReactNode }) {
   const locale = useLocale();
   const t = appCopy(locale);
-  return <a href="#offer" className={styles.button}>{typeof children === "string" ? t(children) : children} <Icon name="arrowRight" /></a>;
+  return <a href="#updates" className={styles.button}>{typeof children === "string" ? t(children) : children} <Icon name="arrowRight" /></a>;
 }
 
 function Brand() {
@@ -57,18 +56,30 @@ const TRUST: { icon: IconName; title: string; text: string }[] = [
 
 const BUBBLES = ["Five more minutes?", "Just this level", "Pleeease", "I’m almost done", "Five more minutes?"];
 
+const DAY_PREVIEWS = [
+  { label: "Screen time, handled all day.", alt: "Shield Family overview showing Mia and Leo’s remaining screen time and learning activity against a sunrise sky." },
+  { label: "Fun apps rest at school.", alt: "School-time routine set from 8 AM to 3 PM on weekdays, with essential apps remaining available." },
+  { label: "Homework first.", alt: "Homework routine pausing fun apps from 4 PM to 5 PM on weekdays." },
+  { label: "Earn time by learning.", alt: "Learning-reward settings with quizzes, brain games and a daily extra-time cap." },
+  { label: "Answer from your phone.", alt: "A child’s request for 15 extra minutes with Approve and Decline controls on the parent’s phone." },
+  { label: "Know they got home.", alt: "Family map with home and school places and an example arrival notification." },
+  { label: "A break for dinner.", alt: "Screen Time overview with a prominent Pause apps control against a sunset sky." },
+  { label: "Bedtime, on schedule.", alt: "Bedtime routine scheduled from 7:30 PM to 7 AM every day." },
+  { label: "Daily limits & apps", alt: "Daily-limit settings showing a two-hour allowance, selected apps and device protections against an indigo night sky." },
+  { label: "Your evening, back.", alt: "Learning summary showing questions answered, games completed, time earned and a weekly practice chart." },
+] as const;
+
 export function ShieldFamilySite({ locale = "en" }: { locale?: Locale }) {
   const t = appCopy(locale);
-  const availability = t("Founding Families · 3 months free");
-  const faqs = [1, 2, 3, 5, 6, 7].map((i) => funnelFaqs[i]);
+  const faqs = funnelFaqs;
   return (
     <ProductMotion className={styles.site}>
-      <div className={styles.announcement}><span>{availability}</span><strong>{t("3 months free for the first 500 families.")}</strong></div>
+      <div className={styles.announcement}><span>{t("A little learning. A little more play.")}</span><a href="#updates">{t("App news & early testing")} <Icon name="arrowRight" /></a></div>
       <div className={styles.makerBar}><Link href={localePath("/", locale)} aria-label={t("Back to daryanmade")}>{t("← daryanmade")}</Link><span>{t("An independent project by Daryan Kamalifar")}</span><LanguageSwitch locale={locale} /></div>
       <header className={styles.header}>
         <Brand />
-        <nav className={styles.headerNav} aria-label={t("Main")}><a href="#how-it-works">{t("How it works")}</a><a href="#inside">{t("Inside the app")}</a><a href="#updates">{t("Updates")}</a><a href="#offer">{t("The offer")}</a></nav>
-        <a href="#offer" className={styles.headerCta}>{t("3 months free")}{" "}<Icon name="arrowRight" /></a>
+        <nav className={styles.headerNav} aria-label={t("Main")}><a href="#how-it-works">{t("How it works")}</a><a href="#inside">{t("Inside the app")}</a><a href="#updates">{t("Updates")}</a><a href="#download">{t("Download")}</a></nav>
+        <a href="#updates" className={styles.headerCta}>{t("Keep me updated")}{" "}<Icon name="arrowRight" /></a>
       </header>
 
       <main id="main-content">
@@ -81,12 +92,11 @@ export function ShieldFamilySite({ locale = "en" }: { locale?: Locale }) {
             <div className={styles.heroAction} data-hero-fade>
               <div className={styles.heroActions}>
                 <a href="#moment" className={styles.button}>{t("See how it works")}{" "}<Icon name="arrowDown" /></a>
-                <a href="#offer" className={styles.textLink}>{t("Or get 3 months free")}{" "}<Icon name="arrowRight" /></a>
+                <a href="#updates" className={styles.textLink}>{t("Get updates & test new versions")}{" "}<Icon name="arrowRight" /></a>
               </div>
-              <p className={styles.heroOffer}><span className={styles.offerGift}><Icon name="check" /></span><strong>{t("3 months free")}</strong><span>{t("Eligibility & renewal terms apply")}</span></p>
             </div>
           </div>
-          <div className={styles.heroVisual} data-hero-fade><HeroProductPreview /></div>
+          <div className={styles.heroVisual} data-hero-fade><FamilyPlanIllustration /></div>
         </section>
 
         <div className={styles.productPrinciples}><span><Icon name="shield" />{t("Apple Screen Time underneath")}</span><span><Icon name="book" />{t("Learning that earns a little extra")}</span><span><Icon name="heart" />{t("One shared family plan")}</span></div>
@@ -127,35 +137,34 @@ export function ShieldFamilySite({ locale = "en" }: { locale?: Locale }) {
           <div className={styles.stepFoot}><NextLink href="#inside">{t("See it in the app")}</NextLink></div>
         </section>
 
-        {/* Step 3 — the real app */}
+        {/* Step 3 — one family day in the app */}
         <section className={`${styles.step} ${styles.gallerySection}`} id="inside" aria-labelledby="gallery-title">
-          <div className={styles.galleryHeading} data-reveal>
-            <div data-reveal-item><StepLabel n={3} /></div>
-            <h2 id="gallery-title" className={styles.stepTitle} data-reveal-item>{t("What your family")}<br /><em>{t("actually sees.")}</em></h2>
-            <p className={styles.stepLead} data-reveal-item>{t("Swipe through the real app — your phone, and your child’s.")}</p>
-          </div>
-          <AppGallery />
-          <div className={styles.familyFeatures}>
-            <article><span className={styles.featureGlyph}><Icon name="book" /></span><h3>{t("More curiosity.")}<br /><em>{t("A little less scrolling.")}</em></h3><p>{t("Quizzes across real subjects, adaptive difficulty and brain games. Parents can see learning progress across six skills.")}</p><div className={styles.subjectChips}><span>{t("Math")}</span><span>{t("Reading & Words")}</span><span>{t("Science")}</span><span>{t("Logic & Puzzles")}</span></div></article>
-            <article><span className={styles.featureGlyph}><Icon name="handoff" /></span><h3>{t("A request.")}<br /><em>{t("Not another argument.")}</em></h3><p>{t("Children can ask for more time. Approve or decline from your phone, with the plan and its boundaries still in view.")}</p><div className={styles.requestIllustration} aria-label={t("Product illustration: a child's request needs a parent's decision")}><span><Icon name="message" />{t("Could I have a little more time?")}</span><strong>{t("Your decision.")}<Icon name="shield" /></strong></div></article>
-            <article><span className={styles.featureGlyph}><Icon name="home" /></span><h3>{t("When time ends,")}<br /><em>{t("life keeps going.")}</em></h3><p>{t("Make an offline plan together. Their own choices give them somewhere to land when it’s time to put the screen down.")}</p><div className={styles.landingIllustration}><span>{t("WHAT COMES NEXT?")}</span><p>{t("Build something.")}<br />{t("Head outside.")}<br /><em>{t("Make it their choice.")}</em></p></div></article>
-          </div>
-          <div className={styles.familyDay}>
-            <div className={styles.familyDayHeading}><p className={styles.featureKicker}>{t("For the rest of the family day.")}</p><h3>{t("Good habits.")}<br /><em>{t("A little help around them.")}</em></h3></div>
-            <div className={styles.familyDayGrid}>
-              <article><span className={styles.familyDayNumber}>{t("01 / SKILL LAB")}</span><h4>{t("Try it. Understand it.")}<br />{t("Take it into real life.")}</h4><p>{t("Short lessons combine something to try, a clear explanation and a real-life idea. Learning can be a moment of curiosity, too.")}</p></article>
-              <article><span className={styles.familyDayNumber}>{t("02 / A FAMILIAR RHYTHM")}</span><h4>{t("School. Dinner.")}<br />{t("Time to wind down.")}</h4><p>{t("Set recurring downtime and bedtime for each child or the whole family. Add practical routine jobs, with minutes awarded after a parent approves.")}</p></article>
-              <article><span className={styles.familyDayNumber}>{t("03 / WHEN YOU WANT TO KNOW")}</span><h4>{t("They’re home.")}<br />{t("You can breathe.")}</h4><p>{t("Optional family location brings a live map, arrival and departure alerts, and an activity timeline. Location sharing is opt-in and parent-controlled.")}</p></article>
+          <div className={styles.insideContent}>
+            <div className={styles.galleryHeading} data-reveal>
+              <div data-reveal-item><StepLabel n={3} /></div>
+              <h2 id="gallery-title" className={styles.stepTitle} data-reveal-item>{t("A day")}<br /><em>{t("with Shield.")}</em></h2>
+              <p className={styles.stepLead} data-reveal-item>{t("School, homework, extra minutes and bedtime. See how one shared plan fits around the day.")}</p>
             </div>
+            <ProductGallery locale={locale} name="Shield Family" title={t("From the first alarm to lights out.")} variant="day" images={DAY_PREVIEWS.map((preview, index) => ({
+              src: `/images/shield-site/day-${String(index + 1).padStart(2, "0")}.webp`,
+              label: t(preview.label), alt: t(preview.alt), width: 1206, height: 2622,
+            }))} disclosure={t("App previews combine native parent-app captures from 21 October with illustrative artwork and example settings. The current App Store release may differ.")} />
+            <div className={styles.familyFeatures}>
+              <article><span className={styles.featureGlyph}><Icon name="book" /></span><h3>{t("More curiosity.")}<br /><em>{t("A little less scrolling.")}</em></h3><p>{t("Quizzes across real subjects, adaptive difficulty and brain games. Parents can see learning progress across six skills.")}</p><div className={styles.subjectChips}><span>{t("Math")}</span><span>{t("Reading & Words")}</span><span>{t("Science")}</span><span>{t("Logic & Puzzles")}</span></div></article>
+              <article><span className={styles.featureGlyph}><Icon name="handoff" /></span><h3>{t("A request.")}<br /><em>{t("Not another argument.")}</em></h3><p>{t("Children can ask for more time. Approve or decline from your phone, with the plan and its boundaries still in view.")}</p><div className={styles.requestIllustration} aria-label={t("Product illustration: a child's request needs a parent's decision")}><span><Icon name="message" />{t("Could I have a little more time?")}</span><strong>{t("Your decision.")}<Icon name="shield" /></strong></div></article>
+              <article><span className={styles.featureGlyph}><Icon name="home" /></span><h3>{t("When time ends,")}<br /><em>{t("life keeps going.")}</em></h3><p>{t("Make an offline plan together. Their own choices give them somewhere to land when it’s time to put the screen down.")}</p><div className={styles.landingIllustration}><span>{t("WHAT COMES NEXT?")}</span><p>{t("Build something.")}<br />{t("Head outside.")}<br /><em>{t("Make it their choice.")}</em></p></div></article>
+            </div>
+            <div className={styles.familyDay}>
+              <div className={styles.familyDayHeading}><p className={styles.featureKicker}>{t("For the rest of the family day.")}</p><h3>{t("Good habits.")}<br /><em>{t("A little help around them.")}</em></h3></div>
+              <div className={styles.familyDayGrid}>
+                <article><span className={styles.familyDayNumber}>{t("01 / SKILL LAB")}</span><h4>{t("Try it. Understand it.")}<br />{t("Take it into real life.")}</h4><p>{t("Short lessons combine something to try, a clear explanation and a real-life idea. Learning can be a moment of curiosity, too.")}</p></article>
+                <article><span className={styles.familyDayNumber}>{t("02 / A FAMILIAR RHYTHM")}</span><h4>{t("School. Dinner.")}<br />{t("Time to wind down.")}</h4><p>{t("Set recurring downtime and bedtime for each child or the whole family. Add practical routine jobs, with minutes awarded after a parent approves.")}</p></article>
+                <article><span className={styles.familyDayNumber}>{t("03 / WHEN YOU WANT TO KNOW")}</span><h4>{t("They’re home.")}<br />{t("You can breathe.")}</h4><p>{t("Optional family location brings a live map, arrival and departure alerts, and an activity timeline. Location sharing is opt-in and parent-controlled.")}</p></article>
+              </div>
+            </div>
+            <AppUpdatesInline locale={locale} app="shield-family" />
+            <div className={styles.stepFoot}><NextLink href="#shield-film">{t("Watch the idea come to life")}</NextLink></div>
           </div>
-          <ProductGallery locale={locale} name="Shield Family" title={t("One family. A whole day.")} images={[
-            { src: "/images/shield-site/campaign-01.webp", label: t("A shared overview"), alt: t("Shield Family campaign artwork: family screen time at the start of the day") },
-            { src: "/images/shield-site/campaign-03.webp", label: t("Homework first"), alt: t("Shield Family campaign artwork: a weekday homework downtime window") },
-            { src: "/images/shield-site/campaign-04.webp", label: t("Earn by learning"), alt: t("Shield Family campaign artwork: learning earns minutes within the parent-set cap") },
-            { src: "/images/shield-site/campaign-06.webp", label: t("Home, safely"), alt: t("Shield Family campaign artwork: a family map with a home arrival notification") },
-          ]} disclosure={t("Update preview · Submitted-release campaign artwork with example family data. Features and interface may differ from the current App Store release.")} />
-          <AppUpdatesInline locale={locale} app="shield-family" />
-          <div className={styles.stepFoot}><NextLink href="#shield-film">{t("Watch the idea come to life")}</NextLink></div>
         </section>
 
         <section className={styles.filmSection} id="shield-film" aria-labelledby="shield-film-title">
@@ -173,56 +182,46 @@ export function ShieldFamilySite({ locale = "en" }: { locale?: Locale }) {
             {TRUST.map((item) => <li key={item.title} data-reveal-item><span className={styles.trustIcon}><Icon name={item.icon} /></span><strong>{t(item.title)}</strong><p>{t(item.text)}</p></li>)}
           </ul>
           <FaqAccordion className={styles.faqList} items={faqs.map(({ question, answer }) => ({ question: t(question), answer: <p>{t(answer)}</p> }))} />
-          <div className={styles.stepFoot}><NextLink href="#offer">{t("Your 3 free months")}</NextLink></div>
+          <div className={styles.stepFoot}><NextLink href="#updates">{t("Stay in the loop")}</NextLink></div>
         </section>
 
-        {/* The offer */}
-        <section className={styles.offerSection} id="offer" aria-labelledby="offer-title">
-          <div className={styles.offerIntro} data-reveal>
-            <p className={styles.offerEyebrow} data-reveal-item>{t("Founding Families · the first 500")}</p>
-            <h2 id="offer-title" data-reveal-item><span data-offer-word>{t("3 months.")}</span><span data-offer-word>{t("Free.")}</span></h2>
-            <p data-reveal-item>{t("The full app for your whole family. Every child, your co-parent, and a shared plan to start with.")}</p>
-          </div>
-          <ol className={styles.claimSteps} aria-label={t("How to get the offer")} data-reveal><li data-reveal-item><b>1</b>{" "}{t("Choose your plan")}</li><li data-reveal-item><b>2</b>{" "}{t("Confirm your email")}</li><li data-reveal-item><b>3</b>{" "}{t("Redeem your Apple code")}</li></ol>
-          <div className={styles.offerForm} data-reveal><ShieldOfferForm /></div>
-          <p className={styles.offerCancel}><Icon name="lock" />{" "}{t("Cancel anytime in your Apple settings, at least 24 hours before it renews.")}</p>
-          <a href={localePath("/projects/shield-family/redeem", locale)} className={styles.redeemHelp}>{t("See how redemption works")}{" "}<Icon name="arrowRight" /></a>
-        </section>
+        <div className={styles.updatesSection} id="offer"><AppUpdatesForm app="shield-family" id="updates" /></div>
 
         {/* Download */}
         <section className={styles.download} id="download" aria-labelledby="download-title" data-reveal>
           <h2 id="download-title" className={styles.stepTitle} data-reveal-item>{t("Get Shield")}<br /><em>{t("on iPhone & iPad.")}</em></h2>
-          <p className={styles.stepLead} data-reveal-item>{t("If you use a valid offer code, redeem it before starting a subscription. Apple confirms eligibility and the exact terms.")}</p>
+          <p className={styles.stepLead} data-reveal-item>{t("Start with a shared family plan. Find the latest version and subscription details on the App Store.")}</p>
           <div className={styles.downloadRow} data-reveal-item>
             <div className={styles.qrCard}>
               <a href={APP_STORE_URL} className={styles.qr} aria-label={t("Open Shield Family on the App Store")}><Image src="/images/shield-site/app-store-qr.png" width={132} height={132} alt={t("QR code for Shield Family on the App Store")} /></a>
               <p><strong>{t("Scan with your iPhone")}</strong>{t("Point the camera at the code.")}</p>
             </div>
             <div className={styles.downloadActions}>
-              <AppStoreLink className={styles.appStoreLink} source="download"><AppleMark /><span>{t("Download on the")}<br /><strong>{t("App Store")}</strong></span></AppStoreLink>
-              <ClaimLink placement="download">{t("Get my 3 free months")}</ClaimLink>
+              <AppStoreLink className={styles.appStoreLink}><AppleMark /><span>{t("Download on the")}<br /><strong>{t("App Store")}</strong></span></AppStoreLink>
+              <UpdatesLink>{t("Keep me updated")}</UpdatesLink>
             </div>
           </div>
           <p className={styles.downloadNote} data-reveal-item>{t("A parent device and a child device · iOS / iPadOS 26 or later")}</p>
         </section>
-        <section className={styles.updatesSection}><AppUpdatesForm app="shield-family" id="updates" /></section>
       </main>
-      <footer className={styles.footer} id="shield-footer"><Brand /><nav aria-label={t("Footer")}><a href={localePath("/projects/shield-family#offer", locale)}>{t("Recover your code")}</a><a href={localePath("/projects/shield-family#inside", locale)}>{t("Setup help")}</a><a href={localePath("/projects/shield-family/privacy", locale)}>{t("Website privacy")}</a><a href="https://daryan-kf.github.io/kidshield-legal/privacy.html">{t("App privacy")}</a><a href="https://daryan-kf.github.io/kidshield-legal/terms.html">{t("Terms")}</a><a href="mailto:info@sarpoli.com">{t("Contact")}</a></nav><p>© {new Date().getFullYear()}{" "}{t("Shield Family")}</p></footer>
-      <MobileOffer />
+      <footer className={styles.footer} id="shield-footer"><Brand /><nav aria-label={t("Footer")}><a href="#updates">{t("App news & early testing")}</a><a href={localePath("/projects/shield-family#inside", locale)}>{t("Setup help")}</a><a href={localePath("/projects/shield-family/updates/privacy", locale)}>{t("Website privacy")}</a><a href="https://daryan-kf.github.io/kidshield-legal/privacy.html">{t("App privacy")}</a><a href="https://daryan-kf.github.io/kidshield-legal/terms.html">{t("Terms")}</a><a href="mailto:info@sarpoli.com">{t("Contact")}</a></nav><p>© {new Date().getFullYear()}{" "}{t("Shield Family")}</p></footer>
+      <MobileUpdates />
     </ProductMotion>
   );
 }
 
-function HeroProductPreview() {
+function FamilyPlanIllustration() {
   const locale = useLocale();
   const t = appCopy(locale);
-  return <figure className={styles.heroStage} data-product-fan aria-label={t("Shield Family native app previews for parents and children")}>
-    <div className={styles.stageOrbit} aria-hidden="true" /><div className={styles.stageDisc} aria-hidden="true" />
-    <div className={styles.parentDevice} data-fan-phone><span>{t("YOUR PHONE")}</span><div className={styles.phone}><Image src="/images/shield-site/parent-home.webp" width={1170} height={2532} sizes="(max-width: 700px) 42vw, 235px" loading="eager" alt={t("Shield Family parent preview: family overview and a child's device setup")} /></div></div>
-    <div className={styles.childDevice} data-fan-phone><span>{t("THEIR WORLD")}</span><div className={styles.phone}><Image src="/images/shield-site/child-home.webp" width={1170} height={2532} sizes="(max-width: 700px) 43vw, 245px" loading="eager" alt={t("Shield Family child preview: time status, learning questions and brain games")} /></div></div>
-    <div className={styles.stageNote}><Icon name="heart" /><div>{t("Two perspectives.")}<br /><strong>{t("One family plan.")}</strong></div></div>
-    <figcaption>{t("Native development preview · Example family data")}</figcaption>
-  </figure>;
+  return <div className={styles.familyPlan}>
+    <p className={styles.planEyebrow}>{t("One family plan.")}</p>
+    <svg className={styles.planPath} viewBox="0 0 540 490" fill="none" aria-hidden="true"><path d="M260 94C430 40 557 180 421 253S160 303 209 390" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 7" strokeLinecap="round" /></svg>
+    <Image className={styles.planMascot} src="/images/shield-site/icon.webp" width={256} height={256} sizes="(max-width: 700px) 33vw, 200px" alt="" loading="eager" />
+    <div className={`${styles.planPoint} ${styles.planLimit}`}><span><Icon name="shield" /></span><strong>{t("You set the limit.")}</strong></div>
+    <div className={`${styles.planPoint} ${styles.planLearn}`}><span><Icon name="book" /></span><strong>{t("They earn a little extra.")}</strong></div>
+    <div className={`${styles.planPoint} ${styles.planBedtime}`}><span><Icon name="moon" /></span><strong>{t("Bedtime still wins.")}</strong></div>
+    <a href="#inside" className={styles.planLink}>{t("See a day with Shield")} <Icon name="arrowRight" /></a>
+  </div>;
 }
 
 /** An explanation of the product model, deliberately separate from native app UI. */
@@ -339,83 +338,39 @@ function EarningDemo() {
   );
 }
 
-/** Only authentic captures of the current native build belong in this gallery. */
-const appScreens: { file: string; title: string; alt: string }[] = [
-  {
-    file: "parent-home.webp",
-    title: "Connect your family",
-    alt: "Parent Today view with Mia’s profile and a prompt to connect her device. Setup is not yet complete.",
-  },
-  {
-    file: "daily-limits.webp",
-    title: "Choose the daily boundaries",
-    alt: "Parent Screen Time controls for daily allowance, app access, bedtime and capped learning rewards. Example settings are saved while the device awaits connection.",
-  },
-  {
-    file: "child-home.webp",
-    title: "A clear place to begin",
-    alt: "Mia’s day shows her time status, Game of the Day, and Math, Science, Reading and Logic question games. No app limit is active in this example.",
-  },
-  {
-    file: "learning.webp",
-    title: "A little learning along the way",
-    alt: "A question from Shield’s Math learning activity, running in the native app with example family data.",
-  },
-  {
-    file: "time-plan.webp",
-    title: "Their time, explained",
-    alt: "The child’s expanded time plan shows a saved allowance and bedtime timeline, with a reminder that bedtime and pauses still apply. No limited apps have been chosen in this example.",
-  },
-];
-
-function AppGallery() {
-  const locale = useLocale();
-  const t = appCopy(locale);
-  return <>
-    <div className={styles.gallery} role="region" aria-label={t("Shield Family app screenshots")} tabIndex={0} data-reveal>
-      {appScreens.map((screen) => <figure key={screen.file} data-gallery-item data-reveal-item>
-        <a href={`/images/shield-site/${screen.file}`} target="_blank" rel="noopener noreferrer" aria-label={locale === "da" ? `Åbn skærmbilledet ${t(screen.title)} i fuld størrelse` : `Open full-size ${screen.title} screenshot`}>
-          <div className={styles.phone}><Image src={`/images/shield-site/${screen.file}`} alt={t(screen.alt)} width={1170} height={2532} quality={85} sizes="(max-width: 600px) 215px, 205px" /></div>
-        </a><figcaption>{t(screen.title)}</figcaption>
-      </figure>)}
-    </div>
-    <p className={styles.note}>{t("Development preview · Actual native app with example family data.")}<br />{t("Screens may differ from the current App Store release.")}</p>
-  </>;
-}
-
 function AppleMark({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 28" fill="currentColor" aria-hidden="true"><path d="M19.1 14.9c0-3.4 2.8-5.1 2.9-5.2-1.6-2.4-4.1-2.7-5-2.7-2.1-.2-4.1 1.3-5.1 1.3-1.1 0-2.7-1.3-4.4-1.2-2.3 0-4.5 1.4-5.7 3.4-2.4 4.2-.6 10.4 1.8 13.8 1.2 1.7 2.5 3.5 4.3 3.4 1.7-.1 2.4-1.1 4.5-1.1s2.7 1.1 4.5 1c1.9 0 3.1-1.7 4.2-3.4 1.3-1.9 1.8-3.7 1.9-3.8-.1 0-3.9-1.5-3.9-5.5ZM15.8 4.7C16.8 3.5 17.5 1.9 17.3.2c-1.5.1-3.2 1-4.3 2.2-1 1.1-1.8 2.8-1.6 4.4 1.6.1 3.3-.8 4.4-2.1Z" /></svg>;
 }
 
 
 
-function AppStoreLink({ children, className }: { children?: ReactNode; className?: string; source?: string }) {
+function AppStoreLink({ children, className }: { children?: ReactNode; className?: string }) {
   const locale = useLocale();
   const t = appCopy(locale);
   return <a href={APP_STORE_URL} className={className}>{children ?? <><AppleMark /><span>{t("Download on the")}<strong>{t("App Store")}</strong></span></>}</a>;
 }
 
-function MobileOffer() {
+function MobileUpdates() {
   const locale = useLocale();
   const t = appCopy(locale);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const hero = document.getElementById("shield-hero");
-    const offer = document.getElementById("offer");
+    const updates = document.getElementById("updates");
     const footer = document.getElementById("shield-footer");
-    let heroVisible = true, offerVisible = false, footerVisible = false;
+    let heroVisible = true, updatesVisible = false, footerVisible = false;
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.target === hero) heroVisible = entry.isIntersecting;
-        if (entry.target === offer) offerVisible = entry.isIntersecting;
+        if (entry.target === updates) updatesVisible = entry.isIntersecting;
         if (entry.target === footer) footerVisible = entry.isIntersecting;
       }
-      setVisible(!heroVisible && !offerVisible && !footerVisible);
+      setVisible(!heroVisible && !updatesVisible && !footerVisible);
     });
-    for (const element of [hero, offer, footer]) if (element) observer.observe(element);
+    for (const element of [hero, updates, footer]) if (element) observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  return <aside className={styles.sticky} hidden={!visible} aria-label={t("Shield Family offer")}><span>{t("Three months of family time")}<small>{t("For eligible new subscribers · conditions apply")}</small></span><a href="#offer" className={styles.button}>{t("See the offer")}{" "}<Icon name="arrowRight" /></a></aside>;
+  return <aside className={styles.sticky} hidden={!visible} aria-label={t("Shield Family updates")}><span>{t("Stay close to what’s next")}<small>{t("App news & early testing")}</small></span><a href="#updates" className={styles.button}>{t("Keep me updated")}{" "}<Icon name="arrowRight" /></a></aside>;
 }
 
 type IconName =
@@ -503,13 +458,12 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
 
 /** Public copy stays separate from the visual treatment. Screens show example data. */
 const funnelFaqs = [
-  { question: "What exactly do the three free months include?", answer: "Full access to Shield Family on the monthly, 3-month or yearly plan you choose, for eligible new subscribers who redeem a valid offer code. One family subscription covers all your children. The app helps you build a shared family plan." },
-  { question: "What happens after the free period?", answer: "Your chosen subscription renews automatically. A monthly plan begins monthly billing; a 3-month plan charges the 3-month price every three months; a yearly plan charges the full annual price for the following year. Check your local price before claiming and review the exact amount and renewal date in Apple’s confirmation screen. Cancel in Apple Account settings at least 24 hours before the free period ends to avoid renewal." },
+  { question: "Can we plan around school, homework and bedtime?", answer: "Yes. Set routines for the parts of the day when selected apps should rest, alongside each child’s daily allowance. A parent pause and bedtime remain separate boundaries; earning extra minutes does not override them." },
+  { question: "Do we have to share location?", answer: "No. Location sharing is optional. When enabled with the required permissions, family places and arrival notifications can help you see that a child has reached home or school. Screen-time and learning tools do not require you to turn it on." },
   { question: "Which devices does our family need?", answer: "A compatible parent device and child device: iPhone or iPad running iOS or iPadOS 26 or later. You connect them as a family and approve Apple Screen Time permissions during setup. Shield does not support Android or manage gaming consoles. Learning content is currently in English." },
   { question: "Can my child earn unlimited extra minutes?", answer: "No. You choose the earning rate and separate daily caps for quizzes and games. Learning can continue after a cap is reached, but stops adding time. Bedtime is a separate boundary, even when earned minutes remain. Unused earned minutes do not bank into another day." },
   { question: "How is this different from Apple’s Screen Time?", answer: "Shield uses Apple Screen Time to restrict the apps you select. It adds learning that can earn time, a visible balance for your child, parent-approved requests for more time, and a shared family view. The earning limits stay in your hands." },
-  { question: "Does Shield read private messages?", answer: "Shield does not read your child’s messages, photos, or browsing content. Family information syncs through your family’s private iCloud. Location sharing is optional. The website has a separate privacy policy explaining the information needed to verify your email and send your offer code." },
+  { question: "Does Shield read private messages?", answer: "Shield does not read your child’s messages, photos, or browsing content. Family information syncs through your family’s private iCloud. Location sharing is optional." },
   { question: "Can my co-parent and other children join?", answer: "Yes. Invite your co-parent to the same family and give each child their own settings. One family subscription includes all children. Remote changes and shared information depend on connectivity and the required permissions." },
-  { question: "How do I use my code?", answer: "Confirm your email to reveal your unique code. On your iPhone or iPad, use the redemption button to open Apple’s offer screen. Review and confirm the offer, then open Shield to connect your family. There is also a step-by-step guide for entering the code manually." },
-  { question: "Do I have to give feedback to keep the offer?", answer: "No. Your offer does not depend on feedback. We only use your signup email for confirmation, your requested code and help with this offer." },
+  { question: "Can I test new versions?", answer: "Leave your email below and confirm your address. We’ll share app updates and invitations when testing opportunities are available. Taking part is optional, and you can unsubscribe anytime." },
 ];

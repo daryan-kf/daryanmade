@@ -1,0 +1,23 @@
+.note{max-width:450px;margin:38px 0 20px 50px;padding:18px 0 0;border-top:1px solid #d9d1c3}
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.top>span{font:7px/1.6 monospace;letter-spacing:1.2px;color:#69665c}
+.choices{display:flex;align-items:center;gap:1px;flex-shrink:0}
+.choices button{position:relative;border:0;background:none;padding:6px 7px;color:#69665c;font:8px/1.5 monospace;transition:color 220ms ease}
+.choices button::after{content:"";position:absolute;left:7px;right:7px;bottom:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform 400ms var(--ease-out)}
+.choices button[aria-pressed="true"]{color:var(--accent)}
+.choices button[aria-pressed="true"]::after{transform:scaleX(1)}
+.thought{min-height:83px;padding-top:10px}
+.thought p{font:italic 26px/1.15 var(--font-serif),Georgia,serif;letter-spacing:-.35px;color:#4c4338;text-wrap:balance}
+.thought a{display:inline-flex;align-items:center;gap:10px;margin-top:10px;font:10px/1.5 var(--font-sans),sans-serif;color:#80513b}
+@media(hover:hover) and (pointer:fine){.choices button:hover{color:var(--accent)}.thought a:hover{color:var(--accent)}}
+@media(max-width:1100px){.note{max-width:380px;margin-left:0;margin-top:28px}.thought p{font-size:23px}.top>span{font-size:6px;letter-spacing:.85px}}
+@media(max-width:700px){.note{margin:27px 0 0;padding-top:13px;max-width:none}.top>span{font-size:6.5px;letter-spacing:.9px}.choices button{min-width:28px;min-height:32px;padding:7px}.thought{min-height:82px;padding-top:7px}.thought p{font-size:24px}.thought a{font-size:10px;margin-top:9px}}
+@media(max-width:350px){.top>span{font-size:6px;letter-spacing:.5px}.thought p{font-size:22px}}
+@media(prefers-reduced-motion:reduce){.choices button,.choices button::after{transition:none}}
+:global(html[data-maker-motion="paused"]) .choices button,:global(html[data-maker-motion="paused"]) .choices button::after{transition:none}
+@media(max-width:700px){
+  .top{gap:8px}.top>span{font-size:8px;line-height:1.7;letter-spacing:.7px;max-width:25ch}
+  .choices button{min-width:44px;min-height:44px;font-size:10px}
+  .thought{min-height:108px}.thought p{font-size:27px;line-height:1.2}
+  .thought a{min-height:44px;font-size:13px;margin-top:4px}
+}

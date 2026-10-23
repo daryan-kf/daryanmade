@@ -28,13 +28,14 @@ test("Danish and English are server-rendered with matching language metadata", a
   }
 });
 
-test("Danish home preserves collection order and inactive Wardrobe", async ({ page }) => {
+test("Danish home preserves collection order and enabled Twillby", async ({ page }) => {
   await page.goto("/da");
   await expect(page.locator("h1")).toContainText("Gode idéer.");
   expect(await page.locator("[data-project-card]").evaluateAll(cards => cards.map(card => (card as HTMLElement).dataset.projectCard))).toEqual(["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra", "next-project"]);
   const wardrobe = page.locator('[data-project-card="wardrobe"]');
   await expect(wardrobe).toContainText("Kommer snart");
-  await expect(wardrobe.locator("a,button")).toHaveCount(0);
+  await expect(wardrobe.getByRole("heading", { name: "Twillby", exact: true })).toBeVisible();
+  await expect(wardrobe.locator("[data-project-link]")).toHaveAttribute("href", "/da/projects/wardrobe");
   await expect(page.locator('[data-project-card="vela"] [data-project-link]')).toHaveAttribute("href", "/da/vela");
   await expect(page.locator('[data-project-card="shield-family"] [data-project-link]')).toHaveAttribute("href", "/da/projects/shield-family");
   await expect(page.locator('[data-project-card="sarpoli"] [data-project-link]')).toHaveAttribute("href", "https://sarpoli.com");
@@ -57,6 +58,8 @@ for (const product of products) {
 test("Danish product previews open at the top after leaving the home collection", async ({ page }) => {
   for (const slug of ["vela", "shield-family"]) {
     await page.goto("/da");
+    await expect(page.locator(`[data-project-card="${slug}"] details`)).not.toHaveAttribute("open");
+    await expect(page.locator(`[data-project-card="${slug}"] figure`).first()).toBeVisible();
     await page.locator(`[data-project-card="${slug}"] [data-project-link]`).click();
     await expect(page.locator("h1")).toBeVisible();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(4);

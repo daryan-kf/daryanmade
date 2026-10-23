@@ -4,10 +4,9 @@ import type { CSSProperties } from "react";
 import type { Project } from "@/lib/projects";
 import styles from "./product-visual.module.css";
 import { MakerMark } from "./icons";
-import { MakerFallback } from "./maker-journey";
 import { HomeAppScreen, type HomeAppScreenKind } from "./home-app-screen";
 
-type ProductVisualProps = { project: Project; large?: boolean; locale?: Locale; homePreview?: boolean };
+type ProductVisualProps = { project: Project; large?: boolean; locale?: Locale };
 
 function Mark({ project, inverse = false }: { project: Project; inverse?: boolean }) {
   return (
@@ -38,7 +37,7 @@ function BrowserBar({ label }: { label: string }) {
   return <div className={styles.browserBar}><span className={styles.browserDots}><i /><i /><i /></span><span>{label}</span><span className={styles.browserPlus}>+</span></div>;
 }
 
-function MobileScene({ project, large, locale = "en", homePreview = false }: ProductVisualProps) {
+function MobileScene({ project, large, locale = "en" }: ProductVisualProps) {
   const isIqra = project.slug === "iqra";
   const previews: Record<string, string> = { "Latest update preview": "Forhåndsvisning af seneste opdatering", "Read · Learn · Remember": "Læs · Lær · Husk", "Vela 2.0": "Vela 2.0" };
   const preview = project.previewLabel || "Interface preview";
@@ -46,8 +45,8 @@ function MobileScene({ project, large, locale = "en", homePreview = false }: Pro
     <>
       <div className={styles.halo} />
       <div className={styles.orbitLine} />
-      {!homePreview && <Mark project={project} />}
-      {!homePreview && <span className={styles.previewLabel}>{locale === "da" ? previews[preview] || project.previewLabel || "Forhåndsvisning af brugerfladen" : preview}</span>}
+      <Mark project={project} />
+      <span className={styles.previewLabel}>{locale === "da" ? previews[preview] || project.previewLabel || "Forhåndsvisning af brugerfladen" : preview}</span>
       <div className={styles.deviceAssembly} data-parallax>
         <Phone project={project} screen={2} className={styles.phoneBack} />
         <Phone project={project} screen={1} className={styles.phoneFront} />
@@ -115,18 +114,18 @@ function IdentityScene({ project, locale = "en" }: ProductVisualProps) {
   );
 }
 
-export function ProductVisual({ project, large = false, locale = "en", homePreview = false }: ProductVisualProps) {
+export function ProductVisual({ project, large = false, locale = "en" }: ProductVisualProps) {
   const isMobile = ["shield-family", "iqra", "vela"].includes(project.slug);
   const concept = project.slug === "wardrobe";
   return (
     <div
-      className={`${styles.scene} ${large ? styles.large : ""} ${homePreview ? styles.homePreview : ""}`}
+      className={`${styles.scene} ${large ? styles.large : ""}`}
       data-project={project.slug}
       style={{ "--project-color": project.color, "--project-ink": project.ink } as CSSProperties}
       role="img"
       aria-label={locale === "da" ? `${project.name}: ${concept ? "forhåndsvisning af brugerflade under udvikling og stilbilleder" : isMobile ? "appens brugerflade" : "produktvisning"}` : `${project.name} ${concept ? "development interface preview and styling imagery" : isMobile ? "product interface" : "product preview"}`}
     >
-      {project.slug === "next-project" ? <><Mark project={project} />{homePreview ? <div className={styles.surpriseMark} data-maker-anchor="work"><MakerFallback variant="work" /></div> : <MakerMark className={styles.surpriseMark} />}<span className={styles.surpriseYear}>2027</span><span className={styles.sceneNote}>{locale === "da" ? "Noget godt er ved at tage form." : "Something good is taking shape."}</span></> : isMobile ? <MobileScene project={project} large={large} locale={locale} homePreview={homePreview} />
+      {project.slug === "next-project" ? <><Mark project={project} /><MakerMark className={styles.surpriseMark} /><span className={styles.surpriseYear}>2027</span><span className={styles.sceneNote}>{locale === "da" ? "Noget godt er ved at tage form." : "Something good is taking shape."}</span></> : isMobile ? <MobileScene project={project} large={large} locale={locale} />
         : project.slug === "kaizencv" ? <ResumeScene project={project} />
         : project.slug === "wardrobe" ? <WardrobeScene project={project} locale={locale} />
         : project.slug === "koebsklar" ? <PropertyScene project={project} />

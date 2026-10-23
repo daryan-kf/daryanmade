@@ -7,11 +7,10 @@
 .form { min-width:0; }
 .label { display:block; font-size:13px; font-weight:600; margin-bottom:10px; }
 .email { width:100%; min-height:54px; border:1px solid color-mix(in srgb,var(--updates-color) 30%,transparent); border-radius:9px; background:color-mix(in srgb,var(--updates-surface) 55%,white); color:var(--updates-text); padding:14px 16px; font:inherit; font-size:16px; outline-offset:4px; }
-.email:focus-visible,.consent input:focus-visible { outline:2px solid var(--updates-color); }
+.email:focus-visible { outline:2px solid var(--updates-color); }
 .email::placeholder { color:var(--updates-text); opacity:.55; }
 .email[aria-invalid=true] { border-color:#a02c2c; }
-.consent { display:flex; gap:11px; align-items:flex-start; margin:20px 0; font-size:12px; line-height:1.8; cursor:pointer; }
-.consent input { width:18px; height:18px; margin:3px 0 0; flex-shrink:0; accent-color:var(--updates-color); }
+.consent { margin:18px 0; font-size:11px; line-height:1.8; opacity:.85; }
 .button { display:flex; align-items:center; justify-content:space-between; gap:25px; width:100%; min-height:52px; border:0; border-radius:9px; padding:15px 20px; background:var(--updates-color); color:white; font-size:13px; font-weight:650; cursor:pointer; transition:filter 180ms,transform 180ms; }
 .button:disabled { opacity:.65; cursor:wait; }
 .button:focus-visible { outline:2px solid var(--updates-color); outline-offset:5px; }
@@ -66,3 +65,9 @@
 @media(hover:hover) and (pointer:fine) { .button:not(:disabled):hover { filter:brightness(1.1); transform:translateY(-1px); } }
 @media(max-width:720px) { .signup { grid-template-columns:1fr; gap:30px; border-radius:18px; } .intro { max-width:100%; } .intro h2 { font-size:34px; } .promise { margin-top:16px; } .shellContent { margin-top:58px; } .shellNav { align-items:center; gap:12px; } }
 @media(prefers-reduced-motion:reduce) { .button,.inlineMark { transition:none; } .button:not(:disabled):hover { transform:none; } }
+@media(max-width:700px){
+  .signup{padding:28px 22px}
+  .consent,.small,.promise{font-size:13px;line-height:1.7}
+  .button,.label,.inlineSummary{font-size:15px}
+  .email{min-height:56px;font-size:16px}
+}

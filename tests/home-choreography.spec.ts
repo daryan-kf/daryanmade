@@ -71,7 +71,12 @@ test("pausing during the opening sequence immediately restores all reading text"
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("[data-home-line]").first()).toHaveAttribute("style", /105%/);
   const pause = page.getByRole("button", { name: "Pause motion", exact: true });
-  await expect(pause).toBeVisible();
+  // The local sculpture exposes its control after its first successful frame.
+  // Advance one frame at a time so we can still pause during the opening text.
+  await expect.poll(async () => {
+    await page.clock.runFor(16);
+    return pause.isVisible();
+  }).toBe(true);
   // Dispatch through the real control while the animation clock is frozen;
   // Playwright's click stability frames would otherwise wait for that clock.
   await pause.dispatchEvent("click");

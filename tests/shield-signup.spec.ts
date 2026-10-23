@@ -1,91 +1,43 @@
-import { test, expect, type Page } from "@playwright/test";
-
-const signupForm = (page: Page) => page.locator("#offer").getByRole("form", { name: "A little more family time." });
-const emailInput = (page: Page) => signupForm(page).getByRole("textbox", { name: "Your email address", exact: true });
-const consentInput = (page: Page) => signupForm(page).getByRole("checkbox", { name: /^I accept the offer details/ });
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
 test.beforeEach(async ({ page }) => { await page.emulateMedia({ reducedMotion: "reduce" }); });
 
-test("signup validates email and unchecked consent before submitting anything", async ({ page }) => {
-  let calls = 0;
-  await page.route("**/api/shield-family/signup", async (route) => {
-    calls += 1;
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
-  });
-  const response = await page.goto("/projects/shield-family#offer");
-  expect(response?.status()).toBe(200);
-  const form = signupForm(page);
-  const submit = form.getByRole("button", { name: "Send my confirmation link" });
-  await expect(consentInput(page)).not.toBeChecked();
-  await expect(form.getByRole("radio", { name: /^Yearly/ })).toBeChecked();
-  await submit.click();
-  await expect(form.getByRole("alert")).toContainText("Please check these details");
-  await expect(form.getByRole("alert")).toBeFocused();
-  await expect(emailInput(page)).toHaveAttribute("aria-invalid", "true");
-  await expect(consentInput(page)).toHaveAttribute("aria-invalid", "true");
-  expect(calls).toBe(0);
-
-  await emailInput(page).fill("not-an-email");
-  await submit.click();
-  await expect(form).toContainText("Use a complete email address");
-  expect(calls).toBe(0);
-
-  await emailInput(page).fill("family@example.com");
-  await submit.click();
-  await expect(form).toContainText("Accept the offer details before requesting your confirmation link.");
-  await expect(emailInput(page)).toHaveValue("family@example.com");
-  await expect(emailInput(page)).toHaveAttribute("aria-invalid", "false");
-  await expect(consentInput(page)).not.toBeChecked();
-  expect(calls).toBe(0);
-});
-
-test("the chosen plan and consent survive a transient signup failure, then retry succeeds", async ({ page }) => {
-  const requests: { method: string; body: unknown }[] = [];
-  await page.route("**/api/shield-family/signup", async (route) => {
-    requests.push({ method: route.request().method(), body: route.request().postDataJSON() });
-    await route.fulfill({ status: requests.length === 1 ? 503 : 200, contentType: "application/json", body: JSON.stringify(requests.length === 1 ? { ok: false, error: "Email confirmation is temporarily unavailable. Please try again." } : { ok: true }) });
-  });
+test("Shield replaces the promotion with an email-only signup, including old offer anchors", async ({ page }) => {
   await page.goto("/projects/shield-family#offer");
-  const form = signupForm(page);
-  await form.getByRole("radio", { name: /^Every 3 months/ }).check();
-  await emailInput(page).fill("family@example.com");
-  await consentInput(page).check();
-  await form.getByRole("button", { name: "Send my confirmation link" }).click();
-  await expect(form.getByRole("alert")).toContainText("temporarily unavailable");
-  await expect(emailInput(page)).toHaveValue("family@example.com");
-  await expect(form.getByRole("radio", { name: /^Every 3 months/ })).toBeChecked();
-  await expect(consentInput(page)).toBeChecked();
-  await form.getByRole("button", { name: "Try again" }).click();
-  const success = page.locator("#offer").getByRole("status");
-  await expect(success.getByRole("heading", { name: "Check your inbox." })).toBeVisible();
-  await expect(success).toContainText("family@example.com");
-  await expect(success).toContainText("Requesting a code doesn’t start a subscription.");
-  await expect(success).toBeFocused();
-  expect(requests).toEqual(Array.from({ length: 2 }, () => ({ method: "POST", body: { locale: "en", email: "family@example.com", plan: "quarterly", website: "", termsAccepted: true } })));
+  const form = page.locator("#updates").getByRole("form", { name: "Shield Family email updates", exact: true });
+  await expect(form).toBeVisible();
+  await expect(form.getByRole("textbox", { name: "Your email address" })).toBeVisible();
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await expect(page.getByRole("checkbox")).toHaveCount(0);
+  await expect(page.locator("body")).not.toContainText(/3 months free|Founding Families|Choose your plan|Redeem your Apple code|The offer/i);
+  await expect(page.locator('a[href="#offer"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Keep me updated" }).first()).toHaveAttribute("href", "#updates");
+  await form.scrollIntoViewIfNeeded();
+  const results = await new AxeBuilder({ page }).include("#updates").withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  expect(results.violations).toEqual([]);
 });
 
-test("signup disables controls while sending and a double click produces one request", async ({ page }) => {
-  let calls = 0;
-  let release: (() => void) | undefined;
-  const responseReady = new Promise<void>((resolve) => { release = resolve; });
-  await page.route("**/api/shield-family/signup", async (route) => {
-    calls += 1;
-    expect(route.request().postDataJSON()).toEqual({ locale: "en", email: "family@example.com", plan: "monthly", website: "", termsAccepted: true });
-    await responseReady;
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+for (const locale of ["en", "da"] as const) {
+  test(`Twillby has a complete ${locale} preview with upcoming stores and mobile images`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${locale === "da" ? "/da" : ""}/projects/wardrobe`);
+    await expect(page.locator("h1")).toHaveText(locale === "da" ? /Lidt mere\s*dig\./ : /A little more\s*you\./);
+    await expect(page.getByRole("img", { name: "Twillby", exact: true }).first()).toBeVisible();
+    await expect(page.locator('main img[src*="twillby-site"][src*="mascot.png"]')).toBeVisible();
+    await expect(page.locator("main")).not.toContainText("Twill Buy");
+    const stores = page.getByLabel(locale === "da" ? "Appens tilgængelighed" : "App availability");
+    await expect(stores).toContainText("App Store");
+    await expect(stores).toContainText("Google Play");
+    await expect(stores.locator("small")).toHaveText(Array(2).fill(locale === "da" ? "Kommer snart" : "Coming soon"));
+    await expect(page.locator('a[href*="apps.apple.com"], a[href*="play.google.com"]')).toHaveCount(0);
+    for (const image of await page.locator("main img").all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
+    }
+    await expect(page.locator('#updates[data-updates-app="wardrobe"]')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+    expect(results.violations.map(item => ({ id: item.id, targets: item.nodes.map(node => node.target) }))).toEqual([]);
   });
-  await page.goto("/projects/shield-family#offer");
-  const form = signupForm(page);
-  await form.getByRole("radio", { name: /^Monthly/ }).check();
-  await emailInput(page).fill("family@example.com");
-  await consentInput(page).check();
-  await form.getByRole("button", { name: "Send my confirmation link" }).click({ clickCount: 2, delay: 30 });
-  await expect(form).toHaveAttribute("aria-busy", "true");
-  await expect(form.getByRole("button", { name: "Requesting your link…" })).toBeDisabled();
-  await expect(emailInput(page)).toBeDisabled();
-  await expect(consentInput(page)).toBeDisabled();
-  await expect.poll(() => calls).toBe(1);
-  release?.();
-  await expect(page.locator("#offer").getByRole("heading", { name: "Check your inbox." })).toBeVisible();
-  expect(calls).toBe(1);
-});
+}

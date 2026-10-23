@@ -32,7 +32,7 @@ export function VelaSite({ locale = "en" }: { locale?: Locale }) {
   { question: t("Is Vela 2.0 available now?"), answer: <p>{t("Yes. Vela 2.0 is available on the App Store for iPhone and iPad. Join the Vela updates below for new features and occasional news from the app.")}</p> },
   { question: t("Is Vela free?"), answer: <p>{t("Vela requires a Vela Pro subscription. Review the available plans, local prices and renewal terms in the app before subscribing.")}</p> },
   { question: t("What does Talk to Vela actually do?"), answer: <p>{t("You can speak or type to add, move and finish things in the app. Vela shows what changed, with Undo. A handwritten list is reviewed before anything is added. AI features require your permission; basic commands can work offline.")}</p> },
-  { question: t("Can I use Vela without an internet connection?"), answer: <p>{t("Your plan and personal records are saved on your device first and sync to your account when a connection returns. AI requests and some connected services need internet access.")}</p> },
+  { question: t("Can I use Vela without an internet connection?"), answer: <p>{t("Your plan and personal records are saved on your device first. You can begin without an account and connect one when you want to sync. AI requests and some connected services need internet access.")}</p> },
   { question: t("Which devices is Vela made for?"), answer: <p>{t("Vela 2.0 is designed for iPhone and iPad, with native widgets, light and dark themes, and nine interface languages. Check the App Store for the requirements of the currently available release.")}</p> },
 ];
   return <ProductMotion className={styles.site}>
@@ -48,7 +48,7 @@ export function VelaSite({ locale = "en" }: { locale?: Locale }) {
           <p className={styles.eyebrow}>{t("A little more clarity. A little more you.")}</p>
           <h1 id="vela-title" data-product-enter>{t("Just")}<br /><em>{t("say it.")}</em><span className={styles.spark} aria-hidden="true">✦</span></h1>
           <p className={styles.heroPromise}>{t("One sentence. Your day, planned.")}</p>
-          <p className={styles.lead}>{t("Say what’s on your mind. Make room for what matters. Your plans, focus and ideas, together in one calm place.")}</p>
+          <p className={styles.lead}>{t("Plan your day, protect a little focus and keep your ideas moving. Tasks, calendar, goals and habits meet a journal, mood check-ins and a weekly review, in one app for iPhone and iPad.")}</p>
           <div className={styles.actions}><StoreLink locale={locale} /><a href="#updates" className={styles.textLink}>{t("Keep up with Vela")}{" "}<Arrow /></a></div>
           <p className={styles.previewNote}><span />{t("Vela 2.0 is here · Made for iPhone and iPad.")}</p>
         </div>
@@ -94,12 +94,17 @@ export function VelaSite({ locale = "en" }: { locale?: Locale }) {
       <section className={styles.insideSection} id="inside" aria-labelledby="inside-title">
         <div className={styles.sectionHead} data-product-enter><p className={styles.eyebrow}>{t("03 / Big ideas. Small beginnings.")}</p><h2 id="inside-title">{t("For the life")}<br /><em>{t("you’re building.")}</em></h2><p>{t("A good idea deserves a next step.")}<br />{t("And progress deserves a little perspective.")}</p></div>
         <div className={styles.featureGallery}>
-          <article className={styles.ideaFeature}><div><span>{t("CAPTURE → REVISIT")}</span><h3>{t("Let good ideas")}<br /><em>{t("find you again.")}</em></h3><p>{t("Save a thought by voice, photo or link. Bring it back when it’s time, then turn it into a goal.")}</p></div><Phone file="ideas-revisit" alt={t("Vela 2.0 Ideas interface illustration: a saved weekend idea resurfaced for another look")} /></article>
-          <article className={styles.goalFeature}><div><span>{t("GOALS → NEXT STEPS")}</span><h3>{t("Give your someday")}<br /><em>{t("a starting point.")}</em></h3><p>{t("Break a goal into milestones. Choose the steps that matter and send one to your day.")}</p></div><Phone file="goal-impact" alt={t("Vela 2.0 goal interface illustration showing impact choices and the next steps")} /></article>
+          <article className={styles.ideaFeature}><div><span>{t("CAPTURE → REVISIT")}</span><h3>{t("Let good ideas")}<br /><em>{t("find you again.")}</em></h3><p>{t("Save ideas by voice, photo or link, add notes and a board, and revisit them over time. Turn one into a goal when you’re ready to act.")}</p></div><Phone file="ideas-revisit" alt={t("Vela 2.0 Ideas interface illustration: a saved weekend idea resurfaced for another look")} /></article>
+          <article className={styles.goalFeature}><div><span>{t("GOALS → NEXT STEPS")}</span><h3>{t("Give your someday")}<br /><em>{t("a starting point.")}</em></h3><p>{t("Break a goal into milestones and tasks. Consider its six-month impact, choose a useful next step and give it a place in today’s plan.")}</p></div><Phone file="goal-impact" alt={t("Vela 2.0 goal interface illustration showing impact choices and the next steps")} /></article>
           <article className={styles.habitFeature}><div><span>{t("RHYTHM → MOMENTUM")}</span><h3>{t("A little counts.")}<br /><em>{t("Keep it going.")}</em></h3><p>{t("Habits that fit your rhythm. A year that fills with what you did, without a streak to protect.")}</p></div><Phone file="habit-year" alt={t("Vela 2.0 habit interface illustration with a year of recorded activity")} /></article>
         </div>
         <p className={styles.disclosure}>{t("Vela 2.0 interface illustrations, based on the app’s current design.")}</p>
         <div className={styles.growNote}><span aria-hidden="true">✦</span><p>{t("And a little space for yourself.")}<strong>{t("Journal. Check in. Give thanks. Learn a language.")}</strong></p><a href="#vela-film" aria-label={t("Explore Vela in the film")}><Arrow /></a></div>
+        <div className={styles.threePoints}>
+          <article><span>01</span><h3>{t("Keep a record of your day.")}</h3><p>{t("Type, speak or scan a journal entry. Add a mood check-in, record something you’re grateful for and keep your own words of encouragement close.")}</p></article>
+          <article><span>02</span><h3>{t("Return to the words you’re learning.")}</h3><p>{t("Keep words and phrases in a personal vocabulary, practise them with spaced review and build a new word set with Vela.")}</p></article>
+          <article><span>03</span><h3>{t("Let this week shape the next.")}</h3><p>{t("See progress from your own activity, work through a weekly review and turn the next steps into a plan. A missed day does not erase what you’ve done.")}</p></article>
+        </div>
         <ProductGallery locale={locale} name="Vela" title={t("A little more of your every day.")} images={[
           { src: `${IMAGE}campaign-01.webp`, label: t("Just say it"), alt: t("Vela campaign artwork: one spoken sentence becomes four changes to review") },
           { src: `${IMAGE}campaign-03.webp`, label: t("Tasks + calendar"), alt: t("Vela campaign artwork: tasks and calendar events shown together") },

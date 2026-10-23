@@ -21,13 +21,15 @@ export function MotionProvider() {
     const languageChange = document.documentElement.dataset.languageChanging === "true";
     let disposed = false;
     let cleanup: (() => void) | undefined;
-    Promise.all([import("gsap"), import("gsap/ScrollTrigger"), import("lenis")]).then(([{ gsap }, { ScrollTrigger }, { default: Lenis }]) => {
+    Promise.all([import("gsap"), import("gsap/ScrollTrigger"), contentPath === "/" ? Promise.resolve(null) : import("lenis")]).then(([{ gsap }, { ScrollTrigger }, lenisModule]) => {
       if (disposed) return;
       gsap.registerPlugin(ScrollTrigger);
       const motion = gsap.matchMedia();
       motion.add("(prefers-reduced-motion: no-preference)", () => {
       const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-      const lenis = finePointer ? new Lenis({ duration: 1.1, smoothWheel: true, anchors: true }) : undefined;
+      // The studio responds to the visitor's native scroll; only the material
+      // carries inertia. Product sites retain their own established scroll feel.
+      const lenis = finePointer && lenisModule ? new lenisModule.default({ duration: 1.1, smoothWheel: true, anchors: true }) : undefined;
       const tick = (time: number) => lenis?.raf(time * 1000);
       lenis?.on("scroll", ScrollTrigger.update);
       if (lenis) { gsap.ticker.add(tick); gsap.ticker.lagSmoothing(0); }
@@ -42,12 +44,15 @@ export function MotionProvider() {
         if (lines.length) gsap.from(lines, { yPercent: 110, rotation: 1.5, duration: 1.2, stagger: 0.12, ease: "power4.out", clearProps: "all" });
         if (hero.length) gsap.from(hero, { opacity: 0, y: 18, duration: .8, delay: 0.2, stagger: 0.06, ease: "power3.out", clearProps: "all" });
         gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
+          // Each exhibit enters as one complete card; a second copy reveal
+          // would hide its text again after the card has already arrived.
+          if (element.closest("[data-project-card]") && element !== element.closest("[data-project-card]")) return;
           if (languageChange && element.getBoundingClientRect().top < innerHeight) presented.current.add(element);
           if (presented.current.has(element)) return;
           const children = element.querySelectorAll("[data-reveal-item]");
           const targets = children.length ? children : element;
           const sibling = element.hasAttribute("data-project-card") && element.previousElementSibling ? 0.08 : 0;
-          const entrance = gsap.from(targets, { opacity: 0, y: children.length ? 14 : 20, duration: .65, delay: finePointer ? sibling : 0, stagger: children.length ? .055 : 0, ease: "power3.out", clearProps: "all", paused: true });
+          const entrance = gsap.from(targets, { opacity: 0, y: children.length ? 24 : 38, rotationX: children.length ? 0 : 7, transformPerspective: 1000, duration: .9, delay: finePointer ? sibling : 0, stagger: children.length ? .085 : 0, ease: "power3.out", clearProps: "all", paused: true });
           scrollEntrance(ScrollTrigger, element, entrance, () => { presented.current.add(element); });
         });
         if (finePointer) gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((element) => {

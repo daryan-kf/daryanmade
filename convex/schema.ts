@@ -8,8 +8,30 @@ const vela = updateTables("velaEmails", "velaVerifications");
 const iqra = updateTables("iqraEmails", "iqraVerifications");
 const shieldUpdates = updateTables("shieldFamilyUpdateEmails", "shieldFamilyUpdateVerifications");
 
+const twillBuy = updateTables("twillBuyEmails", "twillBuyVerifications");
+const kaizenCV = updateTables("kaizenCVEmails", "kaizenCVVerifications");
+const koebsklar = updateTables("koebsklarEmails", "koebsklarVerifications");
+const sarpoli = updateTables("sarpoliEmails", "sarpoliVerifications");
+
 // Each product owns its own email table and related records. Do not mix audiences.
 export default defineSchema({
+  twillBuyEmails: twillBuy.emails,
+  twillBuyVerifications: twillBuy.verifications,
+  twillBuyEmailJobs: twillBuy.jobs,
+  twillBuyRateLimits: twillBuy.limits,
+  kaizenCVEmails: kaizenCV.emails,
+  kaizenCVVerifications: kaizenCV.verifications,
+  kaizenCVEmailJobs: kaizenCV.jobs,
+  kaizenCVRateLimits: kaizenCV.limits,
+  koebsklarEmails: koebsklar.emails,
+  koebsklarVerifications: koebsklar.verifications,
+  koebsklarEmailJobs: koebsklar.jobs,
+  koebsklarRateLimits: koebsklar.limits,
+  sarpoliEmails: sarpoli.emails,
+  sarpoliVerifications: sarpoli.verifications,
+  sarpoliEmailJobs: sarpoli.jobs,
+  sarpoliRateLimits: sarpoli.limits,
+
   velaEmails: vela.emails,
   velaVerifications: vela.verifications,
   velaEmailJobs: vela.jobs,

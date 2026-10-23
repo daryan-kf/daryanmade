@@ -2,469 +2,331 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { MakerStage } from "@/lib/maker-geometry";
-import type { MakerAnchor, MakerCrossing, MakerPose } from "@/lib/maker-journey-path";
 import { useLocale } from "./locale-provider";
-import { MAKER_PALETTES } from "@/lib/maker-appearance";
+import { StudioSoundToggle } from "./studio-interactions";
+import { studioGreeting } from "@/lib/studio-messages";
 import styles from "./maker-journey.module.css";
 
-export type { MakerStage } from "@/lib/maker-geometry";
-
-/** Pre-rendered with the exact live geometry and studio material. Loading,
- * paused, reduced-motion and no-WebGL states keep the same sculptural finish. */
-export function MakerFallback({ variant = "hero", className = "" }: { variant?: MakerStage; className?: string }) {
-  const asset = variant === "about" || variant === "closing" || variant === "work" ? "hero" : variant;
-  return <img className={`${styles.fallback} ${className}`} src={`/images/maker/${asset}.webp`} width={800} height={800} alt="" aria-hidden="true" draggable={false} decoding="async" data-maker-fallback={variant} />;
+/** A still from the same surface and studio lighting, including without WebGL. */
+export function MakerFallback({ variant = "hero", className = "" }: { variant?: "hero" | "about" | "closing"; className?: string }) {
+  return <img className={`${styles.fallback} ${className}`} src="/images/maker/fluid-study.webp" width={1000} height={1000} alt="" aria-hidden="true" draggable={false} decoding="async" loading={variant === "closing" ? "lazy" : "eager"} data-maker-fallback={variant} />;
 }
 
-/** One page-level transparent canvas. The parent owns layout and art slots;
- * MotionProvider owns Lenis and ScrollTrigger. This component only joins GSAP's
- * existing ticker and refresh notifications, never creating a second clock.
- */
+/** One canvas renders the sculpture inside its hero and closing frames. */
 export function MakerJourney() {
   const locale = useLocale();
-  const hostRef = useRef<HTMLDivElement>(null);
-  const [portalHost, setPortalHost] = useState<HTMLElement | null>(null);
-  useEffect(() => setPortalHost(document.body), []);
+  const wake = useRef<(() => void) | null>(null);
+  const stopMotion = useRef<(() => void) | null>(null);
   const pausedRef = useRef(false);
-  const wakeRef = useRef<(() => void) | null>(null);
-  const [ready, setReady] = useState(false);
-  const [available, setAvailable] = useState(false);
+  const [body, setBody] = useState<HTMLElement | null>(null);
   const [paused, setPaused] = useState(false);
+  const [available, setAvailable] = useState(false);
+  useEffect(() => { setBody(document.body); }, []);
 
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
     const root = document.documentElement;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const compactQuery = window.matchMedia("(max-width: 760px), (pointer: coarse)");
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const compact = matchMedia("(max-width: 700px), (pointer: coarse)");
+    const finePointer = matchMedia("(hover: hover) and (pointer: fine)");
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
     let disposed = false;
     let generation = 0;
-    let cleanupScene: (() => void) | undefined;
-
-    const showFallback = () => {
-      root.dataset.makerMotion = pausedRef.current ? "paused" : "fallback";
-      setReady(false);
+    let release: (() => void) | undefined;
+    const fallback = () => {
+      delete root.dataset.makerEnhanced;
+      root.dataset.makerMotion = "fallback";
+      setAvailable(false);
     };
 
-    async function mountScene() {
-      const thisGeneration = ++generation;
-      if (reduced.matches || disposed) return;
-      let release: (() => void) | undefined;
+    async function mount() {
+      const version = ++generation;
+      if (disposed || reduced.matches) return;
       try {
-        const [THREE, { gsap }, { ScrollTrigger }, { createMakerGeometry, MAKER_STAGES }, { sampleMakerJourney, dampMakerValue, resolveMakerWeights }] = await Promise.all([
-          import("three"), import("gsap"), import("gsap/ScrollTrigger"), import("@/lib/maker-geometry"), import("@/lib/maker-journey-path"),
+        const [THREE, { RoomEnvironment }, { createFluidStudy }, { createFluidGreeting }] = await Promise.all([
+          import("three"), import("three/addons/environments/RoomEnvironment.js"), import("@/lib/fluid-study"), import("@/lib/fluid-greeting"), document.fonts.ready,
         ]);
-        if (disposed || reduced.matches || thisGeneration !== generation) return;
-
-        const compact = compactQuery.matches;
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !compact, powerPreference: "low-power" });
-        const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 2000);
-        camera.position.z = 1000;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.5));
-        renderer.setClearColor(0x000000, 0);
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.toneMapping = THREE.NoToneMapping;
-        renderer.autoClear = false;
+        if (disposed || reduced.matches || version !== generation) return;
+        const anchors = Array.from(document.querySelectorAll<HTMLElement>('[data-maker-anchor="hero"], [data-maker-anchor="closing"]'));
+        if (!anchors.length) return;
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
+        renderer.setPixelRatio(Math.min(devicePixelRatio || 1, compact.matches ? 1.25 : 1.75));
+        renderer.setClearColor(0, 0);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = .8;
         const canvas = renderer.domElement;
         canvas.className = styles.canvas;
-        canvas.setAttribute("aria-hidden", "true");
         canvas.dataset.makerCanvas = "";
-
-        let geometry: ReturnType<typeof createMakerGeometry> | undefined;
-        let material: import("three").ShaderMaterial | undefined;
-        let shadowMap: import("three").DataTexture | undefined;
-        let shadowMaterial: import("three").SpriteMaterial | undefined;
-        let detach: (() => void) | undefined;
-        let released = false;
-        release = () => {
-          if (released) return;
-          released = true;
-          detach?.();
-          geometry?.dispose(); material?.dispose();
-          shadowMap?.dispose(); shadowMaterial?.dispose();
-          renderer.dispose(); canvas.remove();
-        };
-
-        geometry = createMakerGeometry(compact);
-        material = new THREE.ShaderMaterial({
-          uniforms: {
-            pigment: { value: new THREE.Color(MAKER_PALETTES.hero.primary) },
-            secondaryPigment: { value: new THREE.Color(MAKER_PALETTES.hero.secondary) },
-            shadowPigment: { value: new THREE.Color(MAKER_PALETTES.hero.shadow) },
-            detailPigment: { value: new THREE.Color("#fff7e8") },
-          },
-          vertexShader: `
-            #include <common>
-            #include <morphtarget_pars_vertex>
-            attribute float part;
-            varying float surfacePart;
-            varying vec3 studioNormal;
-            void main() {
-              surfacePart = part;
-              #include <beginnormal_vertex>
-              #include <morphnormal_vertex>
-              #include <defaultnormal_vertex>
-              studioNormal = normalize(transformedNormal);
-              #include <begin_vertex>
-              #include <morphtarget_vertex>
-              #include <project_vertex>
-            }
-          `,
-          fragmentShader: `
-            uniform vec3 pigment;
-            uniform vec3 shadowPigment;
-            uniform vec3 secondaryPigment;
-            uniform vec3 detailPigment;
-            varying float surfacePart;
-            varying vec3 studioNormal;
-            void main() {
-              vec3 normal = normalize(studioNormal);
-              vec3 light = normalize(vec3(-0.55, 0.7, 1.0));
-              vec3 fill = normalize(vec3(0.5, -0.8, 0.65));
-              vec3 view = vec3(0.0, 0.0, 1.0);
-              float diffuse = max(dot(normal, light), 0.0);
-              float bounce = max(dot(normal, fill), 0.0);
-              float gloss = pow(max(dot(normal, normalize(light + view)), 0.0), 64.0);
-              float softbox = pow(max(dot(normal, normalize(vec3(-0.85, 0.15, 1.2))), 0.0), 22.0);
-              float rim = pow(max(dot(normal, normalize(fill + view)), 0.0), 45.0);
-              vec3 base = surfacePart > 2.5 ? vec3(1.0, .62, .08) : surfacePart > 1.5 ? detailPigment : surfacePart > .5 ? secondaryPigment : pigment;
-              vec3 shade = surfacePart > .5 ? base * .3 : shadowPigment;
-              vec3 color = mix(shade, base, pow(diffuse, 0.7));
-              color += base * bounce * 0.16;
-              color += vec3(1.0, 0.91, 0.79) * (gloss * 0.65 + softbox * 0.14 + rim * 0.28);
-              gl_FragColor = vec4(color, 1.0);
-              #include <colorspace_fragment>
-            }
-          `,
-        });
+        canvas.dataset.makerForm = "fluid";
+        canvas.dataset.makerTopology = "trefoil";
+        canvas.setAttribute("aria-hidden", "true");
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(34, 1, .1, 30);
+        camera.position.set(0, 0, 6.8);
+        const environment = new RoomEnvironment();
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        const studio = pmrem.fromScene(environment, .035);
+        scene.environment = studio.texture;
+        scene.environmentRotation.set(0, .6, .15);
+        environment.dispose();
+        pmrem.dispose();
+        const { geometry, material, tension, touch } = createFluidStudy(compact.matches);
+        const accent = getComputedStyle(root).getPropertyValue("--accent").trim();
+        if (accent) material.color.set(accent);
         const sculpture = new THREE.Mesh(geometry, material);
+        material.transparent = true;
         sculpture.frustumCulled = false;
         scene.add(sculpture);
+        const serif = getComputedStyle(document.querySelector("h1 em") ?? root).fontFamily;
+        const greeting = root.dataset.languageChanging === "true" ? null : createFluidGreeting(compact.matches,
+          studioGreeting(locale), serif, accent || "#bd4327");
+        if (greeting) scene.add(greeting.points, greeting.lettersSurface);
+        const key = new THREE.DirectionalLight("#ffe7ce", 1.6);
+        key.position.set(-3, 5, 5);
+        const rim = new THREE.DirectionalLight("#fff7ea", 2);
+        rim.position.set(4, 1, -3);
+        scene.add(key, rim);
 
-        const shadowPixels = new Uint8Array(64 * 64 * 4);
-        for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) {
-          const offset = (y * 64 + x) * 4;
-          const radius = ((x - 31.5) / 31.5) ** 2 + ((y - 31.5) / 31.5) ** 2;
-          shadowPixels[offset] = 79; shadowPixels[offset + 1] = 48; shadowPixels[offset + 2] = 26;
-          shadowPixels[offset + 3] = Math.round(Math.max(0, Math.exp(-radius * 4) - 0.018) * 34);
-        }
-        shadowMap = new THREE.DataTexture(shadowPixels, 64, 64);
-        shadowMap.needsUpdate = true;
-        shadowMaterial = new THREE.SpriteMaterial({ map: shadowMap, transparent: true, depthWrite: false, toneMapped: false });
-        const shadow = new THREE.Sprite(shadowMaterial);
-        scene.add(shadow);
-
-        let width = window.innerWidth;
-        let height = window.innerHeight;
-        let anchors: MakerAnchor[] = [];
-        let crossings: MakerCrossing[] = [];
-        let measuring = true;
-        let ticking = false;
+        let frame = 0, lastTime = 0, nextDraw = 0, frames = 0;
+        let breathTime = 0, arrival = 0;
+        let greetingTime = root.dataset.languageChanging === "true" ? 7 : 0;
+        let greetingAmount = 0, greetingSkip = false, greetingSound = false, greetingDisposed = false;
+        let active: HTMLElement | undefined;
         let contextAvailable = true;
-        let previousScroll = window.scrollY;
-        let seek = true;
-        let reframe = false;
-        let previousTime = 0;
-        let fastUntil = 0;
-        let passage: { band: MakerCrossing; from: number; to: number; scroll: number } | undefined;
-        let elapsed = 0;
-        let shown = false;
-        const pose: MakerPose = { x: 0, y: 0, size: 0, from: 0, to: 0, morph: 0, docked: 1 };
-        const displayed = { x: 0, y: 0, size: 0, docked: 1 };
-        const travelTarget = { x: 0, y: 0, size: 0, docked: 1 };
-        const targetWeights = new Float32Array(MAKER_STAGES.length);
-        const travelWeights = new Float64Array(MAKER_STAGES.length);
-        const pointer = { x: 0, y: 0 };
-        const pointerPosition = { x: 0, y: 0 };
-        const pointerVelocity = { x: 0, y: 0 };
-        const rotations = MAKER_STAGES.map(stage => stage === "hero" || stage === "work" || stage === "about" || stage === "closing" ? [.16, -.36, -.24] : [.06, -.10, -.025]);
-        const pigments = MAKER_STAGES.map(stage => ({ primary: new THREE.Color(MAKER_PALETTES[stage].primary), secondary: new THREE.Color(MAKER_PALETTES[stage].secondary), shadow: new THREE.Color(MAKER_PALETTES[stage].shadow) }));
-        const cream = new THREE.Color("#fff7e8"), ink = new THREE.Color("#212245");
-        const addColor = (value: import("three").Color, color: import("three").Color, weight: number) => { value.r += color.r * weight; value.g += color.g * weight; value.b += color.b * weight; };
-
-
-        const clear = () => { renderer.setScissorTest(false); renderer.clear(); };
-        const stop = () => { if (ticking) gsap.ticker.remove(tick); ticking = false; previousTime = 0; };
-        const wake = () => {
-          if (released || disposed || reduced.matches || !contextAvailable || document.hidden) return;
-          if (pausedRef.current) { stop(); clear(); showFallback(); return; }
-          if (!ticking) { ticking = true; gsap.ticker.add(tick); }
+        let needsMeasure = true;
+        let initialized = false;
+        let width = 0, height = 0;
+        const current = { progress: 0, x: 0, y: 0, turn: 0, pulse: 0 };
+        const target = { progress: 0, x: 0, y: 0, turn: 0 };
+        const velocity = { turn: 0, pulse: 0 };
+        let plays = 0;
+        const stop = () => { if (frame) cancelAnimationFrame(frame); frame = 0; lastTime = 0; nextDraw = 0; };
+        const findVisible = () => anchors.find(anchor => {
+          const bounds = anchor.getBoundingClientRect();
+          return bounds.bottom > 0 && bounds.top < innerHeight && bounds.width > 0 && bounds.height > 0;
+        });
+        const attach = (anchor: HTMLElement) => {
+          if (active !== anchor || canvas.parentElement !== anchor) {
+            anchors.forEach(item => { if (item !== anchor) delete item.dataset.makerReady; });
+            active = anchor;
+            active.appendChild(canvas);
+            canvas.dataset.makerStage = active.dataset.makerAnchor;
+            needsMeasure = true;
+          }
+          const bounds = anchor.getBoundingClientRect();
+          if (needsMeasure || width !== bounds.width || height !== bounds.height) {
+            width = bounds.width; height = bounds.height;
+            renderer.setPixelRatio(Math.min(devicePixelRatio || 1, compact.matches ? 1.25 : 1.75));
+            renderer.setSize(width, height, false);
+            camera.aspect = width / height;
+            // Fit the entire surface inside its own frame at every breakpoint.
+            camera.position.z = 6.4 * Math.max(1, height / width);
+            camera.updateProjectionMatrix();
+            needsMeasure = false;
+          }
+          const chapter = anchor.closest<HTMLElement>("[data-maker-chapter]")?.getBoundingClientRect() ?? bounds;
+          const closing = anchor.dataset.makerAnchor === "closing";
+          target.progress = closing
+            ? 1 + THREE.MathUtils.clamp((innerHeight - chapter.top) / (innerHeight + chapter.height), 0, 1)
+            : THREE.MathUtils.clamp(-chapter.top / Math.max(chapter.height, 1), 0, 1);
         };
-        const queueMeasure = () => { measuring = true; wake(); };
-        const measure = () => {
-          measuring = false;
-          const nextWidth = Math.max(1, window.innerWidth);
-          const nextHeight = Math.max(1, window.innerHeight);
-          // Lazy images and ScrollTrigger refresh can change measurements while
-          // reading. They update targets without resetting the motion clock.
-          // A resize rebases the existing distance to the layout target. It
-          // must preserve travel and an unfolding logo, including mobile
-          // browser toolbar height changes during arrival.
-          reframe ||= width !== nextWidth || height !== nextHeight;
-          width = nextWidth;
-          height = nextHeight;
-          renderer.setSize(width, height, false);
-          camera.left = -width / 2; camera.right = width / 2;
-          camera.top = height / 2; camera.bottom = -height / 2;
-          camera.updateProjectionMatrix();
-          const scroll = window.scrollY;
-          const maxScroll = Math.max(0, document.documentElement.scrollHeight - height);
-          anchors = Array.from(document.querySelectorAll<HTMLElement>("[data-maker-anchor]")).flatMap((element) => {
-            const stage = element.dataset.makerAnchor as MakerStage;
-            if (!MAKER_STAGES.includes(stage)) return [];
-            const bounds = element.getBoundingClientRect();
-            if (bounds.width < 8 || bounds.height < 8) return [];
-            const y = bounds.top + bounds.height / 2 + scroll;
-            return [{ stage, x: bounds.left + bounds.width / 2, y, size: Math.min(bounds.width, bounds.height), scroll: Math.min(maxScroll, Math.max(0, y - height * 0.52)) }];
-          }).sort((a, b) => a.y - b.y);
-          const shield = anchors.find(anchor => anchor.stage === "shield-family");
-          const iqra = anchors.find(anchor => anchor.stage === "iqra");
-          if (shield && iqra && Math.abs(shield.y - iqra.y) < 80) {
-            shield.scroll = Math.max(0, shield.y - height * .76);
-            iqra.scroll = Math.max(shield.scroll + 1, iqra.y - height * .28);
-          }
-          for (let i = 1; i < anchors.length; i++) anchors[i].scroll = Math.max(anchors[i].scroll, anchors[i - 1].scroll + 1);
-          crossings = Array.from(document.querySelectorAll<HTMLElement>("[data-maker-crossing]")).map(element => {
-            const bounds = element.getBoundingClientRect();
-            const parent = element.parentElement ? getComputedStyle(element.parentElement) : null;
-            const gap = parent?.display === "grid" ? parseFloat(parent.rowGap) || 0 : 0;
-            return { y: bounds.top + scroll + bounds.height / 2, height: bounds.height + gap * 2 };
-          });
+        const request = () => {
+          if (frame || disposed || (pausedRef.current && frames > 0) || reduced.matches || document.hidden || !contextAvailable) return;
+          frame = requestAnimationFrame(draw);
         };
-
-        function tick(time: number) {
-          if (released || disposed || pausedRef.current || reduced.matches || document.hidden || !contextAvailable) { stop(); return; }
-          if (measuring) measure();
-          const dt = Math.min(previousTime ? time - previousTime : 1 / 60, .1);
-          previousTime = time;
-          const actualScroll = window.scrollY;
-          const scrollDistance = actualScroll - previousScroll;
-          previousScroll = actualScroll;
-          // Wheel velocity never teleports the object. Only initial layout
-          // and restored position take an exact snapshot.
-          if (Math.abs(scrollDistance) / dt > height * 2) fastUntil = time + .2;
-          const reposition = seek;
-          const reframed = reframe;
-          reframe = false;
-          sampleMakerJourney(anchors, actualScroll, width, compact, pose, crossings);
-          if (pose.crossing && pose.crossingBand && passage?.band !== pose.crossingBand) {
-            passage = { band: pose.crossingBand, from: pose.crossingFromX!, to: pose.crossingToX!, scroll: pose.crossingScroll! };
+        function draw(time: number) {
+          frame = 0;
+          if (disposed || (pausedRef.current && frames > 0) || reduced.matches || document.hidden || !contextAvailable) return;
+          const visible = findVisible();
+          if (!visible) { lastTime = 0; nextDraw = 0; return; }
+          const interval = 1000 / (compact.matches ? 30 : 45);
+          if (nextDraw && time < nextDraw) { request(); return; }
+          nextDraw = nextDraw ? Math.max(nextDraw + interval, time) : time + interval;
+          attach(visible);
+          const delta = lastTime ? Math.min((time - lastTime) / 1000, .05) : 1 / 60;
+          if (!initialized) { current.progress = target.progress; initialized = true; }
+          lastTime = time;
+          const blend = 1 - Math.exp(-delta * 5);
+          breathTime += delta;
+          arrival = Math.min(1, arrival + delta / 1.3);
+          const settle = 1 - Math.pow(1 - arrival, 3);
+          const breath = breathTime * Math.PI * 2 / 14;
+          current.progress += (target.progress - current.progress) * blend;
+          current.x += (target.x - current.x) * blend;
+          current.y += (target.y - current.y) * blend;
+          // A small interruptible spring carries the energy of each deliberate
+          // spin. Fixed substeps keep rapid taps and slow frames stable.
+          const steps = Math.ceil(delta / (1 / 120));
+          const step = delta * .85 / steps;
+          for (let i = 0; i < steps; i++) {
+            velocity.turn += ((target.turn - current.turn) * 100 - velocity.turn * 10) * step;
+            current.turn += velocity.turn * step;
+            velocity.pulse += (-current.pulse * 100 - velocity.pulse * 10) * step;
+            current.pulse += velocity.pulse * step;
           }
-          if (passage && (reposition || reframed || passage.band.y - actualScroll < -passage.band.height || passage.band.y - actualScroll > height + passage.band.height)) passage = undefined;
-          const passageX = passage ? (pose.crossing ? pose.x : actualScroll >= passage.scroll ? passage.to : passage.from) : pose.x;
-          const heroAmbient = pose.from === 0 && pose.docked > 0.98;
-          if (heroAmbient) elapsed += dt;
-          for (const axis of ["x", "y"] as const) {
-            const target = heroAmbient ? pointer[axis] : 0;
-            // Exact critically damped response stays stable even on slow
-            // frames; an Euler spring can diverge when a frame takes 100ms.
-            const offset = pointerPosition[axis] - target;
-            const impulse = pointerVelocity[axis] + 10 * offset;
-            const decay = Math.exp(-10 * dt);
-            pointerPosition[axis] = target + (offset + impulse * dt) * decay;
-            pointerVelocity[axis] = (pointerVelocity[axis] - 10 * impulse * dt) * decay;
-          }
-          const influences = sculpture.morphTargetInfluences!;
-          targetWeights.fill(0);
-          targetWeights[pose.from] = 1 - pose.morph;
-          targetWeights[pose.to] += pose.morph;
-          let weightDistance = 0;
-          for (let i = 0; i < influences.length; i++) weightDistance = Math.max(weightDistance, Math.abs(targetWeights[i] - travelWeights[i]));
-          // Docked artwork follows the document exactly. Once travelling, its
-          // fixed-space arc owns vertical movement; mixing both coordinate
-          // systems here would pull it up, then visibly chase it back down.
-          if (!reposition && !reframed && Math.abs(scrollDistance) < height * .35 && pose.docked > 0.999 && displayed.docked > 0.999) displayed.y -= scrollDistance;
-          const catchUp = time < fastUntil && Math.hypot(displayed.x - pose.x, displayed.y - pose.y) > height * .3;
-          const response = pose.docked < displayed.docked - .01 ? 4.8 : pose.docked > displayed.docked + .01 ? 7 : 6;
-          // Position, scale and the convex shape mixture advance with one
-          // bounded travel response. A rapid jump can shorten the route, but
-          // cannot park the sculpture in its slot and morph it afterwards.
-          let blend = Math.min(1 - Math.exp(-dt * response), .9 * dt / Math.max(weightDistance, .0001));
-          for (const field of ["x", "y", "size", "docked"] as const) {
-            const speed = field === "size" ? (compact ? 160 : 320) : field === "docked" ? 1.3 : Math.max(width, height) * (Math.abs(scrollDistance) > height * .15 ? 1.8 : .85);
-            let target = field === "size" && catchUp ? Math.min(pose.size, compact ? 44 : width < 1100 ? 56 : 72) : pose[field];
-            if (passage) {
-              if (field === "x") target = passageX;
-              if (field === "y") target = passage.band.y - actualScroll;
-              if (field === "size") target = Math.min(compact ? 44 : width < 1100 ? 56 : 72, passage.band.height * .8);
-              if (field === "docked") target = 0;
-            }
-            // Move the coordinate frame, not the playhead: a toolbar resize
-            // during arrival retains the same remaining travel distance.
-            if (reframed && !seek) {
-              if (field === "size") displayed.size *= target / Math.max(1, travelTarget.size);
-              else if (field !== "docked") displayed[field] += target - travelTarget[field];
-            }
-            travelTarget[field] = target;
-            if (!reposition) blend = Math.min(blend, speed * dt / Math.max(Math.abs(target - displayed[field]), .0001));
-          }
-          if (seek) blend = 1;
-          let distance = weightDistance;
-          for (const field of ["x", "y", "size", "docked"] as const) {
-            const delta = travelTarget[field] - displayed[field];
-            displayed[field] = reposition || Math.abs(delta) < .0001 ? travelTarget[field] : displayed[field] + delta * blend;
-            distance += Math.abs(travelTarget[field] - displayed[field]);
-          }
-          for (let i = 0; i < influences.length; i++) {
-            travelWeights[i] = weightDistance < .0001 ? targetWeights[i] : travelWeights[i] + (targetWeights[i] - travelWeights[i]) * blend;
-          }
-          const dominant = resolveMakerWeights(travelWeights, influences);
-          let rotationX = 0, rotationY = 0, rotationZ = 0;
-          material!.uniforms.pigment.value.setRGB(0, 0, 0);
-          material!.uniforms.secondaryPigment.value.setRGB(0, 0, 0);
-          material!.uniforms.shadowPigment.value.setRGB(0, 0, 0);
-          for (let i = 0; i < influences.length; i++) {
-            addColor(material!.uniforms.pigment.value, pigments[i].primary, influences[i]);
-            addColor(material!.uniforms.secondaryPigment.value, pigments[i].secondary, influences[i]);
-            addColor(material!.uniforms.shadowPigment.value, pigments[i].shadow, influences[i]);
-            rotationX += rotations[i][0] * influences[i];
-            rotationY += rotations[i][1] * influences[i];
-            rotationZ += rotations[i][2] * influences[i];
-          }
-          material!.uniforms.detailPigment.value.copy(cream).lerp(ink, influences[MAKER_STAGES.indexOf("shield-family")]);
-          canvas.dataset.makerStage = MAKER_STAGES[dominant];
-          canvas.dataset.makerForm = influences[dominant] > .995 ? "settled" : "forming";
-          canvas.dataset.makerLocation = !passage && (pose.morph < .0001 || pose.morph > .9999) && pose.docked > .999 && Math.hypot(displayed.x - pose.x, displayed.y - pose.y) < 3 && Math.abs(displayed.size - pose.size) < 1 ? "docked" : "travelling";
-          // The shrinking form reaches the margin progressively; its body
-          // never exits the viewport while position and scale catch up.
-          const inset = displayed.size * .47 + 1;
-          displayed.x = Math.max(inset, Math.min(width - inset, displayed.x));
-          if (passage) {
-            // If the hand-off lags behind a quick scroll, finish horizontally
-            // inside the same empty band before moving along the next margin.
-            displayed.y = passage.band.y - actualScroll;
-            if (!pose.crossing && Math.abs(displayed.x - passageX) < 3) { passage = undefined; distance += 1; }
-          }
-          const ambient = heroAmbient ? displayed.docked : 0;
-          rotationX += pointerPosition.y * .18 + Math.sin(elapsed * .42) * .15 * ambient;
-          rotationY += pointerPosition.x * .28 + Math.sin(elapsed * .32) * .24 * ambient;
-          rotationZ += Math.sin(elapsed * .27) * .08 * ambient;
+          tension.value = current.progress * .85 + current.x * .12 + Math.sin(breath) * .28;
+          touch.value = current.pulse;
+          sculpture.position.set(0, 0, 0);
+          sculpture.scale.setScalar(.9 + settle * .1);
           sculpture.rotation.set(
-            seek ? rotationX : dampMakerValue(sculpture.rotation.x, rotationX, dt, 0.65),
-            seek ? rotationY : dampMakerValue(sculpture.rotation.y, rotationY, dt, 0.65),
-            seek ? rotationZ : dampMakerValue(sculpture.rotation.z, rotationZ, dt, 0.65),
+            .18 + current.y * .14 + current.progress * .1 + current.pulse * .08 + Math.sin(breath) * .075 + (1 - settle) * .12,
+            -.28 + current.x * .22 + current.progress * .16 + Math.sin(breath * .8) * .16 - (1 - settle) * .2,
+            Math.PI / 2 + .05 + current.progress * .18 + current.turn + Math.sin(breath * .65) * .055,
           );
-          seek = false;
-          const visible = displayed.size > 0 && displayed.y + displayed.size * 0.6 > 0 && displayed.y - displayed.size * 0.6 < height;
-          if (!visible) { clear(); if (distance < .0005) stop(); return; }
-          sculpture.scale.setScalar(displayed.size / 5.7);
-          sculpture.position.set(displayed.x - width / 2, height / 2 - displayed.y + Math.sin(elapsed * .7) * displayed.size * .014 * ambient, 0);
-          shadow.position.set(displayed.x - width / 2, height / 2 - displayed.y - displayed.size * 0.39, -4);
-          shadow.scale.set(displayed.size * 0.72, displayed.size * 0.1, 1);
-          shadow.material.opacity = displayed.docked;
-          clear();
-          const left = Math.max(0, Math.floor(displayed.x - displayed.size * 0.57));
-          const bottom = Math.max(0, Math.floor(height - displayed.y - displayed.size * 0.57));
-          const right = Math.min(width, Math.ceil(displayed.x + displayed.size * 0.57));
-          const top = Math.min(height, Math.ceil(height - displayed.y + displayed.size * 0.57));
-          renderer.setScissor(left, bottom, Math.max(0, right - left), Math.max(0, top - bottom));
-          renderer.setScissorTest(true);
-          renderer.render(scene, camera);
-          if (!shown || root.dataset.makerMotion !== "running") {
-            shown = true; root.dataset.makerMotion = "running";
-            setReady(true); setAvailable(true);
+          if (greeting && !greetingDisposed && active?.dataset.makerAnchor === "hero") {
+            const bounds = active.getBoundingClientRect();
+            const visibleHeight = Math.min(innerHeight, bounds.bottom) - Math.max(0, bounds.top);
+            if (visibleHeight >= Math.min(bounds.height * .6, innerHeight * .5)) greetingTime = Math.min(7, greetingTime + delta);
+            const smooth = (a: number, b: number, value: number) => { const t = Math.max(0, Math.min(1, (value - a) / (b - a))); return t * t * (3 - 2 * t); };
+            const desired = greetingSkip ? 0 : smooth(.55, 1.85, greetingTime) * (1 - smooth(4.5, 6.1, greetingTime));
+            greetingAmount += (desired - greetingAmount) * (1 - Math.exp(-delta * 8));
+            if (greetingTime >= 6.8 || (greetingSkip && greetingAmount < .002)) greetingAmount = 0;
+            greeting.uniforms.amount.value = greetingAmount;
+            greeting.uniforms.time.value = breathTime;
+            greeting.uniforms.opacity.value = smooth(0, .3, greetingAmount) * (1 - smooth(.91, .99, greetingAmount));
+            greeting.points.visible = greeting.uniforms.opacity.value > .001;
+            greeting.letterMaterial.opacity = smooth(.88, .985, greetingAmount);
+            greeting.lettersSurface.visible = greeting.letterMaterial.opacity > .001;
+            greeting.uniforms.density.value = renderer.getPixelRatio() * Math.min(1.35, height / 460);
+            sculpture.updateMatrixWorld();
+            greeting.uniforms.knot.value.copy(sculpture.matrixWorld);
+            material.opacity = 1 - smooth(.03, .48, greetingAmount);
+            material.depthWrite = greetingAmount < .01;
+            sculpture.visible = material.opacity > .005;
+            canvas.dataset.makerGreeting = greetingAmount === 0 && greetingTime >= 6.8 || greetingSkip && greetingAmount === 0 ? "knot" : greetingTime > 4.5 ? "returning" : greetingAmount > .97 ? "message" : greetingTime > .55 ? "unfolding" : "waiting";
+            if (!greetingSound && greetingTime > .65 && greetingTime < 6) {
+              greetingSound = true;
+              window.dispatchEvent(new CustomEvent("studio-feedback", { detail: { kind: "reveal", note: 2 } }));
+            }
+            if (greetingAmount === 0 && (greetingTime >= 6.8 || greetingSkip)) {
+              scene.remove(greeting.points, greeting.lettersSurface);
+              greeting.dispose(); greetingDisposed = true;
+            }
+          } else {
+            if (greeting) { greeting.points.visible = false; greeting.lettersSurface.visible = false; }
+            sculpture.visible = true; material.opacity = 1; material.depthWrite = true;
           }
-          // Scrolling wakes the ticker. Outside the hero, a settled sculpture
-          // costs no continuous rendering or allocation while someone reads.
-          if (!heroAmbient && distance < .0005 && Math.abs(pointerVelocity.x) + Math.abs(pointerVelocity.y) < 0.002) stop();
+          renderer.render(scene, camera);
+          canvas.dataset.flowPhase = tension.value.toFixed(5);
+          canvas.dataset.flowProgress = current.progress.toFixed(5);
+          canvas.dataset.drawCount = String(++frames);
+          canvas.dataset.sculptureTurn = current.turn.toFixed(5);
+          active!.dataset.makerReady = "true";
+          root.dataset.makerEnhanced = "true";
+          root.dataset.makerMotion = pausedRef.current ? "paused" : "running";
+          if (frames === 1) setAvailable(true);
+          request();
         }
-
-        const onPointer = (event: PointerEvent) => {
-          if (!finePointer.matches || pausedRef.current || !anchors.length || window.scrollY > anchors[0].scroll + height * 0.25) return;
-          const anchor = anchors[0];
-          pointer.x = Math.max(-1, Math.min(1, (event.clientX - anchor.x) / Math.max(1, anchor.size * 0.5)));
-          pointer.y = Math.max(-1, Math.min(1, (event.clientY - (anchor.y - window.scrollY)) / Math.max(1, anchor.size * 0.5)));
-          wake();
+        const refresh = () => { needsMeasure = true; request(); };
+        const pointer = (event: PointerEvent) => {
+          if (!finePointer.matches || !active) return;
+          const bounds = active.getBoundingClientRect();
+          const inside = event.clientX >= bounds.left && event.clientX <= bounds.right && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+          const x = inside ? (event.clientX - bounds.left) / bounds.width * 2 - 1 : 0;
+          const y = inside ? (event.clientY - bounds.top) / bounds.height * 2 - 1 : 0;
+          if (x === target.x && y === target.y) return;
+          target.x = x; target.y = y;
+          request();
         };
-        const resetPointer = () => { pointer.x = pointer.y = 0; };
-        const visibility = () => { if (document.hidden) stop(); else { previousTime = 0; queueMeasure(); } };
-        const contextLost = (event: Event) => {
-          event.preventDefault(); contextAvailable = false; stop(); showFallback(); setAvailable(false);
+        const leave = () => { target.x = 0; target.y = 0; request(); };
+        const play = () => {
+          if (pausedRef.current || reduced.matches || document.hidden || !contextAvailable || !findVisible()) return;
+          greetingSkip = true;
+          // Preserve velocity if another tap arrives during the turn, but cap
+          // queued travel so repeated taps never create an endless animation.
+          target.turn = Math.min(target.turn + Math.PI * 2 / 3, current.turn + Math.PI * 4 / 3);
+          velocity.pulse = Math.min(velocity.pulse + 7, 10);
+          canvas.dataset.sculpturePlays = String(++plays);
+          window.dispatchEvent(new CustomEvent("studio-feedback", { detail: { kind: "sculpture" } }));
+          request();
         };
-        const contextRestored = () => { release?.(); cleanupScene = undefined; void mountScene(); };
-        const resize = new ResizeObserver(queueMeasure);
+        const visibility = () => { if (document.hidden) stop(); else refresh(); };
+        const lost = (event: Event) => {
+          event.preventDefault(); contextAvailable = false; stop();
+          anchors.forEach(anchor => { delete anchor.dataset.makerReady; });
+          canvas.style.visibility = "hidden";
+          fallback();
+        };
+        const restored = () => { release?.(); release = undefined; void mount(); };
+        const resize = new ResizeObserver(refresh);
+        anchors.forEach(anchor => resize.observe(anchor));
         resize.observe(document.body);
-        document.querySelectorAll("[data-maker-anchor]").forEach((element) => resize.observe(element));
-        ScrollTrigger.addEventListener("refresh", queueMeasure);
-        window.addEventListener("scroll", wake, { passive: true });
-        window.addEventListener("resize", queueMeasure, { passive: true });
-        window.addEventListener("maker-layout-change", queueMeasure);
-        window.visualViewport?.addEventListener("resize", queueMeasure, { passive: true });
-        window.addEventListener("pointermove", onPointer, { passive: true });
-        document.addEventListener("pointerleave", resetPointer);
+        window.addEventListener("scroll", request, { passive: true });
+        window.addEventListener("resize", refresh, { passive: true });
+        window.addEventListener("maker-layout-change", refresh);
+        window.addEventListener("pointermove", pointer, { passive: true });
+        window.addEventListener("maker-sculpture-play", play);
+        document.addEventListener("pointerleave", leave);
         document.addEventListener("visibilitychange", visibility);
-        document.addEventListener("load", queueMeasure, true);
-        canvas.addEventListener("webglcontextlost", contextLost);
-        canvas.addEventListener("webglcontextrestored", contextRestored);
+        document.addEventListener("load", refresh, true);
+        window.visualViewport?.addEventListener("resize", refresh, { passive: true });
+        canvas.addEventListener("webglcontextlost", lost);
+        canvas.addEventListener("webglcontextrestored", restored);
         let fontReady = true;
-        void document.fonts.ready.then(() => { if (fontReady) queueMeasure(); });
-        detach = () => {
+        void document.fonts.ready.then(() => { if (fontReady) refresh(); });
+        wake.current = refresh;
+        stopMotion.current = stop;
+        release = () => {
           fontReady = false; stop(); resize.disconnect();
-          ScrollTrigger.removeEventListener("refresh", queueMeasure);
-          window.removeEventListener("scroll", wake);
-          window.removeEventListener("resize", queueMeasure);
-          window.removeEventListener("maker-layout-change", queueMeasure);
-          window.visualViewport?.removeEventListener("resize", queueMeasure);
-          window.removeEventListener("pointermove", onPointer);
-          document.removeEventListener("pointerleave", resetPointer);
+          window.removeEventListener("scroll", request);
+          window.removeEventListener("resize", refresh);
+          window.removeEventListener("maker-layout-change", refresh);
+          window.removeEventListener("pointermove", pointer);
+          window.removeEventListener("maker-sculpture-play", play);
+          document.removeEventListener("pointerleave", leave);
           document.removeEventListener("visibilitychange", visibility);
-          document.removeEventListener("load", queueMeasure, true);
-          canvas.removeEventListener("webglcontextlost", contextLost);
-          canvas.removeEventListener("webglcontextrestored", contextRestored);
-          if (wakeRef.current === wake) wakeRef.current = null;
+          document.removeEventListener("load", refresh, true);
+          window.visualViewport?.removeEventListener("resize", refresh);
+          canvas.removeEventListener("webglcontextlost", lost);
+          canvas.removeEventListener("webglcontextrestored", restored);
+          anchors.forEach(anchor => { delete anchor.dataset.makerReady; });
+          if (!greetingDisposed) greeting?.dispose();
+          geometry.dispose(); material.dispose(); studio.dispose(); renderer.dispose(); canvas.remove();
+          wake.current = null; stopMotion.current = null;
         };
-        cleanupScene = release;
-        wakeRef.current = wake;
-        host?.appendChild(canvas);
-        setAvailable(true);
-        wake();
-      } catch {
-        release?.();
-        if (!disposed) { showFallback(); setAvailable(false); }
-      }
+        request();
+      } catch { release?.(); release = undefined; if (!disposed) fallback(); }
     }
-
-    const reset = () => {
-      generation++;
-      cleanupScene?.(); cleanupScene = undefined;
-      wakeRef.current = null;
-      showFallback();
-      setAvailable(false);
-      if (!reduced.matches) void mountScene();
+    let near = false;
+    let scheduled = false;
+    let idle: number | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const cancelBoot = () => {
+      if (idle !== undefined) window.cancelIdleCallback(idle);
+      clearTimeout(timer);
+      scheduled = false;
     };
+    const queueMount = () => {
+      if (disposed || scheduled || reduced.matches || saveData || !near) return;
+      scheduled = true;
+      const boot = () => { if (!disposed && !reduced.matches) void mount(); };
+      // The matching still paints first. Load WebGL only near its own frame,
+      // using an idle slot so it does not compete with text or initial input.
+      if ("requestIdleCallback" in window) idle = window.requestIdleCallback(boot, { timeout: 800 });
+      else timer = setTimeout(boot, 100);
+    };
+    const nearby = new IntersectionObserver(entries => {
+      near = entries.some(entry => entry.isIntersecting) || near;
+      queueMount();
+    }, { rootMargin: "160px 0px" });
+    document.querySelectorAll<HTMLElement>('[data-maker-anchor="hero"], [data-maker-anchor="closing"]').forEach(anchor => nearby.observe(anchor));
+    const reset = () => { generation++; cancelBoot(); release?.(); release = undefined; fallback(); queueMount(); };
     reduced.addEventListener("change", reset);
-    compactQuery.addEventListener("change", reset);
-    if (!reduced.matches) void mountScene();
-    else root.dataset.makerMotion = "fallback";
+    if (reduced.matches || saveData) fallback();
     return () => {
-      disposed = true; generation++;
+      disposed = true; generation++; cancelBoot(); nearby.disconnect(); release?.();
       reduced.removeEventListener("change", reset);
-      compactQuery.removeEventListener("change", reset);
-      cleanupScene?.(); wakeRef.current = null;
-      delete root.dataset.makerMotion;
+      delete root.dataset.makerMotion; delete root.dataset.makerEnhanced;
     };
-  }, [portalHost]);
+  }, []);
 
-  function toggleMotion() {
+  function toggle() {
     const next = !pausedRef.current;
     pausedRef.current = next;
     setPaused(next);
-    document.documentElement.dataset.makerMotion = next ? "paused" : "fallback";
-    if (next) setReady(false);
-    wakeRef.current?.();
+    window.dispatchEvent(new CustomEvent("studio-feedback", { detail: { kind: "motion", note: next ? 0 : 1 } }));
+    document.documentElement.dataset.makerMotion = next ? "paused" : "running";
+    if (next) stopMotion.current?.(); else wake.current?.();
     window.dispatchEvent(new CustomEvent("maker-motion-change", { detail: { paused: next } }));
   }
-
-  return portalHost ? createPortal(<>
-    <div className={styles.layer} ref={hostRef} data-ready={ready && !paused} aria-hidden="true" />
-    <button className={styles.control} type="button" hidden={!available} aria-pressed={paused} onClick={toggleMotion}>
-      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">{paused ? <path d="m5 2 9 6-9 6Z" /> : <path d="M4 2h3v12H4zm5 0h3v12H9z" />}</svg>
-      {locale === "da" ? (paused ? "Afspil bevægelse" : "Sæt bevægelse på pause") : (paused ? "Play motion" : "Pause motion")}
-    </button>
-  </>, portalHost) : null;
+  return body && createPortal(<div className={styles.controls} data-studio-controls><StudioSoundToggle /><button type="button" className={styles.control} hidden={!available} aria-pressed={paused} aria-label={locale === "da" ? (paused ? "Afspil bevægelse" : "Sæt bevægelse på pause") : (paused ? "Play motion" : "Pause motion")} title={locale === "da" ? (paused ? "Afspil bevægelse" : "Sæt bevægelse på pause") : (paused ? "Play motion" : "Pause motion")} onClick={toggle} data-maker-motion-control><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">{paused ? <path d="m5 2 9 6-9 6Z" /> : <path d="M4 2h3v12H4zm5 0h3v12H9z" />}</svg></button></div>, body);
 }
-
-export default MakerJourney;

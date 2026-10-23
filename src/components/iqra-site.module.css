@@ -21,3 +21,8 @@
 .maker>span{margin:0;justify-self:center;text-align:center}
 .maker>nav{grid-column:3;justify-self:end;margin:0;width:76px}
 @media(max-width:760px){.maker{grid-template-columns:minmax(0,1fr) 76px}.maker>nav{grid-column:2}}
+@media(max-width:700px){
+  .lead,.readingSteps article p,.dailyCopy>p,.dailyFeatures p,.libraryGrid article p,.filmCopy>p,.accessSection>p{font-size:15px;line-height:1.75}
+  .button,.smallButton,.textLink{min-height:46px;font-size:14px}
+  .footer nav a{display:inline-flex;align-items:center;min-height:44px;font-size:12px}
+}

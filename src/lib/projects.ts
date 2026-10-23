@@ -10,11 +10,13 @@ export type Project = {
   summary: string;
   headline: string;
   description: string;
+  mobileDescription?: string;
   story: string;
   color: string;
   ink: string;
   tags: string[];
   features: { title: string; text: string }[];
+  faqs?: { question: string; answer: string }[];
   url?: string;
   action?: string;
   storeUrl?: string;
@@ -50,15 +52,16 @@ const projectCatalog: Project[] = [
     slug: "shield-family", name: "Shield Family", category: "Family wellbeing", status: "Live", year: "Ongoing",
     marketingPath: "/projects/shield-family", previewLabel: "Latest update preview",
     screenshots: ["/images/shield-site/today.webp", "/images/shield-site/child.webp", "/images/shield-site/learn.webp"],
-    summary: "A little learning. A little more play.",
-    headline: "Your family's limits. A little room to learn.",
-    description: "A shared family plan for screen time. Set the boundaries, let children earn minutes through learning, and keep requests, routines and progress in one calm place.",
-    story: "Screen time is part of family life. I wanted to build something that makes it feel more intentional: clear boundaries, worthwhile learning, and a shared plan that parents and children can understand.",
+    summary: "Screen-time rules. A shared family plan.",
+    headline: "Clear limits, learning rewards and room for family life.",
+    description: "An iPhone and iPad app for managing family screen time. Set app limits and routines, let children earn capped extra minutes through learning, answer requests remotely, and share an overview with a co-parent. Location sharing is optional.",
+    mobileDescription: "Daily limits, learning rewards and parent-approved requests. One shared family plan, with optional location sharing.",
+    story: "Shield Family makes the plan visible to both sides. Parents choose the limits, school and bedtime routines, learning rewards and pauses. Children see their balance, practise with quizzes and brain games, and ask for extra time. Parents can respond from their own phone, follow learning progress and optionally use family places and arrival notifications.",
     color: "#e9e8f7", ink: "#332c9e", tags: ["iOS app", "Product design", "Family wellbeing"],
     features: [
-      { title: "Set the boundaries", text: "Choose daily screen-time limits and bedtime. Earned extra time never overrides bedtime or a parent pause." },
-      { title: "Let curiosity lead", text: "Quizzes and brain games can earn extra minutes, at the rate and within the daily cap you choose." },
-      { title: "Keep the family in sync", text: "Share the family plan through private iCloud. Raw per-app screen-time data stays on the device; aggregate totals sync." }
+      { title: "Boundaries that follow the day", text: "Choose daily allowances, selected apps and school, homework or bedtime routines. Pause apps when the family needs a break; earned time does not override bedtime or a parent pause." },
+      { title: "Learning with a clear reward", text: "Quizzes and brain games can earn minutes at parent-chosen rates and daily caps. Children can keep learning after the reward cap, with progress visible to the family." },
+      { title: "A connected family overview", text: "Approve or decline requests from your phone, invite a co-parent and give each child their own settings. Optional location sharing adds family places and arrival notifications." }
     ],
     url: "/projects/shield-family", action: "Visit Shield Family",
     storeUrl: "https://apps.apple.com/app/id6782042659",
@@ -67,14 +70,19 @@ const projectCatalog: Project[] = [
   },
   {
     slug: "kaizencv", name: "KaizenCV", category: "Career & AI", status: "Live", year: "Ongoing",
-    summary: "Your next chapter starts with you.", headline: "Make your next career move count.",
-    description: "An AI career workspace for expressing your experience, tailoring a CV and cover letter to the role, and keeping track of the next opportunity.",
-    story: "The hard part is often finding the words for work you already know how to do. KaizenCV starts with your experience: import your CV, work through it with a coach, and review every suggestion before applying it. Choose a template, prepare an application for the role, and keep the next steps together.",
+    summary: "Your experience, made clear.", headline: "Turn the work you’ve done into a CV worth sending.",
+    description: "An AI career coach and CV workspace. Import a PDF or Word CV, review suggested edits, tailor applications to a role and track where you’ve applied. Your first selected CV is free to export as a PDF.",
+    mobileDescription: "Sharpen your CV with an AI coach and tailor it to the role. Your first selected CV exports free as a PDF.",
+    story: "KaizenCV helps you explain the work you have actually done. The coach asks for missing details and offers edits you can approve or skip. Your confirmed experience carries into tailored CVs and cover letters, while templates and an application tracker keep the practical work together. Interview preparation is in beta; voice interview practice is still coming.",
+    faqs: [
+      { question: "What can I do for free?", answer: "Import, edit and download one selected CV as a PDF using a free template. You can keep editing and downloading that CV. The free plan also includes the application tracker and a limited AI allowance; Pro expands downloads, formats and AI use." },
+      { question: "Is interview practice available?", answer: "Interview preparation with role-specific questions and company briefings is available in beta. Voice interview practice is planned for a later release." }
+    ],
     color: "#e5e7fb", ink: "#4342b7", tags: ["Web platform", "AI tools", "Career development"],
     features: [
-      { title: "Tell your story clearly", text: "Import your CV, answer the coach's questions, and review suggestions before applying them." },
-      { title: "Prepare with purpose", text: "Explore role-specific questions and company briefings with interview preparation, currently in beta." },
-      { title: "Make the next move", text: "Tailor your CV and cover letter to the role, export a PDF, and follow your applications in one workspace." }
+      { title: "Start with your real experience", text: "Import a PDF or Word CV and check the extracted details. The coach asks questions, then gives you suggestions to approve or skip." },
+      { title: "Build an application around the role", text: "Tailor your CV and draft a cover letter from your experience. Track applications in one board; explore interview questions and company briefings in the beta preparation tools." },
+      { title: "Choose the layout. Keep your words.", text: "Customise templates, fonts and colours without rewriting your CV. Keep editing and downloading one selected CV as a PDF free; Pro adds further exports and tailoring capacity." }
     ],
     url: "https://www.kaizencv.com", action: "Explore KaizenCV", privacyUrl: "https://www.kaizencv.com/privacy", termsUrl: "https://www.kaizencv.com/terms", support: "mailto:support@kaizencv.com"
   },
@@ -82,14 +90,15 @@ const projectCatalog: Project[] = [
     slug: "iqra", name: "Iqra", category: "Learning & faith", status: "Live", year: "Ongoing",
     marketingPath: "/iqra", previewLabel: "Read · Learn · Remember",
     screenshots: ["/images/iqra-site/read.webp", "/images/iqra-site/prayer.webp", "/images/iqra-site/memorize.webp"],
-    summary: "Begin with one word.", headline: "You don’t have to know Arabic to begin.",
-    description: "Hear each word, understand its meaning, and find your own rhythm with the Quran. Reading, Arabic lessons, memorization and prayer tools — free, with no account required.",
-    story: "Some products are deeply personal. Iqra grows from the belief that learning should feel welcoming and manageable. It brings the essentials into a calm, considered experience that people can return to every day.",
+    summary: "Read, understand and return to the Quran.", headline: "A way into the Quran, wherever you begin.",
+    description: "A Quran reader and learning companion with word audio, transliteration, meaning and commentary. Learn Arabic, organise memorisation and revision, find prayer times and explore sourced stories and duas. Every feature is free; no account is needed.",
+    mobileDescription: "Read and hear each word. Learn Arabic, practise memorisation and find prayer tools. Every feature is free.",
+    story: "Iqra offers several ways to begin: hear a word, read its meaning, learn a letter or return to a passage you are memorising. Prayer tools and sourced libraries bring that practice into everyday life. Personal records stay on the device, and downloaded recitation can travel with you. An optional subscription removes ads; it does not unlock features.",
     color: "#f0e6ce", ink: "#6b501f", tags: ["Mobile app", "Quran learning", "Daily practice"],
     features: [
-      { title: "Read at your pace", text: "Follow the Quran word by word, with transliteration and meaning alongside the Arabic." },
-      { title: "Listen and learn", text: "Audio-led learning and recitation support for building familiarity over time." },
-      { title: "Build a daily practice", text: "Memorisation tools designed around small, repeatable steps." }
+      { title: "Hear it. Read it. Understand it.", text: "Tap words for recorded audio and meaning. Follow recitation with highlighting, switch reading layouts, explore tafsir and download audio for offline listening." },
+      { title: "Learn, memorise and revisit", text: "Work through 16 Arabic lessons and a word bank. Keep new memorisation, recent revision and longer-term review in a manageable practice plan." },
+      { title: "Bring practice into the everyday", text: "Use prayer times, qibla and guided salah. Explore duas, the 99 Names, sourced stories and hadith. All features are free; optional support removes ads." }
     ],
     url: "https://iqra-quran-tau.vercel.app", action: "Visit Iqra", storeUrl: "https://apps.apple.com/app/id6797948777", privacyUrl: "https://iqra-quran-tau.vercel.app/privacy", termsUrl: "https://iqra-quran-tau.vercel.app/terms", support: "https://iqra-quran-tau.vercel.app/support"
   },
@@ -97,52 +106,65 @@ const projectCatalog: Project[] = [
     slug: "vela", name: "Vela", category: "Everyday momentum", status: "Live", year: "Ongoing",
     marketingPath: "/vela", previewLabel: "Vela 2.0",
     screenshots: ["/images/vela-site/today.webp", "/images/vela-site/talk-to-vela.webp", "/images/vela-site/focus-session.webp"],
-    summary: "One sentence. Your day, planned.", headline: "Just say it.",
-    description: "An AI planner that turns what’s on your mind into a day you can actually finish. Tasks, focus, ideas, goals and flexible habits, together in one thoughtful app. Meet Vela 2.0.",
-    story: "A good day starts with a little direction. Vela connects the thought you want to capture with the next step you can take: say it, review it, give it a place in your day. Vela 2.0 brings that idea into a calmer, more connected experience.",
+    summary: "A day planned. Space to grow.", headline: "Plan the day. Build what matters.",
+    description: "A life planner for iPhone and iPad that connects tasks, calendar, focus, goals and habits. Capture thoughts by voice or text, choose your Top 3, and make room for reflection with a journal, mood check-ins and gratitude.",
+    mobileDescription: "Tasks, calendar, focus and ideas in one app. Plan your day, build better habits and make room to reflect.",
+    story: "Vela connects a thought to something you can do today. Talk to Vela helps capture and change plans; Top 3 and Focus make the next step clear. Ideas can become goals, habits can follow a flexible rhythm, and a weekly review brings reflection back into planning. Progress grows without streak pressure. Vela Pro is a subscription.",
     color: "#d9e9df", ink: "#205e51", tags: ["AI planning", "iPhone & iPad", "Vela 2.0"],
     features: [
-      { title: "Say what’s on your mind", text: "Talk or type to Vela, review the proposed actions, and keep control with Undo." },
-      { title: "Give your day a shape", text: "Bring tasks and calendar together, choose your Top 3, and make room for a focused session." },
-      { title: "Keep your ideas moving", text: "Turn ideas into goals and practical next steps. Build flexible habits with momentum, not streak pressure." }
+      { title: "Capture it your way", text: "Speak, type or scan a handwritten list. Talk to Vela can add, move and complete items, with visible changes and Undo." },
+      { title: "Choose, then focus", text: "See tasks beside your calendar, choose a Top 3 and start a focus timer. Optional app blocking helps protect the session." },
+      { title: "Build a life beyond the list", text: "Develop ideas, goals and flexible habits. Journal, track mood, practise gratitude and review vocabulary; use your weekly review to plan what comes next." }
     ],
-    url: "https://vela-productivity.vercel.app", action: "Visit Vela", storeUrl: "https://apps.apple.com/app/id6783922107", privacyUrl: "https://vela-productivity.vercel.app/privacy", termsUrl: "https://vela-productivity.vercel.app/terms", support: "https://vela-productivity.vercel.app/support"
+    url: "https://daryanmade.com/vela", action: "Visit Vela", storeUrl: "https://apps.apple.com/app/id6783922107", privacyUrl: "https://vela-productivity.vercel.app/privacy", termsUrl: "https://vela-productivity.vercel.app/terms", support: "https://vela-productivity.vercel.app/support"
   },
   {
-    slug: "wardrobe", name: "Wardrobe", category: "Personal style", status: "Coming soon", year: "In the making",
-    summary: "Less “nothing to wear.” More you.", headline: "A fresh look at what you already own.",
-    description: "A digital closet and outfit companion exploring AI try-on, outfit ideas, and a more intentional relationship with your wardrobe. Still in the making.",
-    story: "The best outfit might already be in your closet. Wardrobe explores how technology can help you see familiar pieces differently and make getting dressed feel more creative.",
-    color: "#e1e1dd", ink: "#555b56", tags: ["Coming soon", "Digital wardrobe", "AI try-on"],
+    slug: "wardrobe", name: "Twillby", category: "Personal style", status: "Coming soon", year: "In the making",
+    summary: "Your clothes. More ways to wear them.", headline: "See the possibilities in your own closet.",
+    description: "A personal closet, outfit planner and optional AI try-on app. Photograph or import clothes, organise pieces, save outfit combinations and plan looks on a calendar. Coming soon to the App Store and Google Play.",
+    mobileDescription: "Your own clothes, saved outfits and a plan for tomorrow. Optional AI try-on, with the price shown before you generate.",
+    story: "Twillby starts with the clothes you already own. Keep pieces and saved sets together, plan an outfit for a date, and revisit combinations you might have forgotten. Optional AI tools explore try-on pictures, outfit ideas, hair inspiration and styling advice. You choose which photos to share and see the credit price before confirming a generation.",
+    color: "#E8E4DB", ink: "#355C9A", tags: ["Coming soon", "Digital wardrobe", "AI try-on"],
+    marketingPath: "/projects/wardrobe", action: "Explore Twillby",
     features: [
-      { title: "Meet your digital closet", text: "Bring the pieces you own into a single place to explore and organise." },
-      { title: "See a new combination", text: "Discover outfit possibilities and looks built around your personal style." },
-      { title: "Explore AI try-on", text: "An experimental way to visualise a look before deciding what to wear." }
+      { title: "A closet you can actually find things in", text: "Add photos, organise clothes by category and tags, and keep favourite pieces and saved outfit sets easy to find." },
+      { title: "An outfit with a date", text: "Plan looks on the calendar using your own pieces and saved combinations. Revisit favourites without rebuilding an outfit from scratch." },
+      { title: "Try a new direction", text: "Explore optional AI try-on and styling ideas with selected photos and a confirmed credit price. Generated pictures suggest a look; they do not guarantee fit." }
     ]
   },
   {
     slug: "koebsklar", name: "Købsklar", category: "Property & automation", status: "Live", year: "Ongoing",
-    summary: "Complex property documents. A clearer picture.", headline: "More clarity before the next property decision.",
-    description: "An AI-assisted document workspace for Danish property lawyers, bringing purchase agreements, condition reports and transaction documents into a structured review.",
-    story: "A property case can mean repeatedly checking the same facts across a purchase agreement, condition report and supporting documents. Købsklar reads them together, connects findings to their sources, and prepares draft material for the lawyer. The intended benefit is less manual preparation and more attention for the case and the buyer; professional review remains essential.",
+    summary: "Every property finding, back to its source.", headline: "The property case, prepared for your review.",
+    description: "A document workspace for Danish property lawyers. Read purchase agreements, land-registry records, BBR and inspection reports together, surface discrepancies, and prepare source-linked findings and draft advice for professional review.",
+    mobileDescription: "Read the whole property case together. Source-linked findings and draft advice, ready for the lawyer’s review.",
+    story: "A property case only makes sense when its documents are read together. Købsklar connects extracted facts to the original document and page, flags differences between files, and shows missing or unreadable material. It prepares an analysis report, draft legal assessment, advisory letter and document overview. The lawyer checks, edits and owns the advice.",
+    faqs: [
+      { question: "What does Købsklar prepare?", answer: "An analysis report, draft legal assessment, buyer advisory letter and document overview. Findings point to document pages, discrepancies are flagged, and the lawyer reviews and edits the material before using it." },
+      { question: "Can colleagues work on the same cases?", answer: "Create a firm and invite colleagues to share cases within it. A source-linked finding can be opened in the original document or re-checked with the assistant; the professional assessment remains with the lawyer." }
+    ],
     color: "#e2e9fc", ink: "#1d4ed8", tags: ["Web platform", "AI automation", "Property documents"],
     features: [
-      { title: "A case, connected", text: "Read purchase agreements, condition reports and supporting documents together, with discrepancies across files brought into view." },
-      { title: "Findings with a source", text: "Follow key facts to their document and page, then check the analysis in context." },
-      { title: "The groundwork, prepared", text: "An analysis report, draft legal assessment, advisory letter and document overview support the lawyer's review and professional judgment." }
+      { title: "Read the whole case together", text: "Bring purchase agreements, BBR, land-registry records and inspection reports into one case. Scanned documents use text recognition; unreadable files are identified." },
+      { title: "Check a finding in context", text: "Follow a fact to its document and page, inspect cross-document discrepancies, or ask the assistant to re-check a field against the sources." },
+      { title: "Four deliverables, ready to review", text: "Review the analysis report, draft legal assessment, advisory letter and document overview. Download as PDF or Word, edit the advice and share cases within your firm." }
     ],
     url: "https://koebsklar.vercel.app", action: "Visit Købsklar", privacyUrl: "https://koebsklar.vercel.app/privatlivspolitik", termsUrl: "https://koebsklar.vercel.app/handelsbetingelser", support: agencyContact
   },
   {
     slug: "sarpoli", name: "Sarpoli", category: "My AI agency", status: "Live", year: "Ongoing",
-    summary: "Less repetitive work. More room for people.", headline: "AI that understands the work.",
-    description: "I founded Sarpoli to build practical AI automations alongside lawyers, accountants and property teams. We turn document-heavy processes into useful workflows, with clear sources and a person in control.",
-    story: "Case files, contracts, invoices. The same information read, checked and entered again. At Sarpoli, we work alongside the people doing that work, identify where time can be saved, and build around the systems they already use. AI handles the repetition; professionals keep the judgment.",
+    summary: "Less document work. More professional judgment.", headline: "Your documents, read. Your team, in control.",
+    description: "My AI automation studio for law firms, accountants and property teams. We build workflows that read case files, contracts and invoices, extract information with sources, and leave approval with the people doing the work.",
+    mobileDescription: "Custom AI workflows for law firms, accountants and property teams. Documents read, sources linked, people in control.",
+    story: "I founded Sarpoli around the work that keeps returning to a professional’s desk. We start with the team’s own documents, map the repetition, and recommend a practical place to begin. The result is a custom workflow built around existing systems, with source references, visible uncertainty and human approval.",
+    faqs: [
+      { question: "Is Sarpoli an app we subscribe to?", answer: "Sarpoli builds custom AI workflows for professional teams. We begin with an audit of your documents and repeated tasks, then agree the scope and fixed price before implementation." },
+      { question: "Does the AI make the professional decision?", answer: "The workflow finds and structures information, points to its sources and flags uncertainty. Your team reviews and approves the output; professional judgment stays with you." }
+    ],
     color: "#0b0f1a", ink: "#d9e0fb", tags: ["Founder", "AI automation", "Documents & workflows"],
     features: [
-      { title: "Start with the actual work", text: "Map the documents and repeated tasks with the people who know them best." },
-      { title: "Make the sources clear", text: "Extract useful information from case files, contracts and invoices, with source references and uncertainty made visible." },
-      { title: "Keep people in control", text: "Connect the workflow to the team’s existing systems, with a person reviewing the output before it is used." }
+      { title: "Map before we build", text: "A free AI audit identifies repeated document tasks and estimates the hours involved. The written recommendations are yours to keep." },
+      { title: "Every field has a source", text: "Extract facts from contracts, invoices and case files with document references. Missing or uncertain information is flagged for review." },
+      { title: "Built around your team", text: "Custom automations fit existing systems and approval steps. Implementation is agreed at a fixed price, with the first month of operation included." }
     ], url: "https://sarpoli.com", action: "Meet Sarpoli", support: agencyContact
   },
   {
@@ -156,12 +178,11 @@ const projectCatalog: Project[] = [
 // Keep detail-page numbering and next-project navigation aligned with the home collection.
 const collectionOrder = ["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra", "next-project"];
 export const projects: Project[] = collectionOrder.map(slug => projectCatalog.find(project => project.slug === slug)!);
-export const featuredProjects = projects.slice(0, 6);
 export function getProject(slug: string, locale: Locale = "en"): Project | undefined {
   const project = projects.find(project => project.slug === slug);
   if (!project || locale === "en") return project;
   const t = portfolioCopy(locale);
-  return { ...project, name: t(project.name), category: t(project.category), year: t(project.year), summary: t(project.summary), headline: t(project.headline), description: t(project.description), story: t(project.story), tags: project.tags.map(t), action: project.action ? t(project.action) : undefined, previewLabel: project.previewLabel ? t(project.previewLabel) : undefined, features: project.features.map(feature => ({ title: t(feature.title), text: t(feature.text) })) };
+  return { ...project, name: t(project.name), category: t(project.category), year: t(project.year), summary: t(project.summary), headline: t(project.headline), description: t(project.description), mobileDescription: project.mobileDescription ? t(project.mobileDescription) : undefined, story: t(project.story), tags: project.tags.map(t), action: project.action ? t(project.action) : undefined, previewLabel: project.previewLabel ? t(project.previewLabel) : undefined, features: project.features.map(feature => ({ title: t(feature.title), text: t(feature.text) })), faqs: project.faqs?.map(faq => ({ question: t(faq.question), answer: t(faq.answer) })) };
 }
 export function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000")).replace(/\/$/, "");

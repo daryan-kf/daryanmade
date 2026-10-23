@@ -1,161 +1,33 @@
-import { MAKER_STAGES, type MakerStage } from "./maker-geometry";
-export type { MakerStage } from "./maker-geometry";
-
-export type MakerAnchor = {
-  stage: MakerStage;
-  x: number;
-  y: number;
-  size: number;
-  scroll: number;
+export type MakerFlowLayout = {
+  width: number;
+  height: number;
+  hero: { x: number; y: number; size: number; bottom: number };
+  work: { top: number; bottom: number };
 };
-
-export type MakerPose = {
-  x: number;
-  y: number;
-  size: number;
-  from: number;
-  to: number;
-  morph: number;
-  docked: number;
-  crossing?: boolean;
-  crossingBand?: MakerCrossing;
-  crossingFromX?: number;
-  crossingToX?: number;
-  crossingScroll?: number;
-};
-export type MakerCrossing = { y: number; height: number };
-
-const clamp = (value: number) => Math.max(0, Math.min(1, value));
+export type MakerFlowPose = { x: number; y: number; size: number; rotation: number; phase: number; progress: number };
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-const smooth = (t: number) => { const x = clamp(t); return x * x * (3 - 2 * x); };
+const clamp = (x: number) => Math.min(1, Math.max(0, x));
+const smooth = (x: number) => { const t = clamp(x); return t * t * t * (t * (t * 6 - 15) + 10); };
 
-/** A monotonic, time-based response: retargeting never introduces spring bounce.
- * The speed ceiling also applies to low-frame-rate and fast-scroll frames.
+/** Scroll is the only playhead. The same knot leaves the hero, becomes a small
+ * part of the background current, then recedes before the person section.
+ * Project expansion changes the measured extent, never the form or pigment.
  */
-export function dampMakerValue(current: number, target: number, dt: number, maxSpeed: number, response = 8) {
-  const distance = target - current;
-  if (Math.abs(distance) < 0.0001) return target;
-  const step = Math.min(Math.abs(distance) * (1 - Math.exp(-response * dt)), maxSpeed * dt);
-  return current + Math.sign(distance) * step;
-}
-
-/** Shape and position share one travel response. Ease the final two percent
- * into a complete logo before the sculpture finishes docking, rather than
- * leaving tiny remnants of the previous form in a readable section hold.
- * Normalizing also keeps interrupted, multi-section journeys convex.
- */
-export function resolveMakerWeights(weights: ArrayLike<number>, out: number[]) {
-  let total = 0;
-  let dominant = 0;
-  for (let i = 0; i < weights.length; i++) {
-    out[i] = smooth((weights[i] - .02) / .96);
-    total += out[i];
-    if (weights[i] > weights[dominant]) dominant = i;
-  }
-  for (let i = 0; i < weights.length; i++) out[i] = total > 0 ? out[i] / total : i === dominant ? 1 : 0;
-  return dominant;
-}
-
-/** Measured art slots and empty crossing bands define the path. The complete
- * sculpture remains inside the viewport throughout margin travel. It reaches
- * the next art slot with its next form already complete. The morph unfolds
- * across departure and travel; both section holds contain a readable logo.
- * This target pose is stateless. One bounded response follows its position and
- * shape together, so fast scrolling and reversal retarget without a queue.
- */
-export function sampleMakerJourney(
-  anchors: readonly MakerAnchor[],
-  scroll: number,
-  viewportWidth: number,
-  compact: boolean,
-  out: MakerPose = { x: 0, y: 0, size: 0, from: 0, to: 0, morph: 0, docked: 1 },
-  crossings: readonly MakerCrossing[] = [],
-): MakerPose {
-  out.crossing = false;
-  out.crossingBand = undefined;
-  out.crossingFromX = undefined;
-  out.crossingToX = undefined;
-  out.crossingScroll = undefined;
-  if (!anchors.length) {
-    out.size = 0;
-    out.from = 0;
-    out.to = 0;
-    out.morph = 0;
-    out.docked = 1;
-    return out;
-  }
-  let index = 0;
-  while (index < anchors.length - 1 && scroll >= anchors[index + 1].scroll) index++;
-  const a = anchors[index];
-  const b = anchors[Math.min(index + 1, anchors.length - 1)];
-  const t = a === b ? 0 : clamp((scroll - a.scroll) / Math.max(1, b.scroll - a.scroll));
-  out.from = MAKER_STAGES.indexOf(a.stage);
-  out.to = MAKER_STAGES.indexOf(b.stage);
-  if (a === b) {
-    out.x = a.x; out.y = a.y - scroll; out.size = a.size;
-    out.morph = 0; out.docked = 1;
-    return out;
-  }
-  // Paired projects share one reserved horizontal art band. Moving directly
-  // between them avoids sending the sculpture to a corner between two logos.
-  if (a !== b && (Math.abs(b.y - a.y) < 80 || b.scroll - a.scroll < (compact ? 380 : 440))) {
-    const progress = smooth((t - .28) / .62);
-    out.x = mix(a.x, b.x, progress);
-    out.y = mix(a.y, b.y, progress) - scroll;
-    out.size = mix(a.size, b.size, progress);
-    out.morph = progress;
-    out.docked = 1;
-    return out;
-  }
-  const railSize = compact ? 44 : viewportWidth < 1100 ? 56 : 72;
-  const margin = compact ? 24 : viewportWidth < 1100 ? 30 : 40;
-  const fromSide = a.x < viewportWidth / 2 ? margin : viewportWidth - margin;
-  const toSide = b.x < viewportWidth / 2 ? margin : viewportWidth - margin;
-  const span = b.scroll - a.scroll;
-  const railY = mix(a.y - a.scroll, b.y - b.scroll, smooth(t));
-  let crossing: MakerCrossing | undefined;
-  let nearest = Infinity;
-  if (fromSide !== toSide) for (const band of crossings) {
-    const distance = Math.abs(band.y - (a.y + b.y) / 2);
-    if (band.y > a.y && band.y < b.y && distance < nearest) { crossing = band; nearest = distance; }
-  }
-  const crossAt = crossing ? Math.max(.44, Math.min(.68, (crossing.y - railY - a.scroll) / Math.max(1, span))) : .58;
-  if (crossing) {
-    out.crossingBand = crossing;
-    out.crossingFromX = fromSide;
-    out.crossingToX = toSide;
-    out.crossingScroll = a.scroll + crossAt * span;
-  }
-  const crossHalf = Math.min(.10, 170 / Math.max(1, span));
-  const crossStart = crossAt - crossHalf, crossEnd = crossAt + crossHalf;
-  const exitEnd = crossing ? crossStart - .05 : .52;
-  const exitStart = Math.min(.30, exitEnd - .18);
-  const enterStart = crossing ? crossEnd + .04 : .70;
-  const arrivalAt = .90;
-  const exit = smooth((t - exitStart) / (exitEnd - exitStart));
-  const enter = smooth((t - enterStart) / (arrivalAt - enterStart));
-  const departureFloor = a.size * .5 + 24;
-  const departureY = Math.max(departureFloor, t <= exitStart ? a.y - scroll : a.y - a.scroll - span * exitStart);
-  const arrivalY = t >= arrivalAt ? b.y - scroll : b.y - a.scroll - span * arrivalAt;
-  const crossProgress = smooth((t - crossStart) / (crossHalf * 2));
-  const railX = mix(fromSide, toSide, crossProgress);
-  const departing = t < (exitEnd + enterStart) / 2;
-  out.x = departing ? mix(a.x, railX, exit) : mix(railX, b.x, enter);
-  out.y = departing ? mix(departureY, railY, exit) : mix(railY, arrivalY, enter);
-  out.size = departing ? mix(a.size, railSize, exit) : mix(railSize, b.size, enter);
-  if (crossing && t >= exitEnd && t <= enterStart) {
-    // Approach and leave the empty band along the margin; only the small
-    // fully visible form traverses it. All three joins share exact positions.
-    const approach = smooth((t - exitEnd) / (crossStart - exitEnd));
-    const leave = smooth((t - crossEnd) / (enterStart - crossEnd));
-    const inBand = approach * (1 - leave);
-    out.y = mix(railY, crossing.y - scroll, inBand);
-    out.size = mix(railSize, Math.min(railSize, crossing.height * .8), inBand);
-    out.crossing = t >= crossStart && t <= crossEnd;
-  }
-  // Begin with departure and resolve during the approach. The short lead
-  // before docking lets the new mark read clearly as it reaches its art slot.
-  out.morph = smooth((t - exitStart) / (arrivalAt - .04 - exitStart));
-  out.docked = departing ? 1 - exit : enter;
-  return out;
+export function sampleMakerFlow(layout: MakerFlowLayout, scroll: number): MakerFlowPose {
+  const { width, height, hero, work } = layout;
+  const compact = width <= 700;
+  const start = Math.max(40, hero.y - height * .38);
+  const end = Math.max(start + 180, work.top - height * .18);
+  const entry = smooth((scroll - start) / (end - start));
+  const progress = clamp((scroll - work.top + height * .5) / Math.max(height, work.bottom - work.top));
+  const exit = smooth((scroll - (work.bottom - height * .65)) / (height * .5));
+  const edgeX = width + (compact ? 8 : -22) + Math.sin(progress * Math.PI * 2) * (compact ? 8 : 20);
+  return {
+    x: mix(hero.x, edgeX, entry),
+    y: mix(hero.y - scroll, height * (.44 + Math.sin(progress * Math.PI) * .08), entry),
+    size: mix(hero.size, compact ? 94 : 122, entry) * (1 - exit),
+    rotation: -.36 + scroll / Math.max(1, height) * .26,
+    phase: scroll / Math.max(1, height) * .68,
+    progress,
+  };
 }

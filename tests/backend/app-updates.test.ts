@@ -120,7 +120,7 @@ describe("independent app consent", () => {
     const t = createTest();
     expect((await post(t, "vela", "signup", { email: "x".repeat(5000) })).status).toBe(413);
     expect((await post(t, "vela", "signup", null)).status).toBe(400);
-    expect((await t.fetch("/app-updates/wardrobe/signup", { method: "POST" })).status).toBe(404);
+    expect((await t.fetch("/app-updates/unknown-app/signup", { method: "POST" })).status).toBe(404);
     expect((await records(t, "vela")).emails).toHaveLength(0);
   });
 });
@@ -207,7 +207,7 @@ describe("delivery, throttling and cleanup", () => {
     expect(String(first.body)).toContain("/vela/updates/verify#token=");
     expect(String(first.body)).toContain("/vela/updates/unsubscribe#token=");
     expect(String(first.body)).not.toContain("/iqra/");
-    expect(String(first.body)).toContain("news, new features, and product updates");
+    expect(String(first.body)).toContain("app updates, launch news, and invitations to test future versions");
     expect(String(first.body)).not.toContain("launch updates");
     expect((first.headers as Record<string, string>)["Idempotency-Key"]).toBe(`app-updates-vela-${jobId}`);
     const failed = (await records(t, "vela")).jobs[0];

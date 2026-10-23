@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => { await page.emulateMedia({ reducedMotion: "
 
 for (const app of updateApps) {
   const product = appUpdates[app];
-  test(`${product.name} updates require separate consent and preserve details after an error`, async ({ page }) => {
+  test(`${product.name} updates accept one email and preserve it after an error`, async ({ page }) => {
     const bodies: unknown[] = [];
     await page.route(`**/api/apps/${app}/signup`, async route => {
       bodies.push(route.request().postDataJSON());
@@ -15,21 +15,16 @@ for (const app of updateApps) {
     await page.goto(`${product.home}#updates`);
     const section = page.locator(`#updates[data-updates-app="${app}"]`), form = section.getByRole("form", { name: `${product.name} email updates`, exact: true });
     const email = form.getByRole("textbox", { name: "Your email address", exact: true });
-    const consent = form.getByRole("checkbox");
-    await expect(consent).not.toBeChecked();
+    await expect(form.getByRole("checkbox")).toHaveCount(0);
+    await expect(form).toContainText("By choosing “Keep me in the loop”");
     await form.getByRole("button", { name: /Keep me in the loop/ }).click();
     await expect(form.getByRole("alert")).toBeFocused();
     await expect(email).toHaveAttribute("aria-invalid", "true");
-    await expect(consent).toHaveAttribute("aria-invalid", "true");
     expect(bodies).toEqual([]);
     await email.fill("reader@example.test");
     await form.getByRole("button", { name: /Keep me in the loop/ }).click();
-    expect(bodies).toEqual([]);
-    await consent.check();
-    await form.getByRole("button", { name: /Keep me in the loop/ }).click();
     await expect(form.getByRole("alert")).toContainText("temporarily unavailable");
     await expect(email).toHaveValue("reader@example.test");
-    await expect(consent).toBeChecked();
     await form.getByRole("button", { name: /Try again/ }).click();
     await expect(section.getByRole("status")).toBeFocused();
     await expect(section.getByRole("heading", { name: "Check your inbox." })).toBeVisible();
@@ -90,23 +85,21 @@ test("updates signup disables controls and prevents repeated submissions while s
   await page.goto("/vela#updates");
   const section = page.locator('#updates[data-updates-app="vela"]'), form = section.getByRole("form");
   await form.getByRole("textbox", { name: "Your email address" }).fill("reader@example.test");
-  await form.getByRole("checkbox").check();
   await form.getByRole("button", { name: /Keep me in the loop/ }).click({ clickCount: 2, delay: 30 });
   await expect(form).toHaveAttribute("aria-busy", "true");
   await expect(form.getByRole("textbox", { name: "Your email address" })).toBeDisabled();
-  await expect(form.getByRole("checkbox")).toBeDisabled();
   await expect.poll(() => calls).toBe(1);
   release?.();
   await expect(section.getByRole("heading", { name: "Check your inbox." })).toBeVisible();
 });
 
 test("updates API rejects unknown apps and cross-origin submissions", async ({ request }) => {
-  expect((await request.post("/api/apps/wardrobe/signup", { data: {} })).status()).toBe(404);
+  expect((await request.post("/api/apps/unknown-app/signup", { data: {} })).status()).toBe(404);
   expect((await request.post("/api/apps/vela/inventory", { data: {} })).status()).toBe(404);
   expect((await request.post("/api/apps/vela/signup", { headers: { Origin: "https://unrelated.example.test" }, data: { email: "reader@example.test", consentAccepted: true } })).status()).toBe(403);
 });
 
-test("story updates open with the keyboard and keep their consent separate from the closing form", async ({ page }) => {
+test("story updates open with the keyboard and keep their email separate from the closing form", async ({ page }) => {
   const bodies: unknown[] = [];
   await page.route("**/api/apps/vela/signup", async route => {
     bodies.push(route.request().postDataJSON());
@@ -124,25 +117,20 @@ test("story updates open with the keyboard and keep their consent separate from 
   const form = story.getByRole("form", { name: "Vela email updates (story updates)", exact: true });
   await expect(form).toBeVisible();
   expect(bodies).toEqual([]);
-  const consent = form.getByRole("checkbox");
-  await expect(consent).not.toBeChecked();
+  await expect(form.getByRole("checkbox")).toHaveCount(0);
   await form.getByRole("textbox", { name: "Your email address" }).fill("story-reader@example.test");
-  await form.getByRole("button", { name: /Keep me in the loop/ }).click();
-  await expect(consent).toHaveAttribute("aria-invalid", "true");
-  expect(bodies).toEqual([]);
-  await consent.check();
   await form.getByRole("button", { name: /Keep me in the loop/ }).click();
   await expect(story.getByRole("status")).toBeFocused();
   expect(bodies).toEqual([{ locale: "en", email: "story-reader@example.test", consentAccepted: true, website: "" }]);
   const closing = page.locator("#updates").getByRole("form", { name: "Vela email updates", exact: true });
-  await expect(closing.getByRole("checkbox")).not.toBeChecked();
+  await expect(closing.getByRole("checkbox")).toHaveCount(0);
   await expect(closing.getByRole("textbox", { name: "Your email address" })).toHaveValue("");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
 for (const app of updateApps) {
   const product = appUpdates[app];
-  test(`${product.name} Danish signup validates consent and submits its language`, async ({ page }) => {
+  test(`${product.name} Danish signup validates the email and submits its language`, async ({ page }) => {
     let body: unknown;
     await page.route(`**/api/apps/${app}/signup`, async route => {
       body = route.request().postDataJSON();
@@ -155,8 +143,7 @@ for (const app of updateApps) {
     await expect(form.getByRole("alert")).toContainText("Tjek disse oplysninger");
     expect(body).toBeUndefined();
     await form.getByRole("textbox", { name: "Din e-mailadresse", exact: true }).fill("danish@example.test");
-    await expect(form.getByRole("checkbox")).not.toBeChecked();
-    await form.getByRole("checkbox").check();
+    await expect(form.getByRole("checkbox")).toHaveCount(0);
     await expect(form.getByRole("link", { name: "Sådan bruger vi dine oplysninger" })).toHaveAttribute("href", `/da${product.base}/privacy`);
     await form.getByRole("button", { name: /Hold mig opdateret/ }).click();
     await expect(section.getByRole("heading", { name: "Tjek din indbakke." })).toBeVisible();
