@@ -125,7 +125,7 @@ export function StudioSoundToggle() {
   const locale = useLocale();
   const [on, setOn] = useState(false);
   useEffect(() => {
-    try { enabled = sessionStorage.getItem(preferenceKey) === "on"; } catch { enabled = false; }
+    try { enabled = sessionStorage.getItem(preferenceKey) !== "off"; } catch { enabled = true; }
     setOn(enabled);
   }, []);
   return <button type="button" className={styles.soundButton} data-studio-sound aria-pressed={on} aria-label={locale === "da" ? (on ? "Slå lyd fra" : "Slå lyd til") : (on ? "Turn sound off" : "Turn sound on")} onClick={() => {
@@ -161,7 +161,7 @@ export function SculpturePlayButton() {
   }}><MakerMark width={22} height={22} /><span>{locale === "da" ? (played ? "En ny vinkel." : "Giv idéen et drej") : (played ? "A new perspective." : "Give it a spin")}</span><span aria-hidden="true">↻</span></button>;
 }
 
-/** A quiet, opt-in seven-note sound palette and a tiny echo of each action. */
+/** A quiet seven-note sound palette, on by default, and a tiny echo of each action. */
 export function StudioInteractions() {
   useEffect(() => {
     clearTimeout(disposalTimer);
@@ -207,6 +207,15 @@ export function StudioInteractions() {
       animation.finished.catch(() => {}).finally(() => { echo.remove(); echoes.delete(echo); });
     };
     const visibility = () => { if (document.hidden) void context?.suspend().catch(() => {}); };
+    // Browsers only allow audio after a gesture; the first one quietly opens the context.
+    const unlock = () => {
+      document.removeEventListener("pointerdown", unlock);
+      document.removeEventListener("keydown", unlock);
+      if (!enabled) return;
+      try { context ??= new AudioContext(); void context.resume().catch(() => {}); } catch { /* Sound stays optional. */ }
+    };
+    document.addEventListener("pointerdown", unlock, { passive: true });
+    document.addEventListener("keydown", unlock);
     const clearEchoes = () => echoes.forEach(echo => { echo.getAnimations().forEach(animation => animation.cancel()); echo.remove(); });
     window.addEventListener("studio-feedback", feedback);
     window.addEventListener("maker-motion-change", clearEchoes);
@@ -222,6 +231,8 @@ export function StudioInteractions() {
       document.removeEventListener("click", click);
       document.removeEventListener("pointerdown", press);
       document.removeEventListener("visibilitychange", visibility);
+      document.removeEventListener("pointerdown", unlock);
+      document.removeEventListener("keydown", unlock);
       echoes.forEach(echo => echo.remove());
       // A language route can remount the studio. Let its short sonic transition
       // finish and reuse the unlocked context if the next studio mounts.

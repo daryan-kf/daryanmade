@@ -93,3 +93,17 @@
   .contactPaths h3{margin-top:8px}
   .contactPaths p{display:none}
 }
+
+/* Email is the action, so it says so: an envelope, a label, and a copy fallback. */
+.arrow{width:auto;height:66px;grid-auto-flow:column;gap:12px;padding:0 28px;border-radius:44px;font:600 17px/1 var(--font-sans),sans-serif;letter-spacing:-.01em;white-space:nowrap}
+.arrow svg{width:26px;height:26px;stroke-width:1.5}
+.arrow [data-envelope-flap],.contactPaths h3 [data-envelope-flap],.mailRow [data-envelope-flap]{transform-box:fill-box;transform-origin:50% 0;transition:transform .4s cubic-bezier(.23,1,.32,1)}
+.invitation:hover [data-envelope-flap],.invitation:focus-visible [data-envelope-flap],.contactPaths>a:hover [data-envelope-flap],.contactPaths>a:focus-visible [data-envelope-flap],.mailRow a:hover [data-envelope-flap]{transform:scaleY(-1)}
+.mailRow{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px}
+.mailRow>a{display:inline-flex;align-items:center;gap:9px;color:var(--ink);white-space:nowrap}
+.copy{min-height:36px;padding:0 15px;border:1px solid var(--line);border-radius:30px;background:none;color:var(--ink);font:600 12px/1 var(--font-sans),sans-serif;cursor:pointer;transition:background-color .25s,color .25s,border-color .25s}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(hover:hover) and (pointer:fine){.copy:hover{background:var(--ink);border-color:var(--ink);color:var(--paper)}}
+@media(max-width:1100px){.arrow{height:56px;padding:0 22px;font-size:15px}.arrow svg{width:22px;height:22px}}
+@media(max-width:700px){.arrow{height:48px;padding:0 18px;gap:9px;font-size:14px}.arrow svg{width:20px;height:20px}.mailRow>a{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.arrow [data-envelope-flap],.contactPaths h3 [data-envelope-flap],.mailRow [data-envelope-flap]{transition:none}}

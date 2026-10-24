@@ -132,3 +132,7 @@
   .heroBaseline>a{letter-spacing:.3px}
   .aboutGrid{gap:26px}
 }
+
+/* The work story runs edge to edge; only its heading keeps the reading width. */
+.work{max-width:none;padding-inline:0;padding-bottom:0}
+.work>.sectionHeading{max-width:1600px;margin-inline:auto;padding-inline:var(--home-gutter)}

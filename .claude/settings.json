@@ -1,0 +1,9 @@
+{
+  "skillOverrides": {
+    "animate-expo": "off",
+    "building-native-ui": "off",
+    "expo-ui": "off",
+    "native-data-fetching": "off",
+    "react-native-best-practices": "off"
+  }
+}

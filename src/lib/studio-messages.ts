@@ -1,8 +1,8 @@
 import type { Locale } from "./i18n";
 
-/** Independently written lines, composed for the same three-line sculpture. */
+/** The knot untangles into these words: what ideas are like, and what I do with them. */
 export function studioGreeting(locale: Locale) {
   return locale === "da"
-    ? ["En skæv idé.", "Hvad nu hvis?", "Lad os prøve."]
-    : ["A small spark.", "A wild idea.", "Something real."];
+    ? ["Idéer starter i knude.", "Jeg løser dem op."]
+    : ["Ideas start tangled.", "I untangle them."];
 }

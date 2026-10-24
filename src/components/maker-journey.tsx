@@ -42,7 +42,7 @@ export function MakerJourney() {
       const version = ++generation;
       if (disposed || reduced.matches) return;
       try {
-        const [THREE, { RoomEnvironment }, { createFluidStudy }, { createFluidGreeting }] = await Promise.all([
+        const [THREE, { RoomEnvironment }, { createFluidStudy }, { createFluidGreeting, GREETING_SPREAD }] = await Promise.all([
           import("three"), import("three/addons/environments/RoomEnvironment.js"), import("@/lib/fluid-study"), import("@/lib/fluid-greeting"), document.fonts.ready,
         ]);
         if (disposed || reduced.matches || version !== generation) return;
@@ -88,7 +88,9 @@ export function MakerJourney() {
 
         let frame = 0, lastTime = 0, nextDraw = 0, frames = 0;
         let breathTime = 0, arrival = 0;
-        let greetingTime = root.dataset.languageChanging === "true" ? 7 : 0;
+        // Unravel .6–3.5s, hold, re-tie 7.6–9.8s, then release the greeting.
+        const greetingEnd = 10.2;
+        let greetingTime = root.dataset.languageChanging === "true" ? greetingEnd : 0;
         let greetingAmount = 0, greetingSkip = false, greetingSound = false, greetingDisposed = false;
         let active: HTMLElement | undefined;
         let contextAvailable = true;
@@ -175,29 +177,32 @@ export function MakerJourney() {
           if (greeting && !greetingDisposed && active?.dataset.makerAnchor === "hero") {
             const bounds = active.getBoundingClientRect();
             const visibleHeight = Math.min(innerHeight, bounds.bottom) - Math.max(0, bounds.top);
-            if (visibleHeight >= Math.min(bounds.height * .6, innerHeight * .5)) greetingTime = Math.min(7, greetingTime + delta);
+            if (visibleHeight >= Math.min(bounds.height * .6, innerHeight * .5)) greetingTime = Math.min(greetingEnd, greetingTime + delta);
             const smooth = (a: number, b: number, value: number) => { const t = Math.max(0, Math.min(1, (value - a) / (b - a))); return t * t * (3 - 2 * t); };
-            const desired = greetingSkip ? 0 : smooth(.55, 1.85, greetingTime) * (1 - smooth(4.5, 6.1, greetingTime));
-            greetingAmount += (desired - greetingAmount) * (1 - Math.exp(-delta * 8));
-            if (greetingTime >= 6.8 || (greetingSkip && greetingAmount < .002)) greetingAmount = 0;
+            const desired = greetingSkip ? 0 : smooth(.6, 3.5, greetingTime) * (1 - smooth(7.6, 9.8, greetingTime));
+            greetingAmount += (desired - greetingAmount) * (1 - Math.exp(-delta * 6));
+            if (greetingTime >= greetingEnd - .2 || (greetingSkip && greetingAmount < .002)) greetingAmount = 0;
+            // Beads land in reading order; the lettering appears beneath each one as it settles.
+            const reveal = (greetingAmount * (1 + GREETING_SPREAD) - 1) / GREETING_SPREAD;
             greeting.uniforms.amount.value = greetingAmount;
+            greeting.uniforms.reveal.value = reveal;
             greeting.uniforms.time.value = breathTime;
-            greeting.uniforms.opacity.value = smooth(0, .3, greetingAmount) * (1 - smooth(.91, .99, greetingAmount));
-            greeting.points.visible = greeting.uniforms.opacity.value > .001;
-            greeting.letterMaterial.opacity = smooth(.88, .985, greetingAmount);
-            greeting.lettersSurface.visible = greeting.letterMaterial.opacity > .001;
+            greeting.uniforms.opacity.value = smooth(0, .06, greetingAmount);
+            greeting.points.visible = greeting.uniforms.opacity.value > .001 && reveal < 1.1;
+            greeting.letterMaterial.opacity = smooth(0, .02, greetingAmount);
+            greeting.lettersSurface.visible = reveal > -.05;
             greeting.uniforms.density.value = renderer.getPixelRatio() * Math.min(1.35, height / 460);
             sculpture.updateMatrixWorld();
             greeting.uniforms.knot.value.copy(sculpture.matrixWorld);
-            material.opacity = 1 - smooth(.03, .48, greetingAmount);
+            material.opacity = 1 - smooth(.01, .09, greetingAmount);
             material.depthWrite = greetingAmount < .01;
             sculpture.visible = material.opacity > .005;
-            canvas.dataset.makerGreeting = greetingAmount === 0 && greetingTime >= 6.8 || greetingSkip && greetingAmount === 0 ? "knot" : greetingTime > 4.5 ? "returning" : greetingAmount > .97 ? "message" : greetingTime > .55 ? "unfolding" : "waiting";
-            if (!greetingSound && greetingTime > .65 && greetingTime < 6) {
+            canvas.dataset.makerGreeting = greetingAmount === 0 && greetingTime >= greetingEnd - .2 || greetingSkip && greetingAmount === 0 ? "knot" : greetingTime > 7.6 ? "returning" : greetingAmount > .97 ? "message" : greetingTime > .6 ? "unfolding" : "waiting";
+            if (!greetingSound && greetingTime > .7 && greetingTime < 7) {
               greetingSound = true;
               window.dispatchEvent(new CustomEvent("studio-feedback", { detail: { kind: "reveal", note: 2 } }));
             }
-            if (greetingAmount === 0 && (greetingTime >= 6.8 || greetingSkip)) {
+            if (greetingAmount === 0 && (greetingTime >= greetingEnd - .2 || greetingSkip)) {
               scene.remove(greeting.points, greeting.lettersSurface);
               greeting.dispose(); greetingDisposed = true;
             }

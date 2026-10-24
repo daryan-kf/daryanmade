@@ -12,6 +12,11 @@ export function MakerMark(props: SVGProps<SVGSVGElement>) {
   return <svg width="32" height="32" viewBox="0 0 40 40" fill="none" aria-hidden="true" {...props}><path d={MAKER_MARK_PATH} stroke="currentColor" strokeWidth="4.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
+/** The flap can open on hover: style `[data-envelope-flap]`. */
+export function Envelope(props: SVGProps<SVGSVGElement>) {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true" {...props}><rect x="3" y="5.5" width="18" height="13" rx="2" /><path data-envelope-flap d="m3.5 7 8.5 6 8.5-6" /></svg>;
+}
+
 export function Check(props: SVGProps<SVGSVGElement>) {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" {...props}><path d="m5 12 4 4L19 6" /></svg>;
 }

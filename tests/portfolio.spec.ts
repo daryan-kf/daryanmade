@@ -92,8 +92,8 @@ test("the public portfolio omits discontinued projects and keeps the next projec
   }
   await expect(page.locator("main")).not.toContainText(/Anubal|Marzline|RD Revision/i);
   await loadPage(page, "/projects/next-project");
-  await expect(page.locator("h1")).toHaveText(/Something good\s*is taking shape\./);
-  await expect(page.locator(".teaser-content > p")).toHaveText(/A new project, quietly in the making\.\s*I’ll share more in 2027\./);
+  await expect(page.locator("h1")).toHaveText(/Something big\s*is coming\./);
+  await expect(page.locator(".teaser-content > p")).toHaveText(/A new project, quietly in the making\.\s*I’ll share it in mid-2027\./);
   await expect(page.locator("main img, .product-features, .screenshot-section")).toHaveCount(0);
   await expect(page).toHaveTitle(/Next project/);
   await expect(page.locator("main")).toContainText(/2027|next year/i);
@@ -155,7 +155,7 @@ test("the footer gives clients, collaborators and contributors a direct way to g
   await loadPage(page, "/");
   const invitations = page.locator("footer [aria-label='Ways to work together']");
   const subjects: string[] = [];
-  for (const label of ["Build it for me.", "Build it with me.", "Be part of a project."]) {
+  for (const label of ["Let’s swap ideas.", "Let’s build together.", "Jump into a project."]) {
     const link = invitations.getByRole("link").filter({ has: page.getByRole("heading", { name: label, exact: true }) });
     await expect(link).toBeVisible();
     const href = new URL((await link.getAttribute("href"))!);
@@ -207,7 +207,7 @@ test("all project pages load with owner attribution, useful actions, and working
       continue;
     }
     if (project.slug === "next-project") {
-      await expect(page.locator("h1")).toHaveText(/Something good\s*is taking shape\./);
+      await expect(page.locator("h1")).toHaveText(/Something big\s*is coming\./);
       await expect(page.locator("main")).toContainText("2027");
       await expect(page.locator("main a[href='https://www.linkedin.com/in/daryan-kf/']")).toBeVisible();
       await assertNoOverflow(page);

@@ -151,9 +151,9 @@ const projectCatalog: Project[] = [
     url: "https://koebsklar.vercel.app", action: "Visit Købsklar", privacyUrl: "https://koebsklar.vercel.app/privatlivspolitik", termsUrl: "https://koebsklar.vercel.app/handelsbetingelser", support: agencyContact
   },
   {
-    slug: "sarpoli", name: "Sarpoli", category: "My AI agency", status: "Live", year: "Ongoing",
+    slug: "sarpoli", name: "Sarpoli", category: "AI agency", status: "Live", year: "Ongoing",
     summary: "Less document work. More professional judgment.", headline: "Your documents, read. Your team, in control.",
-    description: "My AI automation studio for law firms, accountants and property teams. We build workflows that read case files, contracts and invoices, extract information with sources, and leave approval with the people doing the work.",
+    description: "An AI automation studio for law firms, accountants and property teams. We build workflows that read case files, contracts and invoices, extract information with sources, and leave approval with the people doing the work.",
     mobileDescription: "Custom AI workflows for law firms, accountants and property teams. Documents read, sources linked, people in control.",
     story: "I founded Sarpoli around the work that keeps returning to a professional’s desk. We start with the team’s own documents, map the repetition, and recommend a practical place to begin. The result is a custom workflow built around existing systems, with source references, visible uncertainty and human approval.",
     faqs: [
@@ -169,9 +169,9 @@ const projectCatalog: Project[] = [
   },
   {
     slug: "next-project", name: "Next project", category: "A little surprise", status: "2027", year: "2027",
-    summary: "Something good is taking shape.", headline: "Something good is taking shape.",
-    description: "A new project from Daryan Kamalifar. More in 2027.",
-    story: "More in 2027.", color: "#eae6dc", ink: "#544e42", tags: [], features: []
+    summary: "Something big is coming.", headline: "Something big is coming.",
+    description: "A new project from Daryan Kamalifar, arriving mid-2027.",
+    story: "Arriving mid-2027.", color: "#eae6dc", ink: "#544e42", tags: [], features: []
   },
 ];
 
