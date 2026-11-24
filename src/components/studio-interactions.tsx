@@ -173,7 +173,7 @@ export function StudioInteractions() {
       const card = target.closest<HTMLElement>("[data-project-card]");
       const link = target.closest<HTMLAnchorElement>('a[href^="#project-"]');
       const slug = card?.dataset.projectCard ?? link?.hash.replace("#project-", "");
-      return ["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra"].indexOf(slug ?? "");
+      return ["sarpoli", "kaizencv", "vela", "koebsklar", "shield-family", "wardrobe", "iqra"].indexOf(slug ?? "");
     };
     const feedback = (event: Event) => {
       const { kind, note } = (event as CustomEvent<{ kind: SoundKind; note?: number }>).detail;

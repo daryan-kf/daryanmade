@@ -21,15 +21,15 @@ export function MotionProvider() {
     const languageChange = document.documentElement.dataset.languageChanging === "true";
     let disposed = false;
     let cleanup: (() => void) | undefined;
-    Promise.all([import("gsap"), import("gsap/ScrollTrigger"), contentPath === "/" ? Promise.resolve(null) : import("lenis")]).then(([{ gsap }, { ScrollTrigger }, lenisModule]) => {
+    Promise.all([import("gsap"), import("gsap/ScrollTrigger"), import("lenis")]).then(([{ gsap }, { ScrollTrigger }, lenisModule]) => {
       if (disposed) return;
       gsap.registerPlugin(ScrollTrigger);
       const motion = gsap.matchMedia();
       motion.add("(prefers-reduced-motion: no-preference)", () => {
       const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-      // The studio responds to the visitor's native scroll; only the material
-      // carries inertia. Product sites retain their own established scroll feel.
-      const lenis = finePointer && lenisModule ? new lenisModule.default({ duration: 1.1, smoothWheel: true, anchors: true }) : undefined;
+      // Smooth, unhurried wheel scrolling everywhere, the home page included: a fast flick
+      // glides through the projects instead of jumping past them. Touch keeps native scrolling.
+      const lenis = finePointer && lenisModule ? new lenisModule.default({ duration: 1.3, smoothWheel: true, wheelMultiplier: .85, anchors: true }) : undefined;
       const tick = (time: number) => lenis?.raf(time * 1000);
       lenis?.on("scroll", ScrollTrigger.update);
       if (lenis) { gsap.ticker.add(tick); gsap.ticker.lagSmoothing(0); }

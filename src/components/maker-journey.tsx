@@ -42,7 +42,7 @@ export function MakerJourney() {
       const version = ++generation;
       if (disposed || reduced.matches) return;
       try {
-        const [THREE, { RoomEnvironment }, { createFluidStudy }, { createFluidGreeting, GREETING_SPREAD }] = await Promise.all([
+        const [THREE, { RoomEnvironment }, { createFluidStudy }, { createFluidGreeting, GREETING_SPREAD, GREETING_REACH }] = await Promise.all([
           import("three"), import("three/addons/environments/RoomEnvironment.js"), import("@/lib/fluid-study"), import("@/lib/fluid-greeting"), document.fonts.ready,
         ]);
         if (disposed || reduced.matches || version !== generation) return;
@@ -183,7 +183,7 @@ export function MakerJourney() {
             greetingAmount += (desired - greetingAmount) * (1 - Math.exp(-delta * 6));
             if (greetingTime >= greetingEnd - .2 || (greetingSkip && greetingAmount < .002)) greetingAmount = 0;
             // Beads land in reading order; the lettering appears beneath each one as it settles.
-            const reveal = (greetingAmount * (1 + GREETING_SPREAD) - 1) / GREETING_SPREAD;
+            const reveal = (greetingAmount * (1 + GREETING_SPREAD * GREETING_REACH) - 1) / GREETING_SPREAD;
             greeting.uniforms.amount.value = greetingAmount;
             greeting.uniforms.reveal.value = reveal;
             greeting.uniforms.time.value = breathTime;

@@ -116,6 +116,8 @@
 .figure[data-device="phone"] .extra{left:-48%;top:10%;width:80%;padding:3.2%;border:1.5px solid currentColor;border-radius:14% / 6.6%;background:color-mix(in srgb,var(--story-wash,#fff) 70%,#fff);box-shadow:0 28px 50px -24px #1a160c59;transform:translateX(42%) scale(.92)}
 .figure[data-device="phone"] .extra img{border-radius:11% / 5.2%}
 .figure[data-device="phone"][data-filled] .extra{opacity:1;transform:rotate(-8deg)}
+.figure[data-device="phone"] .extra[data-extra="1"]{left:auto;right:-44%;top:20%;transform:translateX(-42%) scale(.92)}
+.figure[data-device="phone"][data-filled] .extra[data-extra="1"]{transform:rotate(7deg);transition-delay:.12s}
 .figure[data-device="polaroid"] .extra{width:30%;padding:5% 5% 15%;background:#fbf9f3;box-shadow:0 20px 34px -18px #1a160c66}
 .figure[data-device="polaroid"] .extra[data-extra="0"]{left:-24%;top:8%;transform:translate(46%,10%) scale(.9)}
 .figure[data-device="polaroid"] .extra[data-extra="1"]{right:-24%;bottom:6%;transform:translate(-46%,-10%) scale(.9)}
@@ -204,6 +206,7 @@
   .note{display:none}
   .pencil{width:52px;height:9.5px}
   .figure[data-device="phone"] .extra{left:-36%;width:72%}
+  .figure[data-device="phone"] .extra[data-extra="1"]{left:auto;right:-34%}
   .story[data-story-mode="inline"] .rail{position:sticky;top:0;background:color-mix(in srgb,var(--story-wash) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transition:background-color .9s var(--ease-out)}
 }
 @media(max-width:700px){

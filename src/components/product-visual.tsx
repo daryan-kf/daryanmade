@@ -39,7 +39,7 @@ function BrowserBar({ label }: { label: string }) {
 
 function MobileScene({ project, large, locale = "en" }: ProductVisualProps) {
   const isIqra = project.slug === "iqra";
-  const previews: Record<string, string> = { "Latest update preview": "Forhåndsvisning af seneste opdatering", "Read · Learn · Remember": "Læs · Lær · Husk", "Vela 2.0": "Vela 2.0" };
+  const previews: Record<string, string> = { "Latest update preview": "Forhåndsvisning af seneste opdatering", "Read · Learn · Remember": "Læs · Lær · Husk", "Vela 2.3": "Vela 2.3" };
   const preview = project.previewLabel || "Interface preview";
   return (
     <>

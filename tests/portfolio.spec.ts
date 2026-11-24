@@ -11,11 +11,11 @@ const expectedPaths = () => [
 ].flatMap(path => [path, path === "/" ? "/da" : `/da${path}`]).sort();
 const expectedCardLinks = [
   ["sarpoli", "https://sarpoli.com"],
-  ["vela", "/vela"],
-  ["wardrobe", "/projects/wardrobe"],
   ["kaizencv", "https://www.kaizencv.com"],
+  ["vela", "/vela"],
   ["koebsklar", "https://koebsklar.vercel.app/"],
   ["shield-family", "/projects/shield-family"],
+  ["wardrobe", "/projects/wardrobe"],
   ["iqra", "/iqra"],
   ["next-project", "/projects/next-project"],
 ] as const;
@@ -76,7 +76,7 @@ test("homepage presents each project, its product preview and its live destinati
   }
   await expect(page.locator("#work details")).toHaveCount(7);
   await expect(page.locator("#work details[open]")).toHaveCount(0);
-  await expect(page.locator("[data-project-card='vela']")).toContainText("Vela 2.0 · iPhone & iPad");
+  await expect(page.locator("[data-project-card='vela']")).toContainText("Vela 2.3 · iPhone & iPad");
   await expect(page.locator("[data-project-card='sarpoli']")).toContainText("I founded Sarpoli");
   await expect(page.locator("[data-project-card='kaizencv']")).toContainText("review suggestions before applying them");
   await expect(page.locator("[data-project-card='koebsklar']")).toContainText("professional judgment");

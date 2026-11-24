@@ -36,10 +36,13 @@ const chapters: Record<string, Chapter> = {
   },
   vela: {
     question: { en: "What if a thought could plan your day?", da: "Hvad hvis en tanke kunne planlægge din dag?" },
-    caption: { en: "Vela 2.0 · iPhone & iPad", da: "Vela 2.0 · iPhone og iPad" },
+    caption: { en: "Vela 2.3 · iPhone & iPad", da: "Vela 2.3 · iPhone og iPad" },
     device: "phone",
-    shot: { src: "/images/vela-site/today.webp", width: 900, height: 1951, alt: { en: "Vela brings the day’s tasks, focus and calendar together", da: "Vela samler dagens opgaver, fokus og kalender" } },
-    extras: [{ src: "/images/vela-site/talk-to-vela.webp", width: 900, height: 1951, alt: { en: "Talk to Vela turns one sentence into changes to review", da: "Tal med Vela gør én sætning til ændringer, du kan gennemgå" } }],
+    shot: { src: "/images/vela-site/home-today.webp", width: 900, height: 1951, alt: { en: "Vela Today: Top 3, the task due now, habits and a mood week", da: "Vela I dag: Top 3, opgaven der er nu, vaner og ugens humør" } },
+    extras: [
+      { src: "/images/vela-site/home-life.webp", width: 900, height: 1951, alt: { en: "Vela Life: habits, goals, ideas, focus, screen time, journal, mood, gratitude, meditation and more", da: "Vela Liv: vaner, mål, idéer, fokus, skærmtid, dagbog, humør, taknemmelighed, meditation og mere" } },
+      { src: "/images/vela-site/home-flow.webp", width: 900, height: 1951, alt: { en: "Vela Plan: Top 3 above the day’s timeline", da: "Vela Plan: Top 3 over dagens tidslinje" } },
+    ],
     notes: [{ en: "just say it", da: "bare sig det" }, { en: "Top 3, not a backlog", da: "Top 3, ikke en bunke" }],
   },
   wardrobe: {
@@ -55,13 +58,13 @@ const chapters: Record<string, Chapter> = {
   },
   kaizencv: {
     question: { en: "What if your CV told your real story?", da: "Hvad hvis dit CV fortalte din rigtige historie?" },
-    caption: { en: "A window into the real product.", da: "Et kig ind i det rigtige produkt." },
+    caption: { en: "Live at kaizencv.com", da: "Live på kaizencv.com" },
     device: "browser", shot: website("kaizencv", "KaizenCV"),
     notes: [{ en: "your real experience", da: "din egen erfaring" }, { en: "tailored to the role", da: "tilpasset jobbet" }],
   },
   koebsklar: {
     question: { en: "What if every finding showed its source?", da: "Hvad hvis hvert fund viste sin kilde?" },
-    caption: { en: "A window into the real product.", da: "Et kig ind i det rigtige produkt." },
+    caption: { en: "Closed beta · By invitation", da: "Lukket beta · Kun på invitation" },
     device: "browser", shot: website("koebsklar", "Købsklar"),
     notes: [{ en: "every finding, sourced", da: "hvert fund med kilde" }, { en: "the lawyer decides", da: "advokaten beslutter" }],
   },
@@ -69,7 +72,7 @@ const chapters: Record<string, Chapter> = {
     question: { en: "What if screen time felt fair?", da: "Hvad hvis skærmtid føltes fair?" },
     caption: { en: "App previews · Example family data", da: "Appvisninger · Eksempel på familiedata" },
     device: "phone",
-    shot: { src: "/images/shield-family/screen-1.webp", width: 1000, height: 2167, alt: { en: "Shield Family — each child’s time and requests in one parent view", da: "Shield Family — hvert barns tid og anmodninger samlet for forælderen" } },
+    shot: { src: "/images/shield-family/screen-1.webp", width: 1000, height: 2167, alt: { en: "Shield Family — a child’s time left, requests and daily rules in one parent view", da: "Shield Family — et barns resterende tid, anmodninger og daglige regler samlet for forælderen" } },
     extras: [{ src: "/images/shield-site/today.webp", width: 1170, height: 2532, alt: { en: "Shield Family — a child’s day and setup", da: "Shield Family — et barns dag og opsætning" } }],
     notes: [{ en: "learning earns time", da: "læring giver tid" }, { en: "one family plan", da: "én fælles plan" }],
   },
@@ -191,7 +194,7 @@ function StoryChapter({ project, index, total, locale, near }: { project: Projec
   const next = project.slug === "next-project";
   const destination = projectDestination(project, locale);
   const words = (da ? chapter.question.da : chapter.question.en).split(" ");
-  const status = project.slug === "vela" ? t("2.0 · Live") : next ? (da ? "Midt i 2027" : "Mid-2027") : t(project.status);
+  const status = project.slug === "vela" ? t("2.3 · Live") : next ? (da ? "Midt i 2027" : "Mid-2027") : t(project.status);
   return <article id={`project-${project.slug}`} className={styles.chapter} data-project-card={project.slug} data-story-chapter data-finale={next || undefined} style={{ "--wash": chapter.wash ?? project.color, "--wash-ink": chapter.ink ?? project.ink } as CSSProperties}>
     {next && <span className={styles.sky} aria-hidden="true"><i /><i /></span>}
     <div className={styles.ask}>
@@ -222,7 +225,7 @@ function StoryChapter({ project, index, total, locale, near }: { project: Projec
   </article>;
 }
 
-type Item = { article: HTMLElement; figure: HTMLElement; line: SVGPathElement | null; length: number; box: [number, number]; wash: string; ink: string; draw: number; fill: number; progress: number; tilt: number; seen: boolean; drawing: boolean; filled: boolean };
+type Item = { article: HTMLElement; figure: HTMLElement; line: SVGPathElement | null; length: number; box: [number, number]; wash: string; ink: string; draw: number; fill: number; progress: number; tilt: number; seen: boolean; drawing: boolean; filled: boolean; top: number; height: number; figureTop: number; points: Float32Array };
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 const ease = (value: number) => 1 - Math.pow(1 - value, 3);
 
@@ -239,8 +242,27 @@ function mountStory(root: HTMLElement) {
     const line = figure.querySelector<SVGPathElement>("[data-story-line]");
     const box = (line?.ownerSVGElement?.getAttribute("viewBox") ?? "0 0 1 1").split(" ").slice(2).map(Number) as [number, number];
     const style = getComputedStyle(article);
-    return { article, figure, line, length: line?.getTotalLength() ?? 0, box, wash: style.getPropertyValue("--wash").trim(), ink: style.getPropertyValue("--wash-ink").trim(), draw: -1, fill: -1, progress: -1, tilt: 0, seen: false, drawing: false, filled: false };
+    return { article, figure, line, length: line?.getTotalLength() ?? 0, box, wash: style.getPropertyValue("--wash").trim(), ink: style.getPropertyValue("--wash-ink").trim(), draw: -1, fill: -1, progress: -1, tilt: 0, seen: false, drawing: false, filled: false, top: 0, height: 0, figureTop: 0, points: new Float32Array() };
   });
+  // Positions are measured once per layout change, never per frame: reading boxes while
+  // scrolling forced a full layout every frame and made the story stutter.
+  const pageTop = (element: HTMLElement) => { let top = 0; for (let node: HTMLElement | null = element; node; node = node.offsetParent as HTMLElement | null) top += node.offsetTop; return top; };
+  const SAMPLES = 240;
+  function measure() {
+    items.forEach(item => {
+      item.top = pageTop(item.article);
+      item.height = item.article.offsetHeight;
+      item.figureTop = pageTop(item.figure);
+      item.length = item.line?.getTotalLength() ?? 0;
+      const points = new Float32Array((SAMPLES + 1) * 2);
+      if (item.line && item.length) for (let i = 0; i <= SAMPLES; i++) { const point = item.line.getPointAtLength(item.length * i / SAMPLES); points[i * 2] = point.x; points[i * 2 + 1] = point.y; }
+      item.points = points;
+    });
+  }
+  const pointAt = (item: Item, t: number) => {
+    const at = Math.min(SAMPLES, Math.max(0, t * SAMPLES)), i = Math.min(SAMPLES - 1, Math.floor(at)), f = at - i, p = item.points;
+    return { x: p[i * 2] + (p[i * 2 + 2] - p[i * 2]) * f, y: p[i * 2 + 1] + (p[i * 2 + 3] - p[i * 2 + 1]) * f };
+  };
   let frame = 0, last = 0, active = -1, touched = -Infinity;
   const still = () => reduced.matches || html.dataset.makerMotion === "paused";
 
@@ -277,9 +299,9 @@ function mountStory(root: HTMLElement) {
     last = time;
     const mode = root.dataset.storyMode;
     const vh = innerHeight;
-    // Read every box before writing any style.
-    const articles = items.map(item => item.article.getBoundingClientRect());
-    const figures = mode === "inline" ? items.map(item => item.figure.getBoundingClientRect()) : [];
+    const y = scrollY;
+    const articles = items.map(item => ({ top: item.top - y, bottom: item.top + item.height - y, height: item.height }));
+    const figures = mode === "inline" ? items.map(item => ({ top: item.figureTop - y })) : [];
     let current = articles.findIndex(box => box.top <= vh * .5 && box.bottom > vh * .5);
     if (current < 0) current = articles[0].top > vh * .5 ? 0 : items.length - 1;
     activate(current);
@@ -316,8 +338,7 @@ function mountStory(root: HTMLElement) {
       if (filled !== item.filled) { item.filled = filled; item.figure.toggleAttribute("data-filled", filled); }
       if (drawing && item.line && item.length) {
         // The pencil rides the end of the stroke and leans with its direction.
-        const at = nextDraw * item.length;
-        const tip = item.line.getPointAtLength(at), ahead = item.line.getPointAtLength(Math.min(item.length, at + item.length * .01));
+        const tip = pointAt(item, nextDraw), ahead = pointAt(item, Math.min(1, nextDraw + .01));
         const heading = Math.atan2(ahead.y - tip.y, ahead.x - tip.x) * 180 / Math.PI;
         const lean = Math.max(-14, Math.min(14, Math.sin(heading * Math.PI / 180) * -10 + Math.cos(heading * Math.PI / 180) * 6));
         item.tilt += (lean - item.tilt) * .2;
@@ -333,13 +354,19 @@ function mountStory(root: HTMLElement) {
   }
 
   function request() { if (!frame) frame = requestAnimationFrame(tick); }
-  const resize = () => { items.forEach(item => { item.length = item.line?.getTotalLength() ?? 0; }); request(); };
+  const resize = () => { measure(); request(); };
+  const layout = new ResizeObserver(resize);
+  layout.observe(root);
+  // Content above the story can change height too (fonts, images, the hero), which moves every chapter.
+  layout.observe(document.body);
   const touch = () => { touched = performance.now(); };
+  measure();
   setMode();
+  void document.fonts.ready.then(resize);
   addEventListener("scroll", request, { passive: true });
   addEventListener("resize", resize, { passive: true });
   addEventListener("maker-motion-change", request);
-  addEventListener("maker-layout-change", request);
+  addEventListener("maker-layout-change", resize);
   wide.addEventListener("change", setMode);
   reduced.addEventListener("change", setMode);
   rail?.addEventListener("pointerdown", touch, { passive: true });
@@ -348,6 +375,7 @@ function mountStory(root: HTMLElement) {
     cancelAnimationFrame(frame);
     removeEventListener("scroll", request);
     removeEventListener("resize", resize);
+    layout.disconnect();
     removeEventListener("maker-motion-change", request);
     removeEventListener("maker-layout-change", request);
     wide.removeEventListener("change", setMode);

@@ -2,6 +2,8 @@ import { BufferAttribute, BufferGeometry, CanvasTexture, Color, Matrix4, Mesh, M
 
 /** How far the writing sweep is spread across the beads: 0 moves them all at once. */
 export const GREETING_SPREAD = .85;
+/** How far past the last glyph the reveal runs, so the final letters fully settle and their beads melt. */
+export const GREETING_REACH = 1.15;
 
 /** The trefoil unravels into one thread of beads that writes the greeting in reading order,
  * line by line and left to right; each bead melts into the lit lettering where it lands.
@@ -103,7 +105,7 @@ export function createFluidGreeting(compact: boolean, lines: string[], font: str
       varying float fade;
       float easeInOut(float t) { return t < .5 ? 4. * t * t * t : 1. - pow(-2. * t + 2., 3.) / 2.; }
       void main() {
-        float t = easeInOut(clamp(amount * ${(1 + GREETING_SPREAD).toFixed(2)} - order * ${GREETING_SPREAD.toFixed(2)}, 0., 1.));
+        float t = easeInOut(clamp(amount * ${(1 + GREETING_SPREAD * GREETING_REACH).toFixed(4)} - order * ${GREETING_SPREAD.toFixed(2)}, 0., 1.));
         vec3 source = (knot * vec4(position, 1.)).xyz;
         vec3 target = letter;
         target.z += sin(letter.x * 2.8 + time * 1.3) * .025;

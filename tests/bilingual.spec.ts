@@ -31,7 +31,7 @@ test("Danish and English are server-rendered with matching language metadata", a
 test("Danish home preserves collection order and enabled Twillby", async ({ page }) => {
   await page.goto("/da");
   await expect(page.locator("h1")).toContainText("Gode idéer.");
-  expect(await page.locator("[data-project-card]").evaluateAll(cards => cards.map(card => (card as HTMLElement).dataset.projectCard))).toEqual(["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra", "next-project"]);
+  expect(await page.locator("[data-project-card]").evaluateAll(cards => cards.map(card => (card as HTMLElement).dataset.projectCard))).toEqual(["sarpoli", "kaizencv", "vela", "koebsklar", "shield-family", "wardrobe", "iqra", "next-project"]);
   const wardrobe = page.locator('[data-project-card="wardrobe"]');
   await expect(wardrobe).toContainText("Kommer snart");
   await expect(wardrobe.getByRole("heading", { name: "Twillby", exact: true })).toBeVisible();

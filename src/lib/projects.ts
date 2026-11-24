@@ -1,6 +1,6 @@
 import { localePath, type Locale } from "./i18n";
 import { portfolioCopy } from "./portfolio-copy";
-export type ProjectStatus = "Live" | "Coming soon" | "In development" | "Client project" | "2027";
+export type ProjectStatus = "Live" | "Closed beta" | "Coming soon" | "In development" | "Client project" | "2027";
 export type Project = {
   slug: string;
   name: string;
@@ -54,7 +54,7 @@ const projectCatalog: Project[] = [
     screenshots: ["/images/shield-site/today.webp", "/images/shield-site/child.webp", "/images/shield-site/learn.webp"],
     summary: "Screen-time rules. A shared family plan.",
     headline: "Clear limits, learning rewards and room for family life.",
-    description: "An iPhone and iPad app for managing family screen time. Set app limits and routines, let children earn capped extra minutes through learning, answer requests remotely, and share an overview with a co-parent. Location sharing is optional.",
+    description: "An iPhone and iPad app for managing family screen time. Set app limits and routines, let children earn capped extra minutes through learning, answer requests remotely, and share an overview with a co-parent. Location sharing is optional. A subscription with a three-day free trial.",
     mobileDescription: "Daily limits, learning rewards and parent-approved requests. One shared family plan, with optional location sharing.",
     story: "Shield Family makes the plan visible to both sides. Parents choose the limits, school and bedtime routines, learning rewards and pauses. Children see their balance, practise with quizzes and brain games, and ask for extra time. Parents can respond from their own phone, follow learning progress and optionally use family places and arrival notifications.",
     color: "#e9e8f7", ink: "#332c9e", tags: ["iOS app", "Product design", "Family wellbeing"],
@@ -65,12 +65,12 @@ const projectCatalog: Project[] = [
     ],
     url: "/projects/shield-family", action: "Visit Shield Family",
     storeUrl: "https://apps.apple.com/app/id6782042659",
-    privacyUrl: "https://daryan-kf.github.io/kidshield-legal/privacy.html",
-    termsUrl: "https://daryan-kf.github.io/kidshield-legal/terms.html", support: "mailto:info@sarpoli.com"
+    privacyUrl: "https://shieldfamily.vercel.app/app-privacy.html",
+    termsUrl: "https://shieldfamily.vercel.app/app-terms.html", support: "https://shieldfamily.vercel.app/app-support.html"
   },
   {
     slug: "kaizencv", name: "KaizenCV", category: "Career & AI", status: "Live", year: "Ongoing",
-    summary: "Your experience, made clear.", headline: "Turn the work you’ve done into a CV worth sending.",
+    summary: "Your CV, checked against each job.", headline: "Turn the work you’ve done into a CV worth sending.",
     description: "An AI career coach and CV workspace. Import a PDF or Word CV, review suggested edits, tailor applications to a role and track where you’ve applied. Your first selected CV is free to export as a PDF.",
     mobileDescription: "Sharpen your CV with an AI coach and tailor it to the role. Your first selected CV exports free as a PDF.",
     story: "KaizenCV helps you explain the work you have actually done. The coach asks for missing details and offers edits you can approve or skip. Your confirmed experience carries into tailored CVs and cover letters, while templates and an application tracker keep the practical work together. Interview preparation is in beta; voice interview practice is still coming.",
@@ -78,7 +78,7 @@ const projectCatalog: Project[] = [
       { question: "What can I do for free?", answer: "Import, edit and download one selected CV as a PDF using a free template. You can keep editing and downloading that CV. The free plan also includes the application tracker and a limited AI allowance; Pro expands downloads, formats and AI use." },
       { question: "Is interview practice available?", answer: "Interview preparation with role-specific questions and company briefings is available in beta. Voice interview practice is planned for a later release." }
     ],
-    color: "#e5e7fb", ink: "#4342b7", tags: ["Web platform", "AI tools", "Career development"],
+    color: "#f0f5d5", ink: "#4c610b", tags: ["Web platform", "AI tools", "Career development"],
     features: [
       { title: "Start with your real experience", text: "Import a PDF or Word CV and check the extracted details. The coach asks questions, then gives you suggestions to approve or skip." },
       { title: "Build an application around the role", text: "Tailor your CV and draft a cover letter from your experience. Track applications in one board; explore interview questions and company briefings in the beta preparation tools." },
@@ -104,17 +104,17 @@ const projectCatalog: Project[] = [
   },
   {
     slug: "vela", name: "Vela", category: "Everyday momentum", status: "Live", year: "Ongoing",
-    marketingPath: "/vela", previewLabel: "Vela 2.0",
-    screenshots: ["/images/vela-site/today.webp", "/images/vela-site/talk-to-vela.webp", "/images/vela-site/focus-session.webp"],
+    marketingPath: "/vela", previewLabel: "Vela 2.3",
+    screenshots: ["/images/vela-site/home-today.webp", "/images/vela-site/home-flow.webp", "/images/vela-site/home-life.webp"],
     summary: "A day planned. Space to grow.", headline: "Plan the day. Build what matters.",
     description: "A life planner for iPhone and iPad that connects tasks, calendar, focus, goals and habits. Capture thoughts by voice or text, choose your Top 3, and make room for reflection with a journal, mood check-ins and gratitude.",
     mobileDescription: "Tasks, calendar, focus and ideas in one app. Plan your day, build better habits and make room to reflect.",
-    story: "Vela connects a thought to something you can do today. Talk to Vela helps capture and change plans; Top 3 and Focus make the next step clear. Ideas can become goals, habits can follow a flexible rhythm, and a weekly review brings reflection back into planning. Progress grows without streak pressure. Vela Pro is a subscription.",
-    color: "#d9e9df", ink: "#205e51", tags: ["AI planning", "iPhone & iPad", "Vela 2.0"],
+    story: "Vela connects a thought to something you can do today. Talk to Vela helps capture and change plans; Top 3 and Focus make the next step clear. Ideas can become goals, habits can follow a flexible rhythm, and a weekly review brings reflection back into planning. Progress grows without streak pressure. Vela Pro is a subscription, and the yearly plan can start with a three-day free trial.",
+    color: "#d9e9df", ink: "#205e51", tags: ["AI planning", "iPhone & iPad", "Vela 2.3"],
     features: [
       { title: "Capture it your way", text: "Speak, type or scan a handwritten list. Talk to Vela can add, move and complete items, with visible changes and Undo." },
       { title: "Choose, then focus", text: "See tasks beside your calendar, choose a Top 3 and start a focus timer. Optional app blocking helps protect the session." },
-      { title: "Build a life beyond the list", text: "Develop ideas, goals and flexible habits. Journal, track mood, practise gratitude and review vocabulary; use your weekly review to plan what comes next." }
+      { title: "Build a life beyond the list", text: "Develop ideas, goals and flexible habits. Journal, track mood, practise gratitude and learn new words with study cards and a quiz; use your weekly review to plan what comes next." }
     ],
     url: "https://daryanmade.com/vela", action: "Visit Vela", storeUrl: "https://apps.apple.com/app/id6783922107", privacyUrl: "https://vela-productivity.vercel.app/privacy", termsUrl: "https://vela-productivity.vercel.app/terms", support: "https://vela-productivity.vercel.app/support"
   },
@@ -133,10 +133,10 @@ const projectCatalog: Project[] = [
     ]
   },
   {
-    slug: "koebsklar", name: "Købsklar", category: "Property & automation", status: "Live", year: "Ongoing",
+    slug: "koebsklar", name: "Købsklar", category: "Property & automation", status: "Closed beta", year: "Ongoing",
     summary: "Every property finding, back to its source.", headline: "The property case, prepared for your review.",
-    description: "A document workspace for Danish property lawyers. Read purchase agreements, land-registry records, BBR and inspection reports together, surface discrepancies, and prepare source-linked findings and draft advice for professional review.",
-    mobileDescription: "Read the whole property case together. Source-linked findings and draft advice, ready for the lawyer’s review.",
+    description: "A document workspace for Danish property lawyers. Read purchase agreements, land-registry records, BBR and inspection reports together, surface discrepancies, and prepare source-linked findings and draft advice for professional review. Currently in closed beta for selected law firms, by invitation.",
+    mobileDescription: "Read the whole property case together. Source-linked findings and draft advice, ready for the lawyer’s review. Closed beta, by invitation.",
     story: "A property case only makes sense when its documents are read together. Købsklar connects extracted facts to the original document and page, flags differences between files, and shows missing or unreadable material. It prepares an analysis report, draft legal assessment, advisory letter and document overview. The lawyer checks, edits and owns the advice.",
     faqs: [
       { question: "What does Købsklar prepare?", answer: "An analysis report, draft legal assessment, buyer advisory letter and document overview. Findings point to document pages, discrepancies are flagged, and the lawyer reviews and edits the material before using it." },
@@ -158,14 +158,15 @@ const projectCatalog: Project[] = [
     story: "I founded Sarpoli around the work that keeps returning to a professional’s desk. We start with the team’s own documents, map the repetition, and recommend a practical place to begin. The result is a custom workflow built around existing systems, with source references, visible uncertainty and human approval.",
     faqs: [
       { question: "Is Sarpoli an app we subscribe to?", answer: "Sarpoli builds custom AI workflows for professional teams. We begin with an audit of your documents and repeated tasks, then agree the scope and fixed price before implementation." },
-      { question: "Does the AI make the professional decision?", answer: "The workflow finds and structures information, points to its sources and flags uncertainty. Your team reviews and approves the output; professional judgment stays with you." }
+      { question: "Does the AI make the professional decision?", answer: "The workflow finds and structures information, points to its sources and flags uncertainty. Your team reviews and approves the output; professional judgment stays with you." },
+      { question: "What if it doesn’t save the time?", answer: "Before building, we agree in writing a target to halve the time on your own workflow. If we miss it, we keep working at no extra cost. If we still miss it 30 days later, you get the full amount back and keep everything built." }
     ],
-    color: "#0b0f1a", ink: "#d9e0fb", tags: ["Founder", "AI automation", "Documents & workflows"],
+    color: "#111723", ink: "#cbd4f2", tags: ["Founder", "AI automation", "Documents & workflows"],
     features: [
       { title: "Map before we build", text: "A free AI audit identifies repeated document tasks and estimates the hours involved. The written recommendations are yours to keep." },
       { title: "Every field has a source", text: "Extract facts from contracts, invoices and case files with document references. Missing or uncertain information is flagged for review." },
-      { title: "Built around your team", text: "Custom automations fit existing systems and approval steps. Implementation is agreed at a fixed price, with the first month of operation included." }
-    ], url: "https://sarpoli.com", action: "Meet Sarpoli", support: agencyContact
+      { title: "Built around your team", text: "Custom automations fit existing systems and approval steps. After the audit you get one fixed price in writing for the first document type, agreed before anything is built." }
+    ], url: "https://sarpoli.com", action: "Meet Sarpoli", privacyUrl: "https://sarpoli.com/en/privacy", support: agencyContact
   },
   {
     slug: "next-project", name: "Next project", category: "A little surprise", status: "2027", year: "2027",
@@ -176,7 +177,7 @@ const projectCatalog: Project[] = [
 ];
 
 // Keep detail-page numbering and next-project navigation aligned with the home collection.
-const collectionOrder = ["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra", "next-project"];
+const collectionOrder = ["sarpoli", "kaizencv", "vela", "koebsklar", "shield-family", "wardrobe", "iqra", "next-project"];
 export const projects: Project[] = collectionOrder.map(slug => projectCatalog.find(project => project.slug === slug)!);
 export function getProject(slug: string, locale: Locale = "en"): Project | undefined {
   const project = projects.find(project => project.slug === slug);

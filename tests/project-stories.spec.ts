@@ -5,7 +5,7 @@ test("product previews, destinations and stories remain available before JavaScr
   const page = await context.newPage();
   try {
     await page.goto(baseURL || "http://127.0.0.1:3000");
-    for (const slug of ["sarpoli", "vela", "wardrobe", "kaizencv", "koebsklar", "shield-family", "iqra"]) {
+    for (const slug of ["sarpoli", "kaizencv", "vela", "koebsklar", "shield-family", "wardrobe", "iqra"]) {
       const card = page.locator(`[data-project-card="${slug}"]`);
       await expect(card.locator("details")).not.toHaveAttribute("open");
       await expect(card.locator("[data-project-link]")).toBeVisible();
